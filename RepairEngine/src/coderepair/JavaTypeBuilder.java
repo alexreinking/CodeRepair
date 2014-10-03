@@ -31,16 +31,15 @@ public class JavaTypeBuilder {
     }
 
     JavaFunctionType makeCastNode(JavaType lowType, JavaType highType) {
-        return new JavaFunctionType("<cast>", new HashSet<JavaType>(Arrays.asList(lowType)), highType);
+        return new JavaFunctionType("<cast>", Arrays.asList(lowType), highType);
     }
 
     JavaFunctionType makeConstructor(JavaType type, Collection<? extends JavaType> formals) {
-        return new JavaFunctionType("new " + type.getName(), new HashSet<JavaType>(formals), type);
+        return new JavaFunctionType("new " + type.getName(), formals, type);
     }
 
-    JavaFunctionType makeMethod(String name, JavaType type, JavaType output, Collection<? extends JavaType> formals) {
-        HashSet<JavaType> inputs = new HashSet<JavaType>(formals);
-        inputs.add(type);
-        return new JavaFunctionType(name, inputs, output);
+    JavaFunctionType makeMethod(String name, JavaType type, JavaType output, Collection<JavaType> formals) {
+        formals.addAll(Arrays.asList(type));
+        return new JavaFunctionType(name, formals, output);
     }
 }

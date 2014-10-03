@@ -6,8 +6,6 @@ import coderepair.analysis.JavaPrimitiveType;
 import coderepair.analysis.JavaType;
 import coderepair.antlr.JavaPBaseVisitor;
 import org.antlr.v4.runtime.misc.NotNull;
-import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,9 +13,8 @@ import java.util.List;
 
 import static coderepair.antlr.JavaPParser.*;
 
-public class GraphBuilder extends JavaPBaseVisitor<SimpleDirectedWeightedGraph<JavaType, DefaultWeightedEdge>> {
-    private SimpleDirectedWeightedGraph<JavaType, DefaultWeightedEdge> functionFlowGraph = null;
-    private JavaTypeBuilder typeBuilder = new JavaTypeBuilder();
+public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
+    private SynthesisGraph functionFlowGraph = null;
     private HashSet<String> allowedPackages = new HashSet<String>();
     private HashSet<JavaFunctionType> methods = new HashSet<JavaFunctionType>();
 
@@ -31,14 +28,9 @@ public class GraphBuilder extends JavaPBaseVisitor<SimpleDirectedWeightedGraph<J
         allowedPackages.add("java.lang");
     }
 
-    public JavaTypeBuilder getTypeBuilder() {
-        return typeBuilder;
-    }
-
     @Override
-    public SimpleDirectedWeightedGraph<JavaType, DefaultWeightedEdge>
-    visitJavap(@NotNull JavapContext ctx) {
-        functionFlowGraph = new SimpleDirectedWeightedGraph<JavaType, DefaultWeightedEdge>(DefaultWeightedEdge.class);
+    public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
+        functionFlowGraph = new SynthesisGraph(new JavaTypeBuilder());
         for (ClassDeclarationContext classDeclarationContext : ctx.classDeclaration())
             visitClassDeclaration(classDeclarationContext);
 
@@ -47,8 +39,9 @@ public class GraphBuilder extends JavaPBaseVisitor<SimpleDirectedWeightedGraph<J
             functionFlowGraph.setEdgeWeight(functionFlowGraph.addEdge(method.getOutput(), method),
                                             method.getName().equals("<cast>")
                                                     ? 0.0
-                                                    : method.getInputs().size() * 2.0);
-            for (JavaType inType : method.getInputs())
+                                                    : method.getTotalFormals() * 2.0);
+
+            for (JavaType inType : method.getInputs().keySet())
                 functionFlowGraph.addEdge(method, inType);
         }
 
@@ -56,9 +49,9 @@ public class GraphBuilder extends JavaPBaseVisitor<SimpleDirectedWeightedGraph<J
     }
 
     @Override
-    public SimpleDirectedWeightedGraph<JavaType, DefaultWeightedEdge>
+    public SynthesisGraph
     visitClassDeclaration(@NotNull ClassDeclarationContext ctx) {
-        JavaType classNode = typeBuilder.getTypeFromName(ctx.typeName().getText());
+        JavaType classNode = functionFlowGraph.getNodeManager().getTypeFromName(ctx.typeName().getText());
         if (addTypeToGraph(classNode)) {
             List<TypeNameContext> superTypes = new ArrayList<TypeNameContext>();
             if (ctx.extension() != null && ctx.extension().typeList() != null)
@@ -67,9 +60,9 @@ public class GraphBuilder extends JavaPBaseVisitor<SimpleDirectedWeightedGraph<J
                 superTypes.addAll(ctx.implementation().typeList().typeName());
 
             for (TypeNameContext parentType : superTypes) {
-                JavaType parentNode = typeBuilder.getTypeFromName(parentType.getText());
+                JavaType parentNode = functionFlowGraph.getNodeManager().getTypeFromName(parentType.getText());
                 if (addTypeToGraph(parentNode))
-                    methods.add(typeBuilder.makeCastNode(classNode, parentNode));
+                    methods.add(functionFlowGraph.getNodeManager().makeCastNode(classNode, parentNode));
             }
 
             for (MemberDeclarationContext memberDeclarationContext : ctx.memberDeclaration()) {
@@ -79,7 +72,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SimpleDirectedWeightedGraph<J
                     List<JavaType> formals = new ArrayList<JavaType>();
                     if (method.typeList() != null) {
                         for (TypeNameContext formal : method.typeList().typeName()) {
-                            JavaType formalType = typeBuilder.getTypeFromName(formal.getText());
+                            JavaType formalType = functionFlowGraph.getNodeManager().getTypeFromName(formal.getText());
                             if (!addTypeToGraph(formalType)) {
                                 badFormal = true;
                                 break;
@@ -92,12 +85,12 @@ public class GraphBuilder extends JavaPBaseVisitor<SimpleDirectedWeightedGraph<J
                     if (badFormal) continue;
 
                     if (method.typeName().size() == 1) {
-                        methods.add(typeBuilder.makeConstructor(classNode, formals));
+                        methods.add(functionFlowGraph.getNodeManager().makeConstructor(classNode, formals));
                     } else {
-                        JavaType outType = typeBuilder.getTypeFromName(method.typeName().get(0).getText());
+                        JavaType outType = functionFlowGraph.getNodeManager().getTypeFromName(method.typeName().get(0).getText());
                         if (addTypeToGraph(outType)) {
                             String methodName = method.typeName().get(1).getText();
-                            methods.add(typeBuilder.makeMethod(methodName, classNode, outType, formals));
+                            methods.add(functionFlowGraph.getNodeManager().makeMethod(methodName, classNode, outType, formals));
                         }
                     }
                 } else if (memberDeclarationContext.fieldDeclaration() != null) {

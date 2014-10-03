@@ -1,17 +1,21 @@
 package coderepair.analysis;
-import java.util.HashSet;
+
+import java.util.Collection;
+import java.util.HashMap;
 
 public class JavaFunctionType extends JavaType {
-    private HashSet<JavaType> inputs;
+    private HashMap<JavaType, Integer> inputs = new HashMap<JavaType, Integer>();
     private JavaType output;
+    private int nFormals;
 
-    public JavaFunctionType(String name, HashSet<JavaType> inputs, JavaType output) {
-        this.inputs = inputs;
+    public JavaFunctionType(String name, Collection<? extends JavaType> formals, JavaType output) {
+        nFormals = formals.size();
+        for (JavaType input : formals) inputs.put(input, 1 + inputs.getOrDefault(input, 0));
         this.output = output;
 
         String sep = "";
         StringBuilder args = new StringBuilder();
-        for (JavaType input : inputs) {
+        for (JavaType input : formals) {
             args.append(sep);
             args.append(input.getName());
             sep = ", ";
@@ -20,7 +24,9 @@ public class JavaFunctionType extends JavaType {
         this.name = output.getName() + " " + name + "(" + args.toString() + ")";
     }
 
-    public HashSet<JavaType> getInputs() {
+    public int getTotalFormals() { return nFormals; }
+
+    public HashMap<JavaType, Integer> getInputs() {
         return inputs;
     }
 

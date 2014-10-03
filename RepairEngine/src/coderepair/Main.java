@@ -13,10 +13,10 @@ import org.jgrapht.ext.DOTExporter;
 import org.jgrapht.ext.IntegerNameProvider;
 import org.jgrapht.ext.VertexNameProvider;
 import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,22 +29,22 @@ public class Main {
         long startTime = System.currentTimeMillis();
         JavaPLexer lexer = new JavaPLexer(new ANTLRFileStream(inFile));
         JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
-        GraphBuilder graphBuilder = new GraphBuilder();
+        GraphBuilder graphBuilder = new GraphBuilder(Arrays.asList("java.io"));
         JavaPParser.JavapContext parsedFile = parser.javap();
         long endTime = System.currentTimeMillis();
         System.out.printf("took %dms\n", endTime - startTime);
 
         System.out.print("Building graph... ");
         startTime = System.currentTimeMillis();
-        SimpleDirectedWeightedGraph<JavaType, DefaultWeightedEdge> graph = graphBuilder.visitJavap(parsedFile);
+        SynthesisGraph graph = graphBuilder.visitJavap(parsedFile);
         endTime = System.currentTimeMillis();
         System.out.printf("took %dms\n", endTime - startTime);
 
         System.out.print("Searching graph... ");
         startTime = System.currentTimeMillis();
         List<DefaultWeightedEdge> path = DijkstraShortestPath.findPathBetween(
-                graph, graphBuilder.getTypeBuilder().getTypeFromName("java.lang.String"),
-                graphBuilder.getTypeBuilder().getTypeFromName("int"));
+                graph, graph.getNodeManager().getTypeFromName("int"),
+                graph.getNodeManager().getTypeFromName("java.lang.String"));
         endTime = System.currentTimeMillis();
         System.out.printf("took %dms\n\n", endTime - startTime);
 
