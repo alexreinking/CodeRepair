@@ -35,12 +35,13 @@ public class JavaTypeBuilder {
         return new JavaFunctionType("new " + type.getName(), formals, type);
     }
 
-    JavaFunctionType makeMethod(String name, JavaType type, JavaType output, Collection<JavaType> formals) {
-        return new JavaMethodType(name, formals, output).setOwner(type);
+    JavaFunctionType makeMethod(String name, JavaType owner, JavaType output, Collection<JavaType> formals) {
+        formals.add(owner);
+        return new JavaMethodType(name, formals, output).setOwner(owner);
     }
 
-    JavaFunctionType makeStaticMethod(String name, JavaType type, JavaType output, Collection<JavaType> formals) {
-        return new JavaFunctionType(type.getName() + "." + name, formals, output);
+    JavaFunctionType makeStaticMethod(String name, JavaType owner, JavaType output, Collection<JavaType> formals) {
+        return new JavaFunctionType(owner.getName() + "." + name, formals, output);
     }
 
     public JavaValueType makeValue(String value, String typeName) {

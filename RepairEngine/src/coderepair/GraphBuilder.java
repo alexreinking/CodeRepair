@@ -14,7 +14,7 @@ import java.util.List;
 import static coderepair.antlr.JavaPParser.*;
 
 public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
-    private SynthesisGraph functionFlowGraph = null;
+    private SynthesisGraph fnFlowGraph = null;
     private HashSet<String> allowedPackages = new HashSet<String>();
     private HashSet<JavaFunctionType> methods = new HashSet<JavaFunctionType>();
 
@@ -29,27 +29,27 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
 
     @Override
     public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
-        functionFlowGraph = new SynthesisGraph(new JavaTypeBuilder());
+        fnFlowGraph = new SynthesisGraph(new JavaTypeBuilder());
         for (ClassDeclarationContext classDeclarationContext : ctx.classDeclaration())
             visitClassDeclaration(classDeclarationContext);
 
         for (JavaFunctionType method : methods) {
-            functionFlowGraph.addVertex(method);
-            functionFlowGraph.setEdgeWeight(functionFlowGraph.addEdge(method.getOutput(), method),
+            fnFlowGraph.addVertex(method);
+            fnFlowGraph.setEdgeWeight(fnFlowGraph.addEdge(method.getOutput(), method),
                                             method.getName().contains("<cast>")
                                                     ? 0.0
                                                     : Math.pow(1.5, method.getTotalFormals()));
 
             for (JavaType inType : method.getInputs().keySet())
-                functionFlowGraph.addEdge(method, inType);
+                fnFlowGraph.addEdge(method, inType);
         }
 
-        return functionFlowGraph;
+        return fnFlowGraph;
     }
 
     @Override
     public SynthesisGraph visitClassDeclaration(@NotNull ClassDeclarationContext ctx) {
-        JavaType classNode = functionFlowGraph.getNodeManager().getTypeFromName(ctx.typeName().getText());
+        JavaType classNode = fnFlowGraph.getNodeManager().getTypeFromName(ctx.typeName().getText());
         if (addTypeToGraph(classNode)) {
             List<TypeNameContext> superTypes = new ArrayList<TypeNameContext>();
             if (ctx.extension() != null && ctx.extension().typeList() != null)
@@ -58,9 +58,9 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                 superTypes.addAll(ctx.implementation().typeList().typeName());
 
             for (TypeNameContext parentType : superTypes) {
-                JavaType parentNode = functionFlowGraph.getNodeManager().getTypeFromName(parentType.getText());
+                JavaType parentNode = fnFlowGraph.getNodeManager().getTypeFromName(parentType.getText());
                 if (addTypeToGraph(parentNode))
-                    methods.add(functionFlowGraph.getNodeManager().makeCastNode(classNode, parentNode));
+                    methods.add(fnFlowGraph.getNodeManager().makeCastNode(classNode, parentNode));
             }
 
             for (MemberDeclarationContext memberDeclarationContext : ctx.memberDeclaration()) {
@@ -70,7 +70,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                     List<JavaType> formals = new ArrayList<JavaType>();
                     if (method.typeList() != null) {
                         for (TypeNameContext formal : method.typeList().typeName()) {
-                            JavaType formalType = functionFlowGraph.getNodeManager().getTypeFromName(formal.getText());
+                            JavaType formalType = fnFlowGraph.getNodeManager().getTypeFromName(formal.getText());
                             if (!addTypeToGraph(formalType)) {
                                 badFormal = true;
                                 break;
@@ -83,12 +83,17 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                     if (badFormal) continue;
 
                     if (method.typeName().size() == 1) {
-                        methods.add(functionFlowGraph.getNodeManager().makeConstructor(classNode, formals));
+                        methods.add(fnFlowGraph.getNodeManager().makeConstructor(classNode, formals));
                     } else {
-                        JavaType outType = functionFlowGraph.getNodeManager().getTypeFromName(method.typeName().get(0).getText());
+                        JavaType outType = fnFlowGraph.getNodeManager().getTypeFromName(method.typeName().get(0).getText());
                         if (addTypeToGraph(outType)) {
                             String methodName = method.typeName().get(1).getText();
-                            methods.add(functionFlowGraph.getNodeManager().makeMethod(methodName, classNode, outType, formals));
+                            JavaFunctionType newFunc;
+                            if(method.modifiers().STATIC() != null)
+                                newFunc = fnFlowGraph.getNodeManager().makeStaticMethod(methodName, classNode, outType, formals);
+                            else
+                                newFunc = fnFlowGraph.getNodeManager().makeMethod(methodName, classNode, outType, formals);
+                            methods.add(newFunc);
                         }
                     }
                 } else if (memberDeclarationContext.fieldDeclaration() != null) {
@@ -100,20 +105,20 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
 
         }
 
-        return functionFlowGraph;
+        return fnFlowGraph;
     }
 
     private boolean addTypeToGraph(JavaType type) {
         if (type.getName().contains("$"))
             return false;
         if (type instanceof JavaPrimitiveType) {
-            functionFlowGraph.addVertex(type);
+            fnFlowGraph.addVertex(type);
             return true;
         } else if (type instanceof JavaClassType) {
             String packageName = ((JavaClassType) type).getPackageName();
             for (String okPackage : allowedPackages)
                 if (packageName.startsWith(okPackage)) {
-                    functionFlowGraph.addVertex(type);
+                    fnFlowGraph.addVertex(type);
                     return true;
                 }
         }

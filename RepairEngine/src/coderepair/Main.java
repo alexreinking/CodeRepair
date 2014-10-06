@@ -39,7 +39,7 @@ public class Main {
         TimedTask synthesis = new TimedTask("Synthesis", new Runnable() {
             @Override public void run() {
                 graph[0].addLocalVariable(graph[0].getNodeManager().makeValue("\"myFile.txt\"", "java.lang.String"));
-                graph[0].synthesizeType("java.io.BufferedReader");
+                graph[0].synthesize("java.io.BufferedReader");
             }
         });
 
@@ -56,6 +56,6 @@ public class Main {
         parseInput.run();
         buildGraph.run();
         synthesis.run();
-        writeDot.run(0);
+//        writeDot.run();
     }
 }

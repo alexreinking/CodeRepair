@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class JavaFunctionType extends JavaType {
+    private final String functionName;
     private HashMap<JavaType, Integer> inputs = new LinkedHashMap<JavaType, Integer>();
     private JavaType output;
     private int nFormals;
@@ -14,6 +15,7 @@ public class JavaFunctionType extends JavaType {
         nFormals = formals.size();
         for (JavaType input : formals) inputs.put(input, 1 + inputs.getOrDefault(input, 0));
         this.output = output;
+        this.functionName = name;
 
         String sep = "";
         StringBuilder args = new StringBuilder();
@@ -28,7 +30,9 @@ public class JavaFunctionType extends JavaType {
         this.name = output.getName() + " " + name + "(" + args.toString() + ")";
     }
 
-    public int getTotalFormals() { return nFormals; }
+    public int getTotalFormals() {
+        return nFormals;
+    }
 
     public HashMap<JavaType, Integer> getInputs() {
         return inputs;
@@ -36,5 +40,9 @@ public class JavaFunctionType extends JavaType {
 
     public JavaType getOutput() {
         return output;
+    }
+
+    public String getFunctionName() {
+        return functionName;
     }
 }
