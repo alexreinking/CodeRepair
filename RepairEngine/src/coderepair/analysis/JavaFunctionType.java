@@ -2,9 +2,11 @@ package coderepair.analysis;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class JavaFunctionType extends JavaType {
-    private HashMap<JavaType, Integer> inputs = new HashMap<JavaType, Integer>();
+    private HashMap<JavaType, Integer> inputs = new LinkedHashMap<JavaType, Integer>();
     private JavaType output;
     private int nFormals;
 
@@ -15,9 +17,11 @@ public class JavaFunctionType extends JavaType {
 
         String sep = "";
         StringBuilder args = new StringBuilder();
-        for (JavaType input : formals) {
+        for (Map.Entry<JavaType, Integer> input : inputs.entrySet()) {
             args.append(sep);
-            args.append(input.getName());
+            args.append(input.getKey().getName());
+            args.append(":");
+            args.append(input.getValue());
             sep = ", ";
         }
 

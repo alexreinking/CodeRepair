@@ -37,9 +37,9 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
         for (JavaFunctionType method : methods) {
             functionFlowGraph.addVertex(method);
             functionFlowGraph.setEdgeWeight(functionFlowGraph.addEdge(method.getOutput(), method),
-                                            method.getName().equals("<cast>")
+                                            method.getName().contains("<cast>")
                                                     ? 0.0
-                                                    : method.getTotalFormals() * 2.0);
+                                                    : Math.pow(1.5, method.getTotalFormals()));
 
             for (JavaType inType : method.getInputs().keySet())
                 functionFlowGraph.addEdge(method, inType);
