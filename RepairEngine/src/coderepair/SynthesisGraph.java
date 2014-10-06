@@ -1,8 +1,6 @@
 package coderepair;
 
-import coderepair.analysis.JavaClassType;
-import coderepair.analysis.JavaPrimitiveType;
-import coderepair.analysis.JavaType;
+import coderepair.analysis.*;
 import org.jetbrains.annotations.NotNull;
 import org.jgrapht.Graphs;
 import org.jgrapht.ext.ComponentAttributeProvider;
@@ -39,11 +37,12 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
             return null;
         }
     };
+
     private final JavaTypeBuilder nodeManager;
     private final double costLimit;
 
     public SynthesisGraph(JavaTypeBuilder nodeManager) {
-        this(nodeManager, 8.0);
+        this(nodeManager, 20.0);
     }
 
     public SynthesisGraph(JavaTypeBuilder nodeManager, double costLimit) {
@@ -62,55 +61,77 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
     }
 
     public void synthesizeType(String qualifiedName) {
-        HashMap<JavaType, TreeSet<SynthesisFragment>> synthTable = new HashMap<JavaType, TreeSet<SynthesisFragment>>();
-        satisfyType(nodeManager.getTypeFromName(qualifiedName), synthTable, 0.0);
+        HashMap<JavaType, TreeSet<Generator>> synthTable = new HashMap<JavaType, TreeSet<Generator>>();
+        JavaType requestedType = nodeManager.getTypeFromName(qualifiedName);
+        satisfyType(requestedType, synthTable, 0.0);
 
-        for (Map.Entry<JavaType, TreeSet<SynthesisFragment>> entry : synthTable.entrySet()) {
+        dumpTable(synthTable);
+        buildType(requestedType, synthTable, 0);
+    }
+
+    private void buildType(JavaType toGen, HashMap<JavaType, TreeSet<Generator>> synthTable, int depth) {
+
+    }
+
+    private void dumpTable(HashMap<JavaType, TreeSet<Generator>> synthTable) {
+        for (Map.Entry<JavaType, TreeSet<Generator>> entry : synthTable.entrySet()) {
             if (entry.getValue().isEmpty()) continue;
             System.out.println("Generators for " + entry.getKey().getName() + ":");
-            for (SynthesisFragment fragment : entry.getValue())
+            for (Generator fragment : entry.getValue()) {
+
                 System.out.println("\t" + fragment.node.getName() + ":" + fragment.cost);
+            }
             System.out.println();
         }
     }
 
     private boolean satisfyType(JavaType startType,
-                                HashMap<JavaType, TreeSet<SynthesisFragment>> synthTable,
+                                HashMap<JavaType, TreeSet<Generator>> synthTable,
                                 double cost) {
+        if (cost > costLimit) return false;
         if (!synthTable.containsKey(startType)) {
-            TreeSet<SynthesisFragment> fragments = new TreeSet<SynthesisFragment>();
+            TreeSet<Generator> fragments = new TreeSet<Generator>();
             synthTable.put(startType, fragments);
 
             for (JavaType funcType : Graphs.successorListOf(this, startType)) {
                 double edgeWeight = getEdgeWeight(getEdge(startType, funcType));
-                if (cost + edgeWeight < costLimit)
-                    if (satisfyFunction(funcType, synthTable, cost + edgeWeight))
-                        fragments.add(new SynthesisFragment(funcType, edgeWeight));
+                if (satisfyFunction(funcType, synthTable, cost + edgeWeight))
+                    fragments.add(new Generator(funcType, edgeWeight));
             }
         }
         return !synthTable.get(startType).isEmpty();
     }
 
     private boolean satisfyFunction(JavaType funcType,
-                                    HashMap<JavaType, TreeSet<SynthesisFragment>> synthTable,
+                                    HashMap<JavaType, TreeSet<Generator>> synthTable,
                                     double cost) {
+        if (cost > costLimit) return false;
         boolean satisfied = true;
-        if (Graphs.successorListOf(this, funcType).size() > 0)
-            for (JavaType inputType : Graphs.successorListOf(this, funcType))
-                satisfied &= satisfyType(inputType, synthTable, cost + getEdgeWeight(getEdge(funcType, inputType)));
+        for (JavaType inputType : Graphs.successorListOf(this, funcType))
+            satisfied &= satisfyType(inputType, synthTable, cost + getEdgeWeight(getEdge(funcType, inputType)));
+        if (funcType instanceof JavaMethodType) {
+            JavaType owner = ((JavaMethodType) funcType).getOwner();
+            satisfied &= satisfyType(owner, synthTable, cost + getEdgeWeight((getEdge(funcType, owner))));
+        }
         return satisfied;
     }
 
-    private static class SynthesisFragment implements Comparable<SynthesisFragment> {
+    public void addLocalVariable(JavaValueType javaValueType) {
+        addVertex(javaValueType);
+        DefaultWeightedEdge newEdge = addEdge(javaValueType.getOutput(), javaValueType);
+        setEdgeWeight(newEdge, 0.0);
+    }
+
+    private static class Generator implements Comparable<Generator> {
         public JavaType node;
         public double cost;
 
-        private SynthesisFragment(JavaType node, double cost) {
+        private Generator(JavaType node, double cost) {
             this.node = node;
             this.cost = cost;
         }
 
-        @Override public int compareTo(@NotNull SynthesisFragment o) {
+        @Override public int compareTo(@NotNull Generator o) {
             if (cost != o.cost)
                 return Double.compare(cost, o.cost);
             return node.getName().compareTo(o.node.getName());

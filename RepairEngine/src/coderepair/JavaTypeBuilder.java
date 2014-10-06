@@ -1,9 +1,6 @@
 package coderepair;
 
-import coderepair.analysis.JavaClassType;
-import coderepair.analysis.JavaFunctionType;
-import coderepair.analysis.JavaPrimitiveType;
-import coderepair.analysis.JavaType;
+import coderepair.analysis.*;
 
 import java.util.*;
 
@@ -39,7 +36,14 @@ public class JavaTypeBuilder {
     }
 
     JavaFunctionType makeMethod(String name, JavaType type, JavaType output, Collection<JavaType> formals) {
-        formals.addAll(Arrays.asList(type));
-        return new JavaFunctionType(name, formals, output);
+        return new JavaMethodType(name, formals, output).setOwner(type);
+    }
+
+    JavaFunctionType makeStaticMethod(String name, JavaType type, JavaType output, Collection<JavaType> formals) {
+        return new JavaFunctionType(type.getName() + "." + name, formals, output);
+    }
+
+    public JavaValueType makeValue(String value, String typeName) {
+        return new JavaValueType(value, classTypes.get(typeName));
     }
 }

@@ -18,7 +18,6 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     private HashSet<String> allowedPackages = new HashSet<String>();
     private HashSet<JavaFunctionType> methods = new HashSet<JavaFunctionType>();
 
-
     public GraphBuilder() {
         this(new ArrayList<String>());
     }
@@ -49,8 +48,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     }
 
     @Override
-    public SynthesisGraph
-    visitClassDeclaration(@NotNull ClassDeclarationContext ctx) {
+    public SynthesisGraph visitClassDeclaration(@NotNull ClassDeclarationContext ctx) {
         JavaType classNode = functionFlowGraph.getNodeManager().getTypeFromName(ctx.typeName().getText());
         if (addTypeToGraph(classNode)) {
             List<TypeNameContext> superTypes = new ArrayList<TypeNameContext>();
