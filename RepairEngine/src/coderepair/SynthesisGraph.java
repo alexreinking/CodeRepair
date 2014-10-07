@@ -113,8 +113,8 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
     }
 
     public void addLocalVariable(JavaValueType javaValueType) {
-        addVertex(javaValueType);
-        setEdgeWeight(addEdge(javaValueType.getOutput(), javaValueType), 0.0);
+        if (addVertex(javaValueType))
+            setEdgeWeight(addEdge(javaValueType.getOutput(), javaValueType), 0.0);
     }
 
     private static class Generator implements Comparable<Generator> {

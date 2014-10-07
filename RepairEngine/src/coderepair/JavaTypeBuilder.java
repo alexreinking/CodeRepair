@@ -2,7 +2,10 @@ package coderepair;
 
 import coderepair.analysis.*;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 public class JavaTypeBuilder {
     private HashMap<String, JavaPrimitiveType> primitiveTypes = new HashMap<String, JavaPrimitiveType>();
@@ -45,6 +48,9 @@ public class JavaTypeBuilder {
     }
 
     public JavaValueType makeValue(String value, String typeName) {
-        return new JavaValueType(value, classTypes.get(typeName));
+        JavaType valType = classTypes.get(typeName);
+        if (valType == null) valType = primitiveTypes.get(typeName);
+        if (valType == null) throw new RuntimeException("No such type: " + typeName);
+        return new JavaValueType(value, valType);
     }
 }
