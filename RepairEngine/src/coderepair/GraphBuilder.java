@@ -1,9 +1,6 @@
 package coderepair;
 
-import coderepair.analysis.JavaClassType;
-import coderepair.analysis.JavaFunctionType;
-import coderepair.analysis.JavaPrimitiveType;
-import coderepair.analysis.JavaType;
+import coderepair.analysis.*;
 import coderepair.antlr.JavaPBaseVisitor;
 import org.antlr.v4.runtime.misc.NotNull;
 
@@ -27,6 +24,14 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
         allowedPackages.add("java.lang");
     }
 
+    private double costForFunction(JavaFunctionType method) {
+        double multiplier = 1.0;
+        if (method.getFunctionName().equals("<cast>")) multiplier = 0.0;
+        if (method.getFunctionName().startsWith("new ")) multiplier = 0.0;
+        if (method instanceof JavaMethodType) multiplier = 1.5;
+        return multiplier * Math.pow(1.5, method.getTotalFormals());
+    }
+
     @Override
     public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
         fnFlowGraph = new SynthesisGraph(new JavaTypeBuilder());
@@ -35,10 +40,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
 
         for (JavaFunctionType method : methods) {
             fnFlowGraph.addVertex(method);
-            fnFlowGraph.setEdgeWeight(fnFlowGraph.addEdge(method.getOutput(), method),
-                                            method.getName().contains("<cast>")
-                                                    ? 0.0
-                                                    : Math.pow(1.5, method.getTotalFormals()));
+            fnFlowGraph.setEdgeWeight(fnFlowGraph.addEdge(method.getOutput(), method), costForFunction(method));
 
             for (JavaType inType : method.getInputs().keySet())
                 fnFlowGraph.addEdge(method, inType);

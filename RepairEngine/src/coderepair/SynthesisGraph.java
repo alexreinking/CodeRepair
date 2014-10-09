@@ -11,10 +11,7 @@ import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.*;
 
 public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, DefaultWeightedEdge> {
     private static IntegerNameProvider<JavaType> idProvider = new IntegerNameProvider<JavaType>();
@@ -44,7 +41,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
     private HashMap<JavaType, TreeSet<Generator>> synthTable;
 
     public SynthesisGraph(JavaTypeBuilder nodeManager) {
-        this(nodeManager, 10.0);
+        this(nodeManager, 7.0);
     }
 
     public SynthesisGraph(JavaTypeBuilder nodeManager, double costLimit) {
@@ -72,17 +69,41 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
             if (iterator.next().getValue().isEmpty())
                 iterator.remove();
 
-        dumpTable(synthTable);
+        dumpTable();
+        System.out.println(getExpression(requestedType, 0.0));
     }
 
-    private void dumpTable(HashMap<JavaType, TreeSet<Generator>> synthTable) {
+    private String getExpression(JavaType requestedType, double cost) {
+        Generator generator = synthTable.get(requestedType).pollFirst();
+        if (generator == null) return "";
+        String prefix = "", funcName = "", args = "";
+        if (generator.type instanceof JavaMethodType)
+            prefix = getExpression(((JavaMethodType) generator.type).getOwner(), 0.0);
+        if (generator.type instanceof JavaFunctionType) {
+            ArrayList<String> argsList = new ArrayList<String>();
+            funcName = ((JavaFunctionType) generator.type).getFunctionName();
+            for (JavaType javaType : ((JavaFunctionType) generator.type).getInputs().keySet()) {
+                argsList.add(getExpression(javaType, 0.0));
+            }
+            args = String.join(",", argsList);
+        }
+        if (funcName.equals("<cast>"))
+            return args;
+        String code = funcName;
+        if (!(generator.type instanceof JavaValueType))
+            code += "(" + args + ")";
+
+        if (!prefix.isEmpty()) code = prefix + " " + code;
+        return code;
+    }
+
+    private void dumpTable() {
         for (Map.Entry<JavaType, TreeSet<Generator>> entry : synthTable.entrySet()) {
             System.out.println("Generators for " + entry.getKey().getName() + ":");
             for (Generator fragment : entry.getValue()) {
                 String member = "";
-                if (fragment.type instanceof JavaMethodType) {
+                if (fragment.type instanceof JavaMethodType)
                     member = " member of " + ((JavaMethodType) fragment.type).getOwner().getName();
-                }
                 System.out.println("\t" + fragment.type.getName() + ":" + fragment.cost + member);
             }
             System.out.println();
