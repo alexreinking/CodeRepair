@@ -1,8 +1,8 @@
 package coderepair.analysis;
 
 public class JavaClassType extends JavaType {
-    private String className;
-    private String packageName;
+    private final String className;
+    private final String packageName;
     private boolean conrete;
 
     public JavaClassType(String qualifiedName, boolean conrete) {

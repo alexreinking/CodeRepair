@@ -129,9 +129,9 @@ public class Neo4JQueryBuilder extends JavaPBaseVisitor<Void> {
     }
 
     private static class ClassNode {
-        public String qualifiedName;
-        public String className;
-        public String packageName;
+        public final String qualifiedName;
+        public final String className;
+        public final String packageName;
 
         private ClassNode(String qualifiedName) {
             int lastSeparator = Math.max(qualifiedName.lastIndexOf('.'), qualifiedName.lastIndexOf('/'));

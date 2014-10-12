@@ -7,9 +7,9 @@ import java.util.Map;
 
 public class JavaFunctionType extends JavaType {
     protected String functionName;
-    private HashMap<JavaType, Integer> inputs = new LinkedHashMap<JavaType, Integer>();
-    private JavaType output;
-    private int nFormals;
+    private final HashMap<JavaType, Integer> inputs = new LinkedHashMap<JavaType, Integer>();
+    private final JavaType output;
+    private final int nFormals;
 
     public JavaFunctionType(String name, Collection<? extends JavaType> formals, JavaType output) {
         nFormals = formals.size();

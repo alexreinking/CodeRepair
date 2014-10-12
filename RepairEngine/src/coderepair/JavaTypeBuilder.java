@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class JavaTypeBuilder {
-    private HashMap<String, JavaPrimitiveType> primitiveTypes = new HashMap<String, JavaPrimitiveType>();
-    private HashMap<String, JavaClassType> classTypes = new HashMap<String, JavaClassType>();
+    private final HashMap<String, JavaPrimitiveType> primitiveTypes = new HashMap<String, JavaPrimitiveType>();
+    private final HashMap<String, JavaClassType> classTypes = new HashMap<String, JavaClassType>();
 
     public JavaTypeBuilder() {
         List<String> primNames = Arrays.asList("byte", "short", "int", "long", "float", "double", "boolean", "char");

@@ -12,8 +12,8 @@ import static coderepair.antlr.JavaPParser.*;
 
 public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     private SynthesisGraph fnFlowGraph = null;
-    private HashSet<String> allowedPackages = new HashSet<String>();
-    private HashSet<JavaFunctionType> methods = new HashSet<JavaFunctionType>();
+    private final HashSet<String> allowedPackages = new HashSet<String>();
+    private final HashSet<JavaFunctionType> methods = new HashSet<JavaFunctionType>();
 
     public GraphBuilder() {
         this(new ArrayList<String>());
