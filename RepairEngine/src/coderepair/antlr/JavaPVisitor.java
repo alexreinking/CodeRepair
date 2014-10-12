@@ -1,4 +1,4 @@
-// Generated from /Users/alexreinking/Development/CodeRepair/RepairEngine/JavaP.g4 by ANTLR 4.4.1-dev
+// Generated from /home/alex/Development/CodeRepair/RepairEngine/JavaP.g4 by ANTLR 4.4.1-dev
 package coderepair.antlr;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
@@ -36,17 +36,17 @@ public interface JavaPVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitJavap(@NotNull JavaPParser.JavapContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link JavaPParser#extension}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExtension(@NotNull JavaPParser.ExtensionContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link JavaPParser#typeName}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitTypeName(@NotNull JavaPParser.TypeNameContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link JavaPParser#extension}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExtension(@NotNull JavaPParser.ExtensionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link JavaPParser#memberDeclaration}.
 	 * @param ctx the parse tree

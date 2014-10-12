@@ -1,4 +1,4 @@
-// Generated from /Users/alexreinking/Development/CodeRepair/RepairEngine/JavaP.g4 by ANTLR 4.4.1-dev
+// Generated from /home/alex/Development/CodeRepair/RepairEngine/JavaP.g4 by ANTLR 4.4.1-dev
 package coderepair.antlr;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
@@ -46,14 +46,14 @@ public class JavaPBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements 
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExtension(@NotNull JavaPParser.ExtensionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTypeName(@NotNull JavaPParser.TypeNameContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTypeName(@NotNull JavaPParser.TypeNameContext ctx) { return visitChildren(ctx); }
+	@Override public T visitExtension(@NotNull JavaPParser.ExtensionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

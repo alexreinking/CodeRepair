@@ -1,4 +1,4 @@
-// Generated from /Users/alexreinking/Development/CodeRepair/RepairEngine/JavaP.g4 by ANTLR 4.4.1-dev
+// Generated from /home/alex/Development/CodeRepair/RepairEngine/JavaP.g4 by ANTLR 4.4.1-dev
 package coderepair.antlr;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -939,8 +939,8 @@ public class JavaPParser extends Parser {
 		public TerminalNode INT() { return getToken(JavaPParser.INT, 0); }
 		public TerminalNode FLOAT() { return getToken(JavaPParser.FLOAT, 0); }
 		public TerminalNode LONG() { return getToken(JavaPParser.LONG, 0); }
-		public TerminalNode VOID() { return getToken(JavaPParser.VOID, 0); }
 		public TerminalNode SEPARATOR() { return getToken(JavaPParser.SEPARATOR, 0); }
+		public TerminalNode VOID() { return getToken(JavaPParser.VOID, 0); }
 		public TerminalNode DOUBLE() { return getToken(JavaPParser.DOUBLE, 0); }
 		public TerminalNode ELLIPSIS() { return getToken(JavaPParser.ELLIPSIS, 0); }
 		public TerminalNode BYTE() { return getToken(JavaPParser.BYTE, 0); }

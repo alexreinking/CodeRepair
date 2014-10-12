@@ -17,13 +17,15 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
     private static IntegerNameProvider<JavaType> idProvider = new IntegerNameProvider<JavaType>();
 
     private static VertexNameProvider<JavaType> nameProvider = new VertexNameProvider<JavaType>() {
-        @Override public String getVertexName(JavaType type) {
+        @Override
+        public String getVertexName(JavaType type) {
             return type.getName();
         }
     };
 
     private static ComponentAttributeProvider<JavaType> colorProvider = new ComponentAttributeProvider<JavaType>() {
-        @Override public Map<String, String> getComponentAttributes(JavaType component) {
+        @Override
+        public Map<String, String> getComponentAttributes(JavaType component) {
             if (component instanceof JavaClassType || component instanceof JavaPrimitiveType) {
                 HashMap<String, String> attrMap = new HashMap<String, String>();
                 attrMap.put("fontcolor", "white");
@@ -41,7 +43,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
     private HashMap<JavaType, TreeSet<Generator>> synthTable;
 
     public SynthesisGraph(JavaTypeBuilder nodeManager) {
-        this(nodeManager, 7.0);
+        this(nodeManager, 8.0);
     }
 
     public SynthesisGraph(JavaTypeBuilder nodeManager, double costLimit) {
@@ -69,12 +71,86 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
             if (iterator.next().getValue().isEmpty())
                 iterator.remove();
 
-        dumpTable();
-        for (String expression : getExpression(requestedType)) System.out.println(expression);
+//        dumpTable();
+        for (Snippet snippet : getExpression(requestedType, costLimit)) {
+            System.out.println(snippet.code + " === " + snippet.cost);
+        }
     }
 
-    private List<String> getExpression(JavaType requestedType) {
-        return new ArrayList<String>();
+    private TreeSet<Snippet> getExpression(JavaType requestedType, double remaining) {
+        TreeSet<Snippet> snippets = new TreeSet<Snippet>();
+        for (Generator generator : synthTable.get(requestedType))
+            if (generator.cost < remaining) {
+                double nextCost = remaining - generator.cost;
+                if (generator.type instanceof JavaValueType)
+                    snippets.add(new Snippet(generator.type.getName(), generator.cost));
+                else if (generator.type instanceof JavaMethodType) {
+                    // TODO: synthesize member functions - maybe only allow ValueType generators for owners?
+                } else if (generator.type instanceof JavaFunctionType) {
+                    JavaFunctionType fGen = (JavaFunctionType) generator.type;
+                    Set<JavaType> inputs = fGen.getInputs().keySet();
+                    List<TreeSet<Snippet>> choices = new ArrayList<TreeSet<Snippet>>(inputs.size());
+                    for (JavaType input : inputs) choices.add(getExpression(input, nextCost));
+                    addFunctionPossibilities(snippets, fGen, generator.cost, choices, 0, new Snippet[choices.size()]);
+                }
+            }
+        return snippets;
+    }
+
+    private boolean addSnippet(TreeSet<Snippet> snippets, Snippet poss) {
+        if (poss.cost > costLimit) return false;
+
+        boolean added = false;
+        if (snippets.size() >= 10) {
+            Snippet better = snippets.pollLast();
+            if (poss.cost < better.cost) {
+                better = poss;
+                added = true;
+            }
+            snippets.add(better);
+        } else {
+            snippets.add(poss);
+            added = true;
+        }
+        return added;
+    }
+
+    private String joinSnips(Snippet snips[], String delim) {
+        StringJoiner sj = new StringJoiner(delim);
+        for (Snippet snip : snips) sj.add(snip.code);
+        return sj.toString();
+    }
+
+    private double sumSnips(Snippet snips[]) {
+        double tot = 0.0;
+        for (Snippet snip : snips) tot += snip.cost;
+        return tot;
+    }
+
+    private void addFunctionPossibilities(TreeSet<Snippet> snippets, JavaFunctionType functionType,
+                                          double baseCost, List<TreeSet<Snippet>> synths,
+                                          int pos, Snippet paramArray[]) {
+        if (synths.size() == 0) {
+            addSnippet(snippets, new Snippet(functionType.getFunctionName() + "()", baseCost));
+        } else {
+            TreeSet<Snippet> snips = synths.get(pos);
+            if (pos + 1 == paramArray.length) {
+                for (Snippet snip : snips) {
+                    paramArray[pos] = snip;
+                    String params = joinSnips(paramArray, ", ");
+                    String code = functionType.getFunctionName();
+                    if(code.equals("<cast>")) code = params;
+                    else code += "(" + params + ")";
+                    double cost = sumSnips(paramArray);
+                    addSnippet(snippets, new Snippet(code, baseCost + cost));
+                }
+            } else {
+                for (Snippet snip : snips) {
+                    paramArray[pos] = snip;
+                    addFunctionPossibilities(snippets, functionType, baseCost, synths, pos + 1, paramArray);
+                }
+            }
+        }
     }
 
     private void dumpTable() {
@@ -119,24 +195,19 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
     }
 
     private static class Snippet implements Comparable<Snippet> {
-        List<Generator> generators;
+        public String code;
+        public double cost;
 
-        public List<Generator> getGenerators() {
-            return generators;
+        private Snippet(String code, double cost) {
+            this.code = code;
+            this.cost = cost;
         }
 
-        public void setGenerators(List<Generator> generators) {
-            this.generators = generators;
-        }
-
-        @Override public int compareTo(@NotNull Snippet o) {
-            return Double.compare(totalCost(generators), totalCost(o.generators));
-        }
-
-        private double totalCost(List<Generator> generators) {
-            double tot = 0.0;
-            for (Generator generator : generators) tot += generator.cost;
-            return tot;
+        @Override
+        public int compareTo(@NotNull Snippet o) {
+            if (cost != o.cost)
+                return Double.compare(cost, o.cost);
+            return code.compareTo(o.code);
         }
     }
 
@@ -149,7 +220,8 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
             this.cost = cost;
         }
 
-        @Override public int compareTo(@NotNull Generator o) {
+        @Override
+        public int compareTo(@NotNull Generator o) {
             if (cost != o.cost)
                 return Double.compare(cost, o.cost);
             return type.getName().compareTo(o.type.getName());

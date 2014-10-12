@@ -1,4 +1,4 @@
-// Generated from /Users/alexreinking/Development/CodeRepair/RepairEngine/JavaP.g4 by ANTLR 4.4.1-dev
+// Generated from /home/alex/Development/CodeRepair/RepairEngine/JavaP.g4 by ANTLR 4.4.1-dev
 package coderepair.antlr;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -65,18 +65,6 @@ public class JavaPBaseListener implements JavaPListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExtension(@NotNull JavaPParser.ExtensionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitExtension(@NotNull JavaPParser.ExtensionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterTypeName(@NotNull JavaPParser.TypeNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -84,6 +72,18 @@ public class JavaPBaseListener implements JavaPListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitTypeName(@NotNull JavaPParser.TypeNameContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExtension(@NotNull JavaPParser.ExtensionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExtension(@NotNull JavaPParser.ExtensionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

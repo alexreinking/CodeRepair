@@ -1,4 +1,4 @@
-// Generated from /Users/alexreinking/Development/CodeRepair/RepairEngine/JavaP.g4 by ANTLR 4.4.1-dev
+// Generated from /home/alex/Development/CodeRepair/RepairEngine/JavaP.g4 by ANTLR 4.4.1-dev
 package coderepair.antlr;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
@@ -49,16 +49,6 @@ public interface JavaPListener extends ParseTreeListener {
 	 */
 	void exitJavap(@NotNull JavaPParser.JavapContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link JavaPParser#extension}.
-	 * @param ctx the parse tree
-	 */
-	void enterExtension(@NotNull JavaPParser.ExtensionContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link JavaPParser#extension}.
-	 * @param ctx the parse tree
-	 */
-	void exitExtension(@NotNull JavaPParser.ExtensionContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link JavaPParser#typeName}.
 	 * @param ctx the parse tree
 	 */
@@ -68,6 +58,16 @@ public interface JavaPListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitTypeName(@NotNull JavaPParser.TypeNameContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaPParser#extension}.
+	 * @param ctx the parse tree
+	 */
+	void enterExtension(@NotNull JavaPParser.ExtensionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaPParser#extension}.
+	 * @param ctx the parse tree
+	 */
+	void exitExtension(@NotNull JavaPParser.ExtensionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link JavaPParser#memberDeclaration}.
 	 * @param ctx the parse tree

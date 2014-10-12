@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
-        final String inFile = "/Users/alexreinking/jio.javap";
+        final String inFile = "./data/rt.javap";
         final JavaPParser.JavapContext[] parseTree = new JavaPParser.JavapContext[1];
         final SynthesisGraph[] graph = new SynthesisGraph[1];
         final GraphBuilder[] graphBuilder = new GraphBuilder[1];
