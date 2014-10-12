@@ -27,7 +27,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     private double costForFunction(JavaFunctionType method) {
         double multiplier = 1.0;
         if (method.getFunctionName().equals("<cast>")) multiplier = 0.0;
-        if (method.getFunctionName().startsWith("new ")) multiplier = 0.0;
+        if (method.getFunctionName().startsWith("new ")) multiplier = 0.25;
         if (method instanceof JavaMethodType) multiplier = 1.5;
         return multiplier * Math.pow(1.5, method.getTotalFormals());
     }

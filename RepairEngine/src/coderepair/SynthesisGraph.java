@@ -70,31 +70,11 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
                 iterator.remove();
 
         dumpTable();
-        System.out.println(getExpression(requestedType, 0.0));
+        for (String expression : getExpression(requestedType)) System.out.println(expression);
     }
 
-    private String getExpression(JavaType requestedType, double cost) {
-        Generator generator = synthTable.get(requestedType).pollFirst();
-        if (generator == null) return "";
-        String prefix = "", funcName = "", args = "";
-        if (generator.type instanceof JavaMethodType)
-            prefix = getExpression(((JavaMethodType) generator.type).getOwner(), 0.0);
-        if (generator.type instanceof JavaFunctionType) {
-            ArrayList<String> argsList = new ArrayList<String>();
-            funcName = ((JavaFunctionType) generator.type).getFunctionName();
-            for (JavaType javaType : ((JavaFunctionType) generator.type).getInputs().keySet()) {
-                argsList.add(getExpression(javaType, 0.0));
-            }
-            args = String.join(",", argsList);
-        }
-        if (funcName.equals("<cast>"))
-            return args;
-        String code = funcName;
-        if (!(generator.type instanceof JavaValueType))
-            code += "(" + args + ")";
-
-        if (!prefix.isEmpty()) code = prefix + " " + code;
-        return code;
+    private List<String> getExpression(JavaType requestedType) {
+        return new ArrayList<String>();
     }
 
     private void dumpTable() {
@@ -136,6 +116,28 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
     public void addLocalVariable(JavaValueType javaValueType) {
         if (addVertex(javaValueType))
             setEdgeWeight(addEdge(javaValueType.getOutput(), javaValueType), 0.0);
+    }
+
+    private static class Snippet implements Comparable<Snippet> {
+        List<Generator> generators;
+
+        public List<Generator> getGenerators() {
+            return generators;
+        }
+
+        public void setGenerators(List<Generator> generators) {
+            this.generators = generators;
+        }
+
+        @Override public int compareTo(@NotNull Snippet o) {
+            return Double.compare(totalCost(generators), totalCost(o.generators));
+        }
+
+        private double totalCost(List<Generator> generators) {
+            double tot = 0.0;
+            for (Generator generator : generators) tot += generator.cost;
+            return tot;
+        }
     }
 
     private static class Generator implements Comparable<Generator> {
