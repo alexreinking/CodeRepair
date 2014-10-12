@@ -43,7 +43,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
     private HashMap<JavaType, TreeSet<Generator>> synthTable;
 
     public SynthesisGraph(JavaTypeBuilder nodeManager) {
-        this(nodeManager, 8.0);
+        this(nodeManager, 7.0);
     }
 
     public SynthesisGraph(JavaTypeBuilder nodeManager, double costLimit) {
@@ -71,7 +71,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
             if (iterator.next().getValue().isEmpty())
                 iterator.remove();
 
-//        dumpTable();
+        dumpTable();
         for (Snippet snippet : getExpression(requestedType, costLimit)) {
             System.out.println(snippet.code + " === " + snippet.cost);
         }
@@ -138,9 +138,10 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
                 for (Snippet snip : snips) {
                     paramArray[pos] = snip;
                     String params = joinSnips(paramArray, ", ");
-                    String code = functionType.getFunctionName();
-                    if(code.equals("<cast>")) code = params;
-                    else code += "(" + params + ")";
+                    String code = "";
+//                    if(functionType instanceof JavaCastType) code = params;
+//                    else
+                        code = functionType.getFunctionName() + "(" + params + ")";
                     double cost = sumSnips(paramArray);
                     addSnippet(snippets, new Snippet(code, baseCost + cost));
                 }

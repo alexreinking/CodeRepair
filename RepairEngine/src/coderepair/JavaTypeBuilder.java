@@ -19,19 +19,23 @@ public class JavaTypeBuilder {
         }
     }
 
-    JavaType getTypeFromName(String qualifiedName) {
+    JavaClassType getTypeFromName(String qualifiedName) {
         if (primitiveTypes.containsKey(qualifiedName))
             return primitiveTypes.get(qualifiedName);
         else if (classTypes.containsKey(qualifiedName))
             return classTypes.get(qualifiedName);
 
-        JavaClassType newType = new JavaClassType(qualifiedName);
+        JavaClassType newType = new JavaClassType(qualifiedName, true);
         classTypes.put(qualifiedName, newType);
         return newType;
     }
 
     JavaFunctionType makeCastNode(JavaType lowType, JavaType highType) {
-        return new JavaFunctionType("<cast>", Arrays.asList(lowType), highType);
+        return new JavaCastType(lowType, highType).setCastTarget(JavaCastType.CastTarget.SUPERCLASS);
+    }
+
+    JavaFunctionType makeInterfaceCastNode(JavaType lowType, JavaType highType) {
+        return new JavaCastType(lowType, highType).setCastTarget(JavaCastType.CastTarget.INTERFACE);
     }
 
     JavaFunctionType makeConstructor(JavaType type, Collection<? extends JavaType> formals) {

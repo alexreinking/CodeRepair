@@ -26,7 +26,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
 
     private double costForFunction(JavaFunctionType method) {
         double multiplier = 1.0;
-        if (method.getFunctionName().equals("<cast>")) multiplier = 0.0;
+        if (method instanceof JavaCastType) multiplier = 0.0;
         if (method.getFunctionName().startsWith("new ")) multiplier = 0.25;
         if (method instanceof JavaMethodType) multiplier = 1.5;
         return multiplier * Math.pow(1.5, method.getTotalFormals());
@@ -51,7 +51,10 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
 
     @Override
     public SynthesisGraph visitClassDeclaration(@NotNull ClassDeclarationContext ctx) {
-        JavaType classNode = fnFlowGraph.getNodeManager().getTypeFromName(ctx.typeName().getText());
+        JavaClassType classNode = fnFlowGraph.getNodeManager().getTypeFromName(ctx.typeName().getText());
+        if(ctx.INTERFACE() != null || ctx.modifiers() != null && ctx.modifiers().ABSTRACT() != null)
+            classNode.setConrete(false);
+
         if (addTypeToGraph(classNode)) {
             List<TypeNameContext> superTypes = new ArrayList<TypeNameContext>();
             if (ctx.extension() != null && ctx.extension().typeList() != null)
@@ -60,9 +63,13 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                 superTypes.addAll(ctx.implementation().typeList().typeName());
 
             for (TypeNameContext parentType : superTypes) {
-                JavaType parentNode = fnFlowGraph.getNodeManager().getTypeFromName(parentType.getText());
-                if (addTypeToGraph(parentNode))
-                    methods.add(fnFlowGraph.getNodeManager().makeCastNode(classNode, parentNode));
+                JavaClassType parentNode = fnFlowGraph.getNodeManager().getTypeFromName(parentType.getText());
+                if (addTypeToGraph(parentNode)) {
+                    if (parentNode.isConcrete())
+                        methods.add(fnFlowGraph.getNodeManager().makeCastNode(classNode, parentNode));
+                    else
+                        methods.add(fnFlowGraph.getNodeManager().makeInterfaceCastNode(classNode, parentNode));
+                }
             }
 
             for (MemberDeclarationContext memberDeclarationContext : ctx.memberDeclaration()) {
@@ -99,14 +106,12 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                         }
                     }
                 } else if (memberDeclarationContext.fieldDeclaration() != null) {
-                    // TODO: fill in
+                    // TODO: fill in for public constants
                 } else {
                     System.err.println("Warning: unknown class member " + memberDeclarationContext.getText());
                 }
             }
-
         }
-
         return fnFlowGraph;
     }
 

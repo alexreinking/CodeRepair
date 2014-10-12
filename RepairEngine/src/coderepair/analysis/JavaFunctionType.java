@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class JavaFunctionType extends JavaType {
-    private final String functionName;
+    protected String functionName;
     private HashMap<JavaType, Integer> inputs = new LinkedHashMap<JavaType, Integer>();
     private JavaType output;
     private int nFormals;

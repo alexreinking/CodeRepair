@@ -19,5 +19,7 @@ public abstract class JavaType {
     public boolean equals(Object o) {
         return this == o || o instanceof JavaType && name.equals(((JavaType) o).name);
     }
+
+
 }
 
