@@ -9,6 +9,9 @@ import org.antlr.v4.runtime.BufferedTokenStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.TreeSet;
+
+import static coderepair.SynthesisGraph.Snippet;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -39,8 +42,9 @@ public class Main {
         TimedTask synthesis = new TimedTask("Synthesis", new Runnable() {
             @Override public void run() {
                 graph[0].addLocalVariable(graph[0].getNodeManager().makeValue("\"myFile1.txt\"", "java.lang.String"));
-                graph[0].addLocalVariable(graph[0].getNodeManager().makeValue("\"myFile2.txt\"", "java.lang.String"));
-                graph[0].synthesize("java.io.BufferedReader");
+                graph[0].addLocalVariable(graph[0].getNodeManager().makeValue("input", "java.io.InputStream"));
+                TreeSet<Snippet> snippets = graph[0].synthesize("java.io.BufferedReader", 10);
+                for (Snippet snippet : snippets) System.out.println(snippet.code);
             }
         });
 
