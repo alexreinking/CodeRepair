@@ -99,7 +99,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
                     addFunctionPossibilities(snippets, fGen, generator.cost, choices, 0, new Snippet[choices.size()]);
                 }
             }
-        if(!snippets.isEmpty())
+        if (!snippets.isEmpty())
             snippetTable.put(requestedType, snippets);
         return snippets;
     }
@@ -139,9 +139,8 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
                     paramArray[pos] = snip;
                     String params = joinSnips(paramArray);
                     String code;
-//                    if(functionType instanceof JavaCastType) code = params;
-//                    else
-                    code = functionType.getFunctionName() + "(" + params + ")";
+                    if (functionType instanceof JavaCastType) code = params;
+                    else code = functionType.getFunctionName() + "(" + params + ")";
                     double cost = sumSnips(paramArray);
                     addSnippet(snippets, new Snippet(code, baseCost + cost));
                 }
