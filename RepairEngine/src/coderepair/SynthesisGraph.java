@@ -42,6 +42,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
     private final double costLimit;
     private HashMap<JavaType, TreeSet<Generator>> synthTable;
     private HashMap<JavaType, TreeSet<Snippet>> snippetTable;
+    private ArrayList<JavaValueType> currentLocals = new ArrayList<JavaValueType>();
 
     public SynthesisGraph(JavaTypeBuilder nodeManager) {
         this(nodeManager, 10.0);
@@ -193,9 +194,17 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
         return satisfied;
     }
 
-    public void addLocalVariable(JavaValueType javaValueType) {
-        if (addVertex(javaValueType))
-            setEdgeWeight(addEdge(javaValueType.getOutput(), javaValueType), -1.0);
+    public void addLocalVariable(String value, String qualifiedType) {
+        JavaValueType newLocal = nodeManager.makeValue(value, qualifiedType);
+        if (addVertex(newLocal)) {
+            currentLocals.add(newLocal);
+            setEdgeWeight(addEdge(newLocal.getOutput(), newLocal), -1.0);
+        }
+    }
+
+    public void resetLocals() {
+        for (JavaValueType currentLocal : currentLocals) removeVertex(currentLocal);
+        currentLocals.clear();
     }
 
     public static class Snippet implements Comparable<Snippet> {

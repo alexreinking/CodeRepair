@@ -14,12 +14,14 @@
 \usepackage{url}                % format URLs
 \usepackage{listings}           % format code
 \usepackage{enumitem}           % adjust spacing in enums
+\usepackage{xspace}             % Ensure correct spacing after text macros
 \usepackage[colorlinks=true,allcolors=blue,breaklinks,draft=false]{hyperref}
 \newcommand{\doi}[1]{doi:~\href{http://dx.doi.org/#1}{\Hurl{#1}}}   % print a hyperlinked DOI
+\newcommand{\ourTool}{Winston\xspace}
 
 \begin{document}
 
-\title{Some Catchy Title about Code Repair}
+\title{\ourTool: It Fixes Things}
 \authorinfo{Double-blind Submission}{}{}
 
 \maketitle

@@ -1,1 +1,4 @@
-aaa
+\section{Algorithm Description}
+\subsection{Graph Construction}
+
+The data structure central to \ourTool is a directed bipartite graph between \textit{type} nodes and \textit{map} nodes. The definitions of type and map are language-agnostic, although our implementation targets Java for its straightforwardness. A type is any concrete data type, and a map is any language entity that produces exactly one data type (possibly void) from zero or more types. In Java, for example, these include methods, static functions, constructors and local methods and variables (which take void to their own data type). In the graph, for each map, an incoming edge is drawn from its codomain, and outgoing edges are drawn from the map to each type in its domain. These relationships capture the notions that each type or map can be \textit{constructed from} or \textit{satisfied by} other maps or types, respectively.
