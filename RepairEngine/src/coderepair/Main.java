@@ -41,10 +41,10 @@ public class Main {
 
         TimedTask synthesis = new TimedTask("Synthesis", new Runnable() {
             @Override public void run() {
-                graph[0].addLocalVariable(graph[0].getNodeManager().makeValue("\"myFile1.txt\"", "java.lang.String"));
-                graph[0].addLocalVariable(graph[0].getNodeManager().makeValue("input", "java.io.InputStream"));
+                graph[0].addLocalVariable(graph[0].getNodeManager().makeValue("body", "java.lang.String"));
+//                graph[0].addLocalVariable(graph[0].getNodeManager().makeValue("sig", "java.lang.String"));
                 TreeSet<Snippet> snippets = graph[0].synthesize("java.io.BufferedReader", 10);
-                for (Snippet snippet : snippets) System.out.println(snippet.code);
+                for (Snippet snippet : snippets) System.out.println(snippet.code + " == " + snippet.cost);
             }
         });
 

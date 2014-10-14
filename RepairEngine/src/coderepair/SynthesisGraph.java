@@ -73,6 +73,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
             if (iterator.next().getValue().isEmpty())
                 iterator.remove();
 
+//        dumpTable();
         return getExpression(requestedType, costLimit, nRequested);
     }
 
@@ -92,11 +93,15 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
                     JavaFunctionType fGen = (JavaFunctionType) generator.type;
                     Set<JavaType> inputs = fGen.getInputs().keySet();
                     List<TreeSet<Snippet>> choices = new ArrayList<TreeSet<Snippet>>(inputs.size());
-                    for (JavaType input : inputs) choices.add(getExpression(input, nextCost, nRequested));
+                    for (JavaType input : inputs) {
+                        for (int i = 0; i < fGen.getInputs().get(input); i++)
+                            choices.add(getExpression(input, nextCost, nRequested));
+                    }
                     addFunctionPossibilities(snippets, fGen, generator.cost, choices, 0,
                                              new Snippet[choices.size()], nRequested);
                 }
             }
+
         if (!snippets.isEmpty())
             snippetTable.put(requestedType, snippets);
         return snippets;
@@ -190,7 +195,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
 
     public void addLocalVariable(JavaValueType javaValueType) {
         if (addVertex(javaValueType))
-            setEdgeWeight(addEdge(javaValueType.getOutput(), javaValueType), 0.0);
+            setEdgeWeight(addEdge(javaValueType.getOutput(), javaValueType), -1.0);
     }
 
     public static class Snippet implements Comparable<Snippet> {
@@ -206,6 +211,8 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
         public int compareTo(@NotNull Snippet o) {
             if (cost != o.cost)
                 return Double.compare(cost, o.cost);
+            if (code.length() != o.code.length())
+                return Integer.compare(code.length(), o.code.length());
             return code.compareTo(o.code);
         }
     }

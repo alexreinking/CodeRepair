@@ -11,9 +11,9 @@ import java.util.List;
 import static coderepair.antlr.JavaPParser.*;
 
 public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
-    private SynthesisGraph fnFlowGraph = null;
     private final HashSet<String> allowedPackages = new HashSet<String>();
     private final HashSet<JavaFunctionType> methods = new HashSet<JavaFunctionType>();
+    private SynthesisGraph fnFlowGraph = null;
 
     public GraphBuilder() {
         this(new ArrayList<String>());
@@ -28,8 +28,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
         double multiplier = 1.0;
         if (method instanceof JavaCastType) multiplier = 0.0;
         if (method.getFunctionName().startsWith("new ")) multiplier = 0.25;
-        if (method instanceof JavaMethodType) multiplier = 1.5;
-        return multiplier * Math.pow(1.5, method.getTotalFormals());
+        return multiplier * (1 + method.getTotalFormals());
     }
 
     @Override
@@ -52,7 +51,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     @Override
     public SynthesisGraph visitClassDeclaration(@NotNull ClassDeclarationContext ctx) {
         JavaClassType classNode = fnFlowGraph.getNodeManager().getTypeFromName(ctx.typeName().getText());
-        if(ctx.INTERFACE() != null || ctx.modifiers() != null && ctx.modifiers().ABSTRACT() != null)
+        if (ctx.INTERFACE() != null || ctx.modifiers() != null && ctx.modifiers().ABSTRACT() != null)
             classNode.setConrete(false);
 
         if (addTypeToGraph(classNode)) {
@@ -98,7 +97,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                         if (addTypeToGraph(outType)) {
                             String methodName = method.typeName().get(1).getText();
                             JavaFunctionType newFunc;
-                            if(method.modifiers().STATIC() != null)
+                            if (method.modifiers().STATIC() != null)
                                 newFunc = fnFlowGraph.getNodeManager().makeStaticMethod(methodName, classNode, outType, formals);
                             else
                                 newFunc = fnFlowGraph.getNodeManager().makeMethod(methodName, classNode, outType, formals);
