@@ -1,12 +1,10 @@
 package coderepair.analysis;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class JavaFunctionType extends JavaType {
     protected String functionName;
+    private final List<JavaType> signature;
     private final HashMap<JavaType, Integer> inputs = new LinkedHashMap<JavaType, Integer>();
     private final JavaType output;
     private final int nFormals;
@@ -16,6 +14,7 @@ public class JavaFunctionType extends JavaType {
         for (JavaType input : formals) inputs.put(input, 1 + inputs.getOrDefault(input, 0));
         this.output = output;
         this.functionName = name;
+        this.signature = new ArrayList<JavaType>(formals);
 
         String sep = "";
         StringBuilder args = new StringBuilder();
@@ -44,5 +43,9 @@ public class JavaFunctionType extends JavaType {
 
     public String getFunctionName() {
         return functionName;
+    }
+
+    public List<JavaType> getSignature() {
+        return signature;
     }
 }

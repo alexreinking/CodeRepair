@@ -92,12 +92,9 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
                     // TODO: synthesize member functions - maybe only allow ValueType generators for owners?
                 } else if (generator.type instanceof JavaFunctionType) {
                     JavaFunctionType fGen = (JavaFunctionType) generator.type;
-                    Set<JavaType> inputs = fGen.getInputs().keySet();
+                    List<JavaType> inputs = fGen.getSignature();
                     List<TreeSet<Snippet>> choices = new ArrayList<TreeSet<Snippet>>(inputs.size());
-                    for (JavaType input : inputs) {
-                        for (int i = 0; i < fGen.getInputs().get(input); i++)
-                            choices.add(getExpression(input, nextCost, nRequested));
-                    }
+                    for (JavaType input : inputs) choices.add(getExpression(input, nextCost, nRequested));
                     addFunctionPossibilities(snippets, fGen, generator.cost, choices, 0,
                                              new Snippet[choices.size()], nRequested);
                 }
