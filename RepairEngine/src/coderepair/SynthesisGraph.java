@@ -74,7 +74,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
             if (iterator.next().getValue().isEmpty())
                 iterator.remove();
 
-//        dumpTable();
+        dumpTable();
         return getExpression(requestedType, costLimit, nRequested);
     }
 
@@ -88,15 +88,18 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
                 double nextCost = remaining - generator.cost;
                 if (generator.type instanceof JavaValueType)
                     snippets.add(new Snippet(generator.type.getName(), generator.cost));
-                else if (generator.type instanceof JavaMethodType) {
-                    // TODO: synthesize member functions - maybe only allow ValueType generators for owners?
-                } else if (generator.type instanceof JavaFunctionType) {
+                else if (generator.type instanceof JavaFunctionType) {
+                    ArrayList<Snippet> owners = new ArrayList<Snippet>();
+                    if (generator.type instanceof JavaMethodType)
+                        owners.addAll(getExpression(((JavaMethodType) generator.type).getOwner(), nextCost, nRequested));
+                    else owners.add(new Snippet("", 0.0));
                     JavaFunctionType fGen = (JavaFunctionType) generator.type;
-                    List<JavaType> inputs = fGen.getSignature();
-                    List<TreeSet<Snippet>> choices = new ArrayList<TreeSet<Snippet>>(inputs.size());
-                    for (JavaType input : inputs) choices.add(getExpression(input, nextCost, nRequested));
-                    addFunctionPossibilities(snippets, fGen, generator.cost, choices, 0,
-                                             new Snippet[choices.size()], nRequested);
+                    List<TreeSet<Snippet>> choices = new ArrayList<TreeSet<Snippet>>();
+                    for (JavaType input : fGen.getSignature()) choices.add(getExpression(input, nextCost, nRequested));
+                    for (Snippet prefix : owners)
+                        addFunctionPossibilities(
+                                prefix.code, snippets, fGen, generator.cost + prefix.cost, choices, 0,
+                                new Snippet[choices.size()], nRequested);
                 }
             }
 
@@ -129,9 +132,10 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
         return tot;
     }
 
-    private void addFunctionPossibilities(TreeSet<Snippet> snippets, JavaFunctionType functionType,
-                                          double baseCost, List<TreeSet<Snippet>> synths,
-                                          int pos, Snippet paramArray[], int nRequested) {
+    private void addFunctionPossibilities(
+            String prefix, TreeSet<Snippet> snippets, JavaFunctionType functionType,
+            double baseCost, List<TreeSet<Snippet>> synths,
+            int pos, Snippet paramArray[], int nRequested) {
         if (synths.size() == 0) {
             addSnippet(snippets, new Snippet(functionType.getFunctionName() + "()", baseCost), nRequested);
         } else {
@@ -143,13 +147,14 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
                     String code;
                     if (functionType instanceof JavaCastType) code = params;
                     else code = functionType.getFunctionName() + "(" + params + ")";
+                    if (!prefix.isEmpty()) code = String.format("(%s).%s", prefix, code);
                     double cost = sumSnips(paramArray);
                     addSnippet(snippets, new Snippet(code, baseCost + cost), nRequested);
                 }
             } else {
                 for (Snippet snip : snips) {
                     paramArray[pos] = snip;
-                    addFunctionPossibilities(snippets, functionType, baseCost, synths, pos + 1, paramArray, nRequested);
+                    addFunctionPossibilities(prefix, snippets, functionType, baseCost, synths, pos + 1, paramArray, nRequested);
                 }
             }
         }
@@ -174,10 +179,15 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
             TreeSet<Generator> fragments = new TreeSet<Generator>();
             synthTable.put(startType, fragments);
 
-            for (JavaType funcType : Graphs.successorListOf(this, startType)) {
-                double edgeWeight = getEdgeWeight(getEdge(startType, funcType));
-                if (satisfyFunction(funcType, cost + edgeWeight))
-                    fragments.add(new Generator(funcType, edgeWeight));
+            try {
+                for (JavaType funcType : Graphs.successorListOf(this, startType)) {
+                    double edgeWeight = getEdgeWeight(getEdge(startType, funcType));
+                    if (satisfyFunction(funcType, cost + edgeWeight))
+                        fragments.add(new Generator(funcType, edgeWeight));
+                }
+            } catch (IllegalArgumentException e) {
+                System.err.println("Failed to satisfy " + startType.getName());
+                throw e;
             }
         }
         return !synthTable.get(startType).isEmpty();

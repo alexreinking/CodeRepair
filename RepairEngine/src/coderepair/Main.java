@@ -25,7 +25,7 @@ public class Main {
                 try {
                     JavaPLexer lexer = new JavaPLexer(new ANTLRFileStream(inFile));
                     JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
-                    graphBuilder[0] = new GraphBuilder(Arrays.asList("java.io", "java.nio"));
+                    graphBuilder[0] = new GraphBuilder(Arrays.asList("java.io", "java.nio"), 5.0);
                     parseTree[0] = parser.javap();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -44,24 +44,13 @@ public class Main {
                 graph[0].resetLocals();
                 graph[0].addLocalVariable("body", "java.lang.String");
                 graph[0].addLocalVariable("sig", "java.lang.String");
-                TreeSet<Snippet> snippets = graph[0].synthesize("java.io.SequenceInputStream", 10);
+                TreeSet<Snippet> snippets = graph[0].synthesize("java.io.BufferedReader", 10);
                 for (Snippet snippet : snippets) System.out.println(snippet.code + " == " + snippet.cost);
-            }
-        });
-
-        TimedTask writeDot = new TimedTask("Writing GraphViz output", new Runnable() {
-            @Override public void run() {
-                try {
-                    graph[0].exportToFile(new FileWriter("/Users/alexreinking/jio.dot"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
         parseInput.run();
         buildGraph.run();
         synthesis.run();
-//        writeDot.run();
     }
 }

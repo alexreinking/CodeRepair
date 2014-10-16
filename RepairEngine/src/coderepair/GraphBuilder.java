@@ -13,13 +13,23 @@ import static coderepair.antlr.JavaPParser.*;
 public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     private final HashSet<String> allowedPackages = new HashSet<String>();
     private final HashSet<JavaFunctionType> methods = new HashSet<JavaFunctionType>();
+    private final double costLimit;
     private SynthesisGraph fnFlowGraph = null;
 
     public GraphBuilder() {
-        this(new ArrayList<String>());
+        this(new ArrayList<String>(), 10.0);
+    }
+
+    public GraphBuilder(double costLimit) {
+        this(new ArrayList<String>(), costLimit);
     }
 
     public GraphBuilder(List<String> packages) {
+        this(packages, 10.0);
+    }
+
+    public GraphBuilder(List<String> packages, double costLimit) {
+        this.costLimit = costLimit;
         allowedPackages.addAll(packages);
         allowedPackages.add("java.lang");
     }
@@ -33,7 +43,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
 
     @Override
     public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
-        fnFlowGraph = new SynthesisGraph(new JavaTypeBuilder());
+        fnFlowGraph = new SynthesisGraph(new JavaTypeBuilder(), costLimit);
         for (ClassDeclarationContext classDeclarationContext : ctx.classDeclaration())
             visitClassDeclaration(classDeclarationContext);
 
@@ -123,7 +133,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
         } else if (type instanceof JavaClassType) {
             String packageName = ((JavaClassType) type).getPackageName();
             for (String okPackage : allowedPackages)
-                if (packageName.startsWith(okPackage)) {
+                if (packageName.startsWith(okPackage) || allowedPackages.size() == 1) {
                     fnFlowGraph.addVertex(type);
                     return true;
                 }
