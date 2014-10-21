@@ -42,7 +42,9 @@ public class Main {
                 graph[0].resetLocals();
                 graph[0].addLocalVariable("body", "java.lang.String");
                 graph[0].addLocalVariable("sig", "java.lang.String");
-                graph[0].addLocalVariable("inputStream", "java.io.InputStream");
+                graph[0].addLocalVariable("inStream", "java.io.InputStream");
+                graph[0].addLocalVariable("outStream", "java.io.InputStream");
+
                 for (String cls : Arrays.asList("java.io.SequenceInputStream", "java.io.BufferedReader",
                         "java.io.FileInputStream", "java.io.InputStreamReader")) {
                     System.out.println("\n============= " + cls + " =============\n");
