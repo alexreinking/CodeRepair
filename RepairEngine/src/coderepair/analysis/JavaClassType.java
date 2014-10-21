@@ -3,10 +3,10 @@ package coderepair.analysis;
 public class JavaClassType extends JavaType {
     private final String className;
     private final String packageName;
-    private boolean conrete;
+    private boolean concrete;
 
-    public JavaClassType(String qualifiedName, boolean conrete) {
-        this.conrete = conrete;
+    public JavaClassType(String qualifiedName, boolean concrete) {
+        this.concrete = concrete;
         int lastSeparator = Math.max(qualifiedName.lastIndexOf('.'), qualifiedName.lastIndexOf('/'));
         lastSeparator = Math.max(0, lastSeparator);
 
@@ -23,11 +23,11 @@ public class JavaClassType extends JavaType {
         return packageName;
     }
 
-    public void setConrete(boolean conrete) {
-        this.conrete = conrete;
+    public void setConcrete(boolean concrete) {
+        this.concrete = concrete;
     }
 
     public boolean isConcrete() {
-        return conrete;
+        return concrete;
     }
 }

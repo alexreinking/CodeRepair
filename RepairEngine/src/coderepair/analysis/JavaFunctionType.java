@@ -7,10 +7,8 @@ public class JavaFunctionType extends JavaType {
     private final List<JavaType> signature;
     private final HashMap<JavaType, Integer> inputs = new LinkedHashMap<JavaType, Integer>();
     private final JavaType output;
-    private final int nFormals;
 
     public JavaFunctionType(String name, Collection<? extends JavaType> formals, JavaType output) {
-        nFormals = formals.size();
         for (JavaType input : formals) inputs.put(input, 1 + inputs.getOrDefault(input, 0));
         this.output = output;
         this.functionName = name;
@@ -30,7 +28,7 @@ public class JavaFunctionType extends JavaType {
     }
 
     public int getTotalFormals() {
-        return nFormals;
+        return signature.size();
     }
 
     public HashMap<JavaType, Integer> getInputs() {

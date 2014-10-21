@@ -35,10 +35,11 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     }
 
     private double costForFunction(JavaFunctionType method) {
-        double multiplier = 1.0;
-        if (method instanceof JavaCastType) multiplier = 0.0;
-        if (method.getFunctionName().startsWith("new ")) multiplier = 0.25;
-        return multiplier * (1 + method.getTotalFormals());
+        if (method instanceof JavaCastType)
+            return ((JavaCastType) method).getCastTarget() == JavaCastType.CastTarget.INTERFACE ? 0.0 : 0.5;
+        if (method.getFunctionName().startsWith("new "))
+            return 2 + method.getTotalFormals();
+        return 1 + method.getTotalFormals();
     }
 
     @Override
@@ -52,7 +53,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
             fnFlowGraph.setEdgeWeight(fnFlowGraph.addEdge(method.getOutput(), method), costForFunction(method));
 
             for (JavaType inType : method.getInputs().keySet())
-                fnFlowGraph.addEdge(method, inType);
+                fnFlowGraph.setEdgeWeight(fnFlowGraph.addEdge(method, inType), 0.0);
         }
 
         return fnFlowGraph;
@@ -62,7 +63,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     public SynthesisGraph visitClassDeclaration(@NotNull ClassDeclarationContext ctx) {
         JavaClassType classNode = fnFlowGraph.getNodeManager().getTypeFromName(ctx.typeName().getText());
         if (ctx.INTERFACE() != null || ctx.modifiers() != null && ctx.modifiers().ABSTRACT() != null)
-            classNode.setConrete(false);
+            classNode.setConcrete(false);
 
         if (addTypeToGraph(classNode)) {
             List<TypeNameContext> superTypes = new ArrayList<TypeNameContext>();

@@ -74,11 +74,13 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
             if (iterator.next().getValue().isEmpty())
                 iterator.remove();
 
-        dumpTable();
+//        dumpTable();
         return getExpression(requestedType, costLimit, nRequested);
     }
 
     private TreeSet<Snippet> getExpression(JavaType requestedType, double remaining, int nRequested) {
+        if (synthTable.get(requestedType) == null)
+            return new TreeSet<Snippet>();
         if (snippetTable.containsKey(requestedType))
             return snippetTable.get(requestedType);
 
@@ -90,9 +92,11 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
                     snippets.add(new Snippet(generator.type.getName(), generator.cost));
                 else if (generator.type instanceof JavaFunctionType) {
                     ArrayList<Snippet> owners = new ArrayList<Snippet>();
-                    if (generator.type instanceof JavaMethodType)
-                        owners.addAll(getExpression(((JavaMethodType) generator.type).getOwner(), nextCost, nRequested));
-                    else owners.add(new Snippet("", 0.0));
+                    if (generator.type instanceof JavaMethodType) {
+                        TreeSet<Snippet> owner = getExpression(((JavaMethodType) generator.type).getOwner(), nextCost, nRequested);
+                        if (owner.size() == 0) continue;
+                        owners.addAll(owner);
+                    } else owners.add(new Snippet("", 0.0));
                     JavaFunctionType fGen = (JavaFunctionType) generator.type;
                     List<TreeSet<Snippet>> choices = new ArrayList<TreeSet<Snippet>>();
                     for (JavaType input : fGen.getSignature()) choices.add(getExpression(input, nextCost, nRequested));
@@ -137,7 +141,9 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaType, Defaul
             double baseCost, List<TreeSet<Snippet>> synths,
             int pos, Snippet paramArray[], int nRequested) {
         if (synths.size() == 0) {
-            addSnippet(snippets, new Snippet(functionType.getFunctionName() + "()", baseCost), nRequested);
+            String code = functionType.getFunctionName() + "()";
+            if (!prefix.isEmpty()) code = String.format("(%s).%s", prefix, code);
+            addSnippet(snippets, new Snippet(code, baseCost), nRequested);
         } else {
             TreeSet<Snippet> snips = synths.get(pos);
             if (pos + 1 == paramArray.length) {

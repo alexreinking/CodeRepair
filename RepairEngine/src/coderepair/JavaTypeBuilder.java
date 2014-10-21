@@ -43,7 +43,6 @@ public class JavaTypeBuilder {
     }
 
     JavaFunctionType makeMethod(String name, JavaType owner, JavaType output, Collection<JavaType> formals) {
-        formals.add(owner);
         return new JavaMethodType(name, formals, output).setOwner(owner);
     }
 
