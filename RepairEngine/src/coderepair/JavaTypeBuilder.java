@@ -1,59 +1,47 @@
 package coderepair;
 
 import coderepair.analysis.*;
+import coderepair.synthesis.CastSynthesizer;
+import coderepair.synthesis.MethodSynthesizer;
+import coderepair.synthesis.StaticFunctionSynthesizer;
+import coderepair.synthesis.ValueSynthesizer;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class JavaTypeBuilder {
-    private final HashMap<String, JavaPrimitiveType> primitiveTypes = new HashMap<String, JavaPrimitiveType>();
-    private final HashMap<String, JavaClassType> classTypes = new HashMap<String, JavaClassType>();
+    private final HashMap<String, JavaTypeNode> classTypes = new HashMap<String, JavaTypeNode>();
 
-    public JavaTypeBuilder() {
-        List<String> primNames = Arrays.asList("byte", "short", "int", "long", "float", "double", "boolean", "char");
-        for (String primType : primNames) {
-            primitiveTypes.put(primType, new JavaPrimitiveType(primType));
-            primitiveTypes.put(primType + "[]", new JavaPrimitiveType(primType + "[]"));
-        }
-    }
-
-    JavaClassType getTypeFromName(String qualifiedName) {
-        if (primitiveTypes.containsKey(qualifiedName))
-            return primitiveTypes.get(qualifiedName);
-        else if (classTypes.containsKey(qualifiedName))
+    JavaTypeNode getTypeFromName(String qualifiedName) {
+        if (classTypes.containsKey(qualifiedName))
             return classTypes.get(qualifiedName);
 
-        JavaClassType newType = new JavaClassType(qualifiedName, true);
+        JavaTypeNode newType = new JavaTypeNode(qualifiedName, true);
         classTypes.put(qualifiedName, newType);
         return newType;
     }
 
-    JavaFunctionType makeCastNode(JavaType lowType, JavaType highType) {
-        return new JavaCastType(lowType, highType).setCastTarget(JavaCastType.CastTarget.SUPERCLASS);
+    JavaFunctionNode makeCastNode(JavaTypeNode lowType, JavaTypeNode highType) {
+        return new JavaFunctionNode("<cast>", Arrays.asList(lowType), highType, new CastSynthesizer());
     }
 
-    JavaFunctionType makeInterfaceCastNode(JavaType lowType, JavaType highType) {
-        return new JavaCastType(lowType, highType).setCastTarget(JavaCastType.CastTarget.INTERFACE);
+    JavaFunctionNode makeConstructor(JavaTypeNode type, Collection<JavaTypeNode> formals) {
+        return new JavaFunctionNode("new " + type.getName(), formals, type, new StaticFunctionSynthesizer());
     }
 
-    JavaFunctionType makeConstructor(JavaType type, Collection<? extends JavaType> formals) {
-        return new JavaFunctionType("new " + type.getName(), formals, type);
+    JavaFunctionNode makeMethod(String name, JavaTypeNode owner, JavaTypeNode output, Collection<JavaTypeNode> formals) {
+        ArrayList<JavaTypeNode> trueFormals = new ArrayList<JavaTypeNode>(1 + formals.size());
+        trueFormals.add(owner);
+        trueFormals.addAll(formals);
+        return new JavaFunctionNode(name, trueFormals, output, new MethodSynthesizer());
     }
 
-    JavaFunctionType makeMethod(String name, JavaType owner, JavaType output, Collection<JavaType> formals) {
-        return new JavaMethodType(name, formals, output).setOwner(owner);
+    JavaFunctionNode makeStaticMethod(String name, JavaTypeNode owner, JavaTypeNode output, Collection<JavaTypeNode> formals) {
+        return new JavaFunctionNode(owner.getClassName() + "." + name, formals, output, new StaticFunctionSynthesizer());
     }
 
-    JavaFunctionType makeStaticMethod(String name, JavaType owner, JavaType output, Collection<JavaType> formals) {
-        return new JavaFunctionType(owner.getName() + "." + name, formals, output);
-    }
-
-    public JavaValueType makeValue(String value, String typeName) {
-        JavaType valType = classTypes.get(typeName);
-        if (valType == null) valType = primitiveTypes.get(typeName);
+    public JavaFunctionNode makeValue(String value, String typeName) {
+        JavaTypeNode valType = classTypes.get(typeName);
         if (valType == null) throw new RuntimeException("No such type: " + typeName);
-        return new JavaValueType(value, valType);
+        return new JavaFunctionNode(value, new ArrayList<JavaTypeNode>(), valType, new ValueSynthesizer());
     }
 }

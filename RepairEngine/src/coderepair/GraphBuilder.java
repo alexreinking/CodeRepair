@@ -1,10 +1,13 @@
 package coderepair;
 
-import coderepair.analysis.*;
+import coderepair.analysis.JavaFunctionNode;
+import coderepair.analysis.JavaGraphNode;
+import coderepair.analysis.JavaTypeNode;
 import coderepair.antlr.JavaPBaseVisitor;
 import org.antlr.v4.runtime.misc.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -12,7 +15,7 @@ import static coderepair.antlr.JavaPParser.*;
 
 public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     private final HashSet<String> allowedPackages = new HashSet<String>();
-    private final HashSet<JavaFunctionType> methods = new HashSet<JavaFunctionType>();
+    private final HashSet<JavaFunctionNode> methods = new HashSet<JavaFunctionNode>();
     private final double costLimit;
     private SynthesisGraph fnFlowGraph = null;
 
@@ -34,9 +37,9 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
         allowedPackages.add("java.lang");
     }
 
-    private double costForFunction(JavaFunctionType method) {
-        if (method instanceof JavaCastType)
-            return ((JavaCastType) method).getCastTarget() == JavaCastType.CastTarget.INTERFACE ? 0.0 : 0.5;
+    private double costForFunction(JavaFunctionNode method) {
+        if (method.getFunctionName().equals("<cast>"))
+            return method.getOutput().isConcrete() ? 0.5 : 0.0;
         if (method.getFunctionName().startsWith("new "))
             return 2 + method.getTotalFormals();
         return 1 + method.getTotalFormals();
@@ -45,14 +48,20 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     @Override
     public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
         fnFlowGraph = new SynthesisGraph(new JavaTypeBuilder(), costLimit);
+        List<String> primNames = Arrays.asList("byte", "short", "int", "long", "float", "double", "boolean", "char");
+        for (String primType : primNames) {
+            addTypeToGraph(fnFlowGraph.getNodeManager().getTypeFromName(primType));
+            addTypeToGraph(fnFlowGraph.getNodeManager().getTypeFromName(primType + "[]"));
+        }
+
         for (ClassDeclarationContext classDeclarationContext : ctx.classDeclaration())
             visitClassDeclaration(classDeclarationContext);
 
-        for (JavaFunctionType method : methods) {
+        for (JavaFunctionNode method : methods) {
             fnFlowGraph.addVertex(method);
             fnFlowGraph.setEdgeWeight(fnFlowGraph.addEdge(method.getOutput(), method), costForFunction(method));
 
-            for (JavaType inType : method.getInputs().keySet())
+            for (JavaGraphNode inType : method.getInputs())
                 fnFlowGraph.setEdgeWeight(fnFlowGraph.addEdge(method, inType), 0.0);
         }
 
@@ -61,7 +70,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
 
     @Override
     public SynthesisGraph visitClassDeclaration(@NotNull ClassDeclarationContext ctx) {
-        JavaClassType classNode = fnFlowGraph.getNodeManager().getTypeFromName(ctx.typeName().getText());
+        JavaTypeNode classNode = fnFlowGraph.getNodeManager().getTypeFromName(ctx.typeName().getText());
         if (ctx.INTERFACE() != null || ctx.modifiers() != null && ctx.modifiers().ABSTRACT() != null)
             classNode.setConcrete(false);
 
@@ -73,23 +82,19 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                 superTypes.addAll(ctx.implementation().typeList().typeName());
 
             for (TypeNameContext parentType : superTypes) {
-                JavaClassType parentNode = fnFlowGraph.getNodeManager().getTypeFromName(parentType.getText());
-                if (addTypeToGraph(parentNode)) {
-                    if (parentNode.isConcrete())
-                        methods.add(fnFlowGraph.getNodeManager().makeCastNode(classNode, parentNode));
-                    else
-                        methods.add(fnFlowGraph.getNodeManager().makeInterfaceCastNode(classNode, parentNode));
-                }
+                JavaTypeNode parentNode = fnFlowGraph.getNodeManager().getTypeFromName(parentType.getText());
+                if (addTypeToGraph(parentNode))
+                    methods.add(fnFlowGraph.getNodeManager().makeCastNode(classNode, parentNode));
             }
 
             for (MemberDeclarationContext memberDeclarationContext : ctx.memberDeclaration()) {
                 MethodDeclarationContext method = memberDeclarationContext.methodDeclaration();
                 if (method != null) {
                     boolean badFormal = false;
-                    List<JavaType> formals = new ArrayList<JavaType>();
+                    List<JavaTypeNode> formals = new ArrayList<JavaTypeNode>();
                     if (method.typeList() != null) {
                         for (TypeNameContext formal : method.typeList().typeName()) {
-                            JavaType formalType = fnFlowGraph.getNodeManager().getTypeFromName(formal.getText());
+                            JavaTypeNode formalType = fnFlowGraph.getNodeManager().getTypeFromName(formal.getText());
                             if (!addTypeToGraph(formalType)) {
                                 badFormal = true;
                                 break;
@@ -104,10 +109,10 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                     if (method.typeName().size() == 1) {
                         methods.add(fnFlowGraph.getNodeManager().makeConstructor(classNode, formals));
                     } else {
-                        JavaType outType = fnFlowGraph.getNodeManager().getTypeFromName(method.typeName().get(0).getText());
+                        JavaTypeNode outType = fnFlowGraph.getNodeManager().getTypeFromName(method.typeName().get(0).getText());
                         if (addTypeToGraph(outType)) {
                             String methodName = method.typeName().get(1).getText();
-                            JavaFunctionType newFunc;
+                            JavaFunctionNode newFunc;
                             if (method.modifiers().STATIC() != null)
                                 newFunc = fnFlowGraph.getNodeManager().makeStaticMethod(methodName, classNode, outType, formals);
                             else
@@ -125,14 +130,16 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
         return fnFlowGraph;
     }
 
-    private boolean addTypeToGraph(JavaType type) {
+    private boolean addTypeToGraph(JavaGraphNode type) {
         if (type.getName().contains("$"))
             return false;
-        if (type instanceof JavaPrimitiveType) {
-            fnFlowGraph.addVertex(type);
-            return true;
-        } else if (type instanceof JavaClassType) {
-            String packageName = ((JavaClassType) type).getPackageName();
+        if (type instanceof JavaTypeNode) {
+            JavaTypeNode actualType = (JavaTypeNode) type;
+            if (actualType.isPrimitive()) {
+                fnFlowGraph.addVertex(actualType);
+                return true;
+            }
+            String packageName = actualType.getPackageName();
             for (String okPackage : allowedPackages)
                 if (packageName.startsWith(okPackage) || allowedPackages.size() == 1) {
                     fnFlowGraph.addVertex(type);

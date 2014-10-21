@@ -6,12 +6,10 @@ import coderepair.util.TimedTask;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.TreeSet;
 
-import static coderepair.SynthesisGraph.Snippet;
+import coderepair.synthesis.Snippet;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -25,7 +23,7 @@ public class Main {
                 try {
                     JavaPLexer lexer = new JavaPLexer(new ANTLRFileStream(inFile));
                     JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
-                    graphBuilder[0] = new GraphBuilder(Arrays.asList("java.io", "java.nio"), 20.0);
+                    graphBuilder[0] = new GraphBuilder(Arrays.asList("java.io", "java.nio"), 10.0);
                     parseTree[0] = parser.javap();
                 } catch (IOException e) {
                     e.printStackTrace();
