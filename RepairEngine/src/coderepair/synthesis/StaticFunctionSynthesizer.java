@@ -5,14 +5,14 @@ import java.util.List;
 
 public class StaticFunctionSynthesizer extends JavaFunctionSynthesizer {
     @Override
-    public String synthesizeFromArguments(String functionName, List<Snippet> formals) {
+    public String synthesizeFromArguments(String functionName, List<CodeSnippet> formals) {
         return String.format("%s(%s)", functionName, String.join(", ", getStrings(formals)));
     }
 
-    private List<String> getStrings(List<Snippet> snippets)
+    private List<String> getStrings(List<CodeSnippet> snippets)
     {
         List<String> args = new ArrayList<String>(snippets.size());
-        for (Snippet snippet : snippets) args.add(snippet.code);
+        for (CodeSnippet snippet : snippets) args.add(snippet.code);
         return args;
     }
 }

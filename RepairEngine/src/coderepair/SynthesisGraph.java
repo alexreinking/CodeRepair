@@ -3,7 +3,7 @@ package coderepair;
 import coderepair.analysis.JavaFunctionNode;
 import coderepair.analysis.JavaGraphNode;
 import coderepair.analysis.JavaTypeNode;
-import coderepair.synthesis.Snippet;
+import coderepair.synthesis.CodeSnippet;
 import org.jetbrains.annotations.NotNull;
 import org.jgrapht.Graphs;
 import org.jgrapht.ext.ComponentAttributeProvider;
@@ -45,7 +45,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
     private final double costLimit;
     private final ArrayList<JavaGraphNode> currentLocals = new ArrayList<JavaGraphNode>();
     private HashMap<JavaGraphNode, TreeSet<Generator>> synthTable;
-    private HashMap<JavaGraphNode, TreeSet<Snippet>> snippetTable;
+    private HashMap<JavaGraphNode, TreeSet<CodeSnippet>> snippetTable;
 
     public SynthesisGraph(JavaTypeBuilder nodeManager) {
         this(nodeManager, 10.0);
@@ -66,9 +66,9 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
                 .export(outputStream, this);
     }
 
-    public TreeSet<Snippet> synthesize(String qualifiedName, int nRequested) {
+    public TreeSet<CodeSnippet> synthesize(String qualifiedName, int nRequested) {
         synthTable = new HashMap<JavaGraphNode, TreeSet<Generator>>();
-        snippetTable = new HashMap<JavaGraphNode, TreeSet<Snippet>>();
+        snippetTable = new HashMap<JavaGraphNode, TreeSet<CodeSnippet>>();
         JavaGraphNode requestedType = nodeManager.getTypeFromName(qualifiedName);
         satisfyType(requestedType, 0.0);
 
@@ -81,24 +81,24 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         return getExpression(requestedType, costLimit, nRequested);
     }
 
-    private TreeSet<Snippet> getExpression(JavaGraphNode requestedType, double remaining, int nRequested) {
+    private TreeSet<CodeSnippet> getExpression(JavaGraphNode requestedType, double remaining, int nRequested) {
         if (synthTable.get(requestedType) == null)
-            return new TreeSet<Snippet>();
+            return new TreeSet<CodeSnippet>();
         if (snippetTable.containsKey(requestedType))
             return snippetTable.get(requestedType);
 
-        TreeSet<Snippet> snippets = new TreeSet<Snippet>();
+        TreeSet<CodeSnippet> snippets = new TreeSet<CodeSnippet>();
         for (Generator generator : synthTable.get(requestedType))
             if (generator.cost < remaining) {
                 double nextCost = remaining - generator.cost;
                 if (generator.type instanceof JavaFunctionNode) {
                     JavaFunctionNode fGen = (JavaFunctionNode) generator.type;
-                    List<TreeSet<Snippet>> choices = new ArrayList<TreeSet<Snippet>>();
+                    List<TreeSet<CodeSnippet>> choices = new ArrayList<TreeSet<CodeSnippet>>();
                     for (JavaGraphNode input : fGen.getSignature())
                         choices.add(getExpression(input, nextCost, nRequested));
                     addFunctionPossibilities(
                             snippets, fGen, generator.cost, choices, 0,
-                            new Snippet[choices.size()], nRequested);
+                            new CodeSnippet[choices.size()], nRequested);
                 }
             }
 
@@ -107,10 +107,10 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         return snippets;
     }
 
-    private void addSnippet(TreeSet<Snippet> snippets, Snippet poss, int nRequested) {
+    private void addSnippet(TreeSet<CodeSnippet> snippets, CodeSnippet poss, int nRequested) {
         if (poss.cost <= costLimit)
             if (snippets.size() >= nRequested) {
-                Snippet better = snippets.pollLast();
+                CodeSnippet better = snippets.pollLast();
                 if (better == null) return;
                 if (poss.cost < better.cost) better = poss;
                 snippets.add(better);
@@ -119,30 +119,30 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
             }
     }
 
-    private double sumSnips(Snippet snips[]) {
+    private double sumSnips(CodeSnippet snips[]) {
         double tot = 0.0;
-        for (Snippet snip : snips) tot += snip.cost;
+        for (CodeSnippet snip : snips) tot += snip.cost;
         return tot;
     }
 
     private void addFunctionPossibilities(
-            TreeSet<Snippet> snippets, JavaFunctionNode functionType,
-            double baseCost, List<TreeSet<Snippet>> synths,
-            int pos, Snippet paramArray[], int nRequested) {
+            TreeSet<CodeSnippet> snippets, JavaFunctionNode functionType,
+            double baseCost, List<TreeSet<CodeSnippet>> synths,
+            int pos, CodeSnippet paramArray[], int nRequested) {
         if (synths.size() == 0) {
-            String code = functionType.getSynthesizer().synthesizeFromArguments(functionType.getFunctionName(), new Snippet[]{});
-            addSnippet(snippets, new Snippet(code, baseCost), nRequested);
+            String code = functionType.getSynthesizer().synthesizeFromArguments(functionType.getFunctionName(), new CodeSnippet[]{});
+            addSnippet(snippets, new CodeSnippet(code, baseCost), nRequested);
         } else {
-            TreeSet<Snippet> snips = synths.get(pos);
+            TreeSet<CodeSnippet> snips = synths.get(pos);
             if (pos + 1 == paramArray.length) {
-                for (Snippet snip : snips) {
+                for (CodeSnippet snip : snips) {
                     paramArray[pos] = snip;
                     String code = functionType.getSynthesizer().synthesizeFromArguments(functionType.getFunctionName(), paramArray);
                     double cost = sumSnips(paramArray);
-                    addSnippet(snippets, new Snippet(code, baseCost + cost), nRequested);
+                    addSnippet(snippets, new CodeSnippet(code, baseCost + cost), nRequested);
                 }
             } else {
-                for (Snippet snip : snips) {
+                for (CodeSnippet snip : snips) {
                     paramArray[pos] = snip;
                     addFunctionPossibilities(snippets, functionType, baseCost, synths, pos + 1, paramArray, nRequested);
                 }

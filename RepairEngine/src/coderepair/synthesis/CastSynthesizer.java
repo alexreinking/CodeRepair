@@ -7,7 +7,7 @@ import java.util.List;
  */
 public class CastSynthesizer extends JavaFunctionSynthesizer {
     @Override
-    public String synthesizeFromArguments(String functionName, List<Snippet> formals) {
+    public String synthesizeFromArguments(String functionName, List<CodeSnippet> formals) {
         if (formals.size() != 1)
             throw new IllegalArgumentException("Error! Can only cast exactly one type to another");
         return formals.get(0).code;

@@ -4,7 +4,7 @@ import java.util.List;
 
 public class ValueSynthesizer extends JavaFunctionSynthesizer {
     @Override
-    public String synthesizeFromArguments(String functionName, List<Snippet> formals) {
+    public String synthesizeFromArguments(String functionName, List<CodeSnippet> formals) {
         if (formals.size() != 0)
             throw new IllegalArgumentException("Values may not take arguments");
         return functionName;

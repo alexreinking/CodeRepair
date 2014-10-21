@@ -2,14 +2,13 @@ package coderepair;
 
 import coderepair.antlr.JavaPLexer;
 import coderepair.antlr.JavaPParser;
+import coderepair.synthesis.CodeSnippet;
 import coderepair.util.TimedTask;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
 
 import java.io.IOException;
 import java.util.Arrays;
-
-import coderepair.synthesis.Snippet;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -48,7 +47,7 @@ public class Main {
                 for (String cls : Arrays.asList("java.io.SequenceInputStream", "java.io.BufferedReader",
                         "java.io.FileInputStream", "java.io.InputStreamReader")) {
                     System.out.println("\n============= " + cls + " =============\n");
-                    for (Snippet snippet : graph[0].synthesize(cls, 10))
+                    for (CodeSnippet snippet : graph[0].synthesize(cls, 10))
                         System.out.printf("%6f  %s\n", snippet.cost, snippet.code);
                 }
             }
