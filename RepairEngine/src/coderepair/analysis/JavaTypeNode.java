@@ -41,7 +41,4 @@ public class JavaTypeNode extends JavaGraphNode {
         return primitive;
     }
 
-    public void setPrimitive(boolean primitive) {
-        this.primitive = primitive;
-    }
 }

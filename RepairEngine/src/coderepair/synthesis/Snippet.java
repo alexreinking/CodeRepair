@@ -1,6 +1,5 @@
 package coderepair.synthesis;
 
-import coderepair.SynthesisGraph;
 import org.jetbrains.annotations.NotNull;
 
 /**

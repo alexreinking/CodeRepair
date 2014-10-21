@@ -43,9 +43,9 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
 
     private final JavaTypeBuilder nodeManager;
     private final double costLimit;
+    private final ArrayList<JavaGraphNode> currentLocals = new ArrayList<JavaGraphNode>();
     private HashMap<JavaGraphNode, TreeSet<Generator>> synthTable;
     private HashMap<JavaGraphNode, TreeSet<Snippet>> snippetTable;
-    private ArrayList<JavaGraphNode> currentLocals = new ArrayList<JavaGraphNode>();
 
     public SynthesisGraph(JavaTypeBuilder nodeManager) {
         this(nodeManager, 10.0);

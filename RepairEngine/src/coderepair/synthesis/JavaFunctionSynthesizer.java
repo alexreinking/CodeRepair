@@ -1,7 +1,5 @@
 package coderepair.synthesis;
 
-import coderepair.analysis.JavaFunctionNode;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
