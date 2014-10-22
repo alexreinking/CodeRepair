@@ -1,5 +1,6 @@
 package coderepair.analysis;
 
+import coderepair.synthesis.CodeSnippet;
 import coderepair.synthesis.JavaFunctionSynthesizer;
 
 import java.util.*;
@@ -13,13 +14,14 @@ public class JavaFunctionNode extends JavaGraphNode {
 
     public JavaFunctionNode(String name, Collection<JavaTypeNode> formals,
                             JavaTypeNode output, JavaFunctionSynthesizer synthesizer) {
-        this.synthesizer = synthesizer;
+        StringJoiner args = new StringJoiner(" x ");
+        for (JavaTypeNode formal : formals) args.add(formal.getClassName());
         inputs.addAll(formals);
+
+        this.synthesizer = synthesizer;
         this.output = output;
         this.functionName = name;
         this.signature = new ArrayList<JavaTypeNode>(formals);
-        StringJoiner args = new StringJoiner(" x ");
-        for (JavaTypeNode formal : formals) args.add(formal.getClassName());
         this.name = String.format("%s: (%s) -> %s", this.functionName, args.toString(), output.getClassName());
     }
 
@@ -43,7 +45,7 @@ public class JavaFunctionNode extends JavaGraphNode {
         return signature;
     }
 
-    public JavaFunctionSynthesizer getSynthesizer() {
-        return synthesizer;
+    public String synthesize(CodeSnippet[] args) {
+        return synthesizer.synthesizeFromArguments(functionName, args);
     }
 }

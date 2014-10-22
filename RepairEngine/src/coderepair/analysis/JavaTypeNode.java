@@ -4,7 +4,7 @@ public class JavaTypeNode extends JavaGraphNode {
     private final String className;
     private final String packageName;
     private boolean concrete;
-    private boolean primitive;
+    private final boolean primitive;
 
     public JavaTypeNode(String qualifiedName, boolean concrete) {
         this.concrete = concrete;

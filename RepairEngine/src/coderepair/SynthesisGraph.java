@@ -130,14 +130,14 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
             double baseCost, List<TreeSet<CodeSnippet>> synths,
             int pos, CodeSnippet paramArray[], int nRequested) {
         if (synths.size() == 0) {
-            String code = functionType.getSynthesizer().synthesizeFromArguments(functionType.getFunctionName(), new CodeSnippet[]{});
+            String code = functionType.synthesize(new CodeSnippet[]{});
             addSnippet(snippets, new CodeSnippet(code, baseCost), nRequested);
         } else {
             TreeSet<CodeSnippet> snips = synths.get(pos);
             if (pos + 1 == paramArray.length) {
                 for (CodeSnippet snip : snips) {
                     paramArray[pos] = snip;
-                    String code = functionType.getSynthesizer().synthesizeFromArguments(functionType.getFunctionName(), paramArray);
+                    String code = functionType.synthesize(paramArray);
                     double cost = sumSnips(paramArray);
                     addSnippet(snippets, new CodeSnippet(code, baseCost + cost), nRequested);
                 }

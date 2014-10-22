@@ -3,7 +3,9 @@
 %
 % Requires sigplanconf style file provided on PLDI'15 web site
 %
-\documentclass[pldi]{sigplanconf}
+
+% Use `pldi` instead of `pldicrc` to hide the author names
+\documentclass[pldicrc]{sigplanconf}
 
 %
 % the following standard packages may be helpful, but are not required
@@ -13,6 +15,7 @@
 \usepackage[scaled]{helvet}     % see www.ctan.org/get/macros/latex/required/psnfss/psnfss2e.pdf
 \usepackage{url}                % format URLs
 \usepackage{listings}           % format code
+\usepackage[]{algorithm2e}      % write up algorithms
 \usepackage{enumitem}           % adjust spacing in enums
 \usepackage{xspace}             % Ensure correct spacing after text macros
 \usepackage[colorlinks=true,allcolors=blue,breaklinks,draft=false]{hyperref}
@@ -22,16 +25,19 @@
 \begin{document}
 
 \title{\ourTool: It Fixes Things}
-\authorinfo{Double-blind Submission}{}{}
+\authorinfo{Alex Reinking}{Yale University}{alexander.reinking@yale.edu}
+\authorinfo{Ruzica Piskac}{Yale University}{ruzica.piskac@yale.edu}
 
 \maketitle
+\begin{abstract}
+\input{abstract}
+\end{abstract}
 
 \input{intro}
 \input{algorithm}
 \input{related}
 \input{theirStuff}
 
-%\bibliographystyle{ACM-Reference-Format-Journals}
 \bibliographystyle{abbrvnat}
 \bibliography{main}
 
