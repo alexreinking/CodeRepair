@@ -1,25 +1,16 @@
 package coderepair.analysis;
 
+import java.io.Serializable;
+
 /**
  * Created by alexreinking on 9/23/14.
  */
-public abstract class JavaGraphNode {
+public abstract class JavaGraphNode implements Serializable {
     protected String name;
-
-    @Override
-    public int hashCode() {
-        return getName().hashCode();
-    }
 
     public String getName() {
         return name;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        return this == o || o instanceof JavaGraphNode && name.equals(((JavaGraphNode) o).name);
-    }
-
 
 }
 

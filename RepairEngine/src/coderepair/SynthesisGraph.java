@@ -13,10 +13,11 @@ import org.jgrapht.ext.VertexNameProvider;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
+import java.io.Serializable;
 import java.io.Writer;
 import java.util.*;
 
-public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, DefaultWeightedEdge> {
+public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, DefaultWeightedEdge> implements Serializable {
     private static final IntegerNameProvider<JavaGraphNode> idProvider = new IntegerNameProvider<JavaGraphNode>();
 
     private static final VertexNameProvider<JavaGraphNode> nameProvider = new VertexNameProvider<JavaGraphNode>() {
@@ -44,8 +45,9 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
     private final JavaTypeBuilder nodeManager;
     private final double costLimit;
     private final ArrayList<JavaGraphNode> currentLocals = new ArrayList<JavaGraphNode>();
-    private HashMap<JavaGraphNode, TreeSet<Generator>> synthTable;
-    private HashMap<JavaGraphNode, TreeSet<CodeSnippet>> snippetTable;
+
+    private transient HashMap<JavaGraphNode, TreeSet<Generator>> synthTable;
+    private transient HashMap<JavaGraphNode, TreeSet<CodeSnippet>> snippetTable;
 
     public SynthesisGraph(JavaTypeBuilder nodeManager) {
         this(nodeManager, 10.0);

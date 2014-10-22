@@ -87,7 +87,6 @@ public class Main {
             }
         });
 
-        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph))
-                .andThen(synthesize).run();
+        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(synthesize).run();
     }
 }

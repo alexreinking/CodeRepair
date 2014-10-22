@@ -34,11 +34,12 @@ public class TimedTask {
         }
         Collections.sort(times);
         try {
-            PrintWriter writer = new PrintWriter(taskName + ".txt", "UTF-8");
-            for (Long time : times) writer.println(time);
-            writer.close();
-            if (!taskName.isEmpty())
+            if (!taskName.isEmpty()) {
+                PrintWriter writer = new PrintWriter(taskName + ".txt", "UTF-8");
+                for (Long time : times) writer.println(time);
+                writer.close();
                 System.out.printf("%s took %dms (best of %d)\n", taskName, times.get(0), nTrials);
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
