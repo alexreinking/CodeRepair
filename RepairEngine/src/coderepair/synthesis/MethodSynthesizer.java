@@ -1,9 +1,10 @@
 package coderepair.synthesis;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MethodSynthesizer extends JavaFunctionSynthesizer {
+public class MethodSynthesizer extends JavaFunctionSynthesizer implements Serializable {
     @Override
     public String synthesizeFromArguments(String functionName, List<CodeSnippet> formals) {
         if (formals.size() < 1)

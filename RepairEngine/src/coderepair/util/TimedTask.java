@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
-* Created by alexreinking on 10/6/14.
-*/
+ * Created by alexreinking on 10/6/14.
+ */
 public class TimedTask {
     private final String taskName;
     private final Runnable task;
@@ -37,11 +37,51 @@ public class TimedTask {
             PrintWriter writer = new PrintWriter(taskName + ".txt", "UTF-8");
             for (Long time : times) writer.println(time);
             writer.close();
-            System.out.printf("%s took %dms (best of %d)\n", taskName, times.get(0), nTrials);
+            if (!taskName.isEmpty())
+                System.out.printf("%s took %dms (best of %d)\n", taskName, times.get(0), nTrials);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+    }
+
+    public TimedTask andThen(final TimedTask next) {
+        final TimedTask self = this;
+        return new TimedTask("", new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    self.run();
+                    next.run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+    }
+
+    public TimedTask orElse(final TimedTask next) {
+        final TimedTask self = this;
+        return new TimedTask("", new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    self.run();
+                    return;
+                } catch (Exception e) {
+                    System.err.printf("%s failed. Reason: %s\n", self.taskName, e.getMessage());
+                    e.printStackTrace();
+                }
+                try {
+                    next.run();
+                } catch (Exception e) {
+                    System.err.printf("%s failed. Reason: %s\n", next.taskName, e.getMessage());
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 }

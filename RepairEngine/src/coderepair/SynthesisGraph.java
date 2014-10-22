@@ -57,10 +57,6 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         this.costLimit = costLimit;
     }
 
-    public JavaTypeBuilder getNodeManager() {
-        return nodeManager;
-    }
-
     public void exportToFile(Writer outputStream) {
         new DOTExporter<JavaGraphNode, DefaultWeightedEdge>(idProvider, nameProvider, null, colorProvider, null)
                 .export(outputStream, this);

@@ -7,18 +7,20 @@ import coderepair.util.TimedTask;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         final String inFile = "./data/rt.javap";
+        final String graphFile = "./data/graph.ser";
         final JavaPParser.JavapContext[] parseTree = new JavaPParser.JavapContext[1];
         final SynthesisGraph[] graph = new SynthesisGraph[1];
         final GraphBuilder[] graphBuilder = new GraphBuilder[1];
 
         TimedTask parseInput = new TimedTask("Parse", new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 try {
                     JavaPLexer lexer = new JavaPLexer(new ANTLRFileStream(inFile));
                     JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
@@ -31,13 +33,45 @@ public class Main {
         });
 
         TimedTask buildGraph = new TimedTask("Graph construction", new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 graph[0] = graphBuilder[0].visitJavap(parseTree[0]);
             }
         });
 
-        TimedTask synthesis = new TimedTask("Synthesis", new Runnable() {
-            @Override public void run() {
+        TimedTask serializeGraph = new TimedTask("Graph serialization", new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    FileOutputStream fileOut = new FileOutputStream(graphFile);
+                    ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                    out.writeObject(graph[0]);
+                    out.close();
+                    fileOut.close();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        TimedTask loadGraph = new TimedTask("Graph deserialization", new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    FileInputStream fileInput = new FileInputStream(graphFile);
+                    ObjectInputStream in = new ObjectInputStream(fileInput);
+                    graph[0] = (SynthesisGraph) in.readObject();
+                    in.close();
+                    fileInput.close();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        TimedTask synthesize = new TimedTask("Synthesis", new Runnable() {
+            @Override
+            public void run() {
                 graph[0].resetLocals();
                 graph[0].addLocalVariable("body", "java.lang.String");
                 graph[0].addLocalVariable("sig", "java.lang.String");
@@ -53,8 +87,7 @@ public class Main {
             }
         });
 
-        parseInput.run();
-        buildGraph.run();
-        synthesis.run();
+        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph))
+                .andThen(synthesize).run();
     }
 }

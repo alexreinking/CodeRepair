@@ -1,6 +1,8 @@
 package coderepair.analysis;
 
-public class JavaTypeNode extends JavaGraphNode {
+import java.io.Serializable;
+
+public class JavaTypeNode extends JavaGraphNode implements Serializable {
     private final String className;
     private final String packageName;
     private boolean concrete;

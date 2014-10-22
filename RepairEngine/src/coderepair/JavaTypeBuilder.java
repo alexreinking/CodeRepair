@@ -6,9 +6,10 @@ import coderepair.synthesis.MethodSynthesizer;
 import coderepair.synthesis.StaticFunctionSynthesizer;
 import coderepair.synthesis.ValueSynthesizer;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class JavaTypeBuilder {
+public class JavaTypeBuilder implements Serializable {
     private final HashMap<String, JavaTypeNode> classTypes = new HashMap<String, JavaTypeNode>();
 
     JavaTypeNode getTypeFromName(String qualifiedName) {

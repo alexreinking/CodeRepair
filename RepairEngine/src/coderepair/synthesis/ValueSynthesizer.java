@@ -1,8 +1,9 @@
 package coderepair.synthesis;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ValueSynthesizer extends JavaFunctionSynthesizer {
+public class ValueSynthesizer extends JavaFunctionSynthesizer implements Serializable {
     @Override
     public String synthesizeFromArguments(String functionName, List<CodeSnippet> formals) {
         if (formals.size() != 0)

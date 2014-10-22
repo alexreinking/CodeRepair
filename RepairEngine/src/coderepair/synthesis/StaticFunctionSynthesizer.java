@@ -1,9 +1,10 @@
 package coderepair.synthesis;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StaticFunctionSynthesizer extends JavaFunctionSynthesizer {
+public class StaticFunctionSynthesizer extends JavaFunctionSynthesizer implements Serializable {
     @Override
     public String synthesizeFromArguments(String functionName, List<CodeSnippet> formals) {
         return String.format("%s(%s)", functionName, String.join(", ", getStrings(formals)));

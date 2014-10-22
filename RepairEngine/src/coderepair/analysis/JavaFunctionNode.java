@@ -3,9 +3,10 @@ package coderepair.analysis;
 import coderepair.synthesis.CodeSnippet;
 import coderepair.synthesis.JavaFunctionSynthesizer;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class JavaFunctionNode extends JavaGraphNode {
+public class JavaFunctionNode extends JavaGraphNode implements Serializable {
     private final JavaFunctionSynthesizer synthesizer;
     private final String functionName;
     private final List<JavaTypeNode> signature;
