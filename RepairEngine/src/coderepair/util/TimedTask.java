@@ -13,19 +13,21 @@ public class TimedTask {
     private final String taskName;
     private final Runnable task;
     private final ArrayList<Long> times = new ArrayList<Long>();
+    private int nTrials = 1;
 
     public TimedTask(String taskName, Runnable task) {
         this.taskName = taskName;
         this.task = task;
     }
 
-    public void run() {
-        run(1);
-    }
-
-    public void run(int nTrials) {
+    public TimedTask times(int nTrials) {
         times.clear();
         times.ensureCapacity(nTrials);
+        this.nTrials = nTrials;
+        return this;
+    }
+
+    public void run() {
         for (int i = 0; i < nTrials; i++) {
             long startTime = System.currentTimeMillis();
             task.run();
@@ -56,7 +58,6 @@ public class TimedTask {
                     self.run();
                     next.run();
                 } catch (Exception e) {
-                    e.printStackTrace();
                     throw new RuntimeException(e);
                 }
             }
@@ -73,13 +74,11 @@ public class TimedTask {
                     return;
                 } catch (Exception e) {
                     System.err.printf("%s failed. Reason: %s\n", self.taskName, e.getMessage());
-                    e.printStackTrace();
                 }
                 try {
                     next.run();
                 } catch (Exception e) {
                     System.err.printf("%s failed. Reason: %s\n", next.taskName, e.getMessage());
-                    e.printStackTrace();
                     throw new RuntimeException(e);
                 }
             }
