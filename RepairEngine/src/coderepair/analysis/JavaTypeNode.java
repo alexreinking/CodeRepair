@@ -1,26 +1,30 @@
 package coderepair.analysis;
 
 import java.io.Serializable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JavaTypeNode extends JavaGraphNode implements Serializable {
     private final String className;
     private final String packageName;
-    private boolean concrete;
     private final boolean primitive;
+    private boolean concrete;
 
     public JavaTypeNode(String qualifiedName, boolean concrete) {
         this.concrete = concrete;
         this.name = qualifiedName;
-        int lastSeparator = Math.max(qualifiedName.lastIndexOf('.'), qualifiedName.lastIndexOf('/'));
-        if (lastSeparator == -1) {
-            this.className = qualifiedName;
-            this.packageName = "";
-            this.primitive = true;
-        } else {
-            this.className = qualifiedName.substring(lastSeparator + 1);
-            this.packageName = qualifiedName.substring(0, lastSeparator);
-            this.primitive = false;
-        }
+
+        Pattern packageClassSep = Pattern.compile("((?:\\w+\\.)+)?(.+)");
+        Matcher matcher = packageClassSep.matcher(this.name);
+
+        if (matcher.find()) {
+            this.className = matcher.group(2);
+            if (matcher.group(1) != null)
+                this.packageName = matcher.group(1).substring(0, matcher.group(1).length() - 1);
+            else this.packageName = "";
+        } else throw new IllegalArgumentException(String.format("'%s' is not a valid Java identifier.", qualifiedName));
+
+        this.primitive = this.packageName.isEmpty();
     }
 
     public String getClassName() {
@@ -31,12 +35,12 @@ public class JavaTypeNode extends JavaGraphNode implements Serializable {
         return packageName;
     }
 
-    public void setConcrete(boolean concrete) {
-        this.concrete = concrete;
-    }
-
     public boolean isConcrete() {
         return concrete;
+    }
+
+    public void setConcrete(boolean concrete) {
+        this.concrete = concrete;
     }
 
     public boolean isPrimitive() {

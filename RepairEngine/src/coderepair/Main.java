@@ -24,7 +24,7 @@ public class Main {
                 try {
                     JavaPLexer lexer = new JavaPLexer(new ANTLRFileStream(inFile));
                     JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
-                    graphBuilder[0] = new GraphBuilder(Arrays.asList("java.io", "java.nio"), 10.0);
+                    graphBuilder[0] = new GraphBuilder(10.0);
                     parseTree[0] = parser.javap();
                 } catch (IOException e) {
                     e.printStackTrace();
