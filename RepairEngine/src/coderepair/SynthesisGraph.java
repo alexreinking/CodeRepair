@@ -64,6 +64,10 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
                 .export(outputStream, this);
     }
 
+    public JavaGraphNode getVertexByName(String qualifiedName) {
+        return nodeManager.getTypeFromName(qualifiedName);
+    }
+
     public TreeSet<CodeSnippet> synthesize(String qualifiedName, int nRequested) {
         synthTable = new HashMap<JavaGraphNode, TreeSet<Generator>>();
         snippetTable = new HashMap<JavaGraphNode, TreeSet<CodeSnippet>>();

@@ -1,13 +1,17 @@
 package coderepair;
 
-import coderepair.analysis.*;
+import coderepair.analysis.JavaFunctionNode;
+import coderepair.analysis.JavaTypeNode;
 import coderepair.synthesis.CastSynthesizer;
 import coderepair.synthesis.MethodSynthesizer;
 import coderepair.synthesis.StaticFunctionSynthesizer;
 import coderepair.synthesis.ValueSynthesizer;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 
 public class JavaTypeBuilder implements Serializable {
     private final HashMap<String, JavaTypeNode> classTypes = new HashMap<String, JavaTypeNode>();
@@ -33,7 +37,7 @@ public class JavaTypeBuilder implements Serializable {
         ArrayList<JavaTypeNode> trueFormals = new ArrayList<JavaTypeNode>(1 + formals.size());
         trueFormals.add(owner);
         trueFormals.addAll(formals);
-        return new JavaFunctionNode(name, trueFormals, output, new MethodSynthesizer());
+        return new JavaFunctionNode(owner.getName() + "." + name, trueFormals, output, new MethodSynthesizer());
     }
 
     JavaFunctionNode makeStaticMethod(String name, JavaTypeNode owner, JavaTypeNode output, Collection<JavaTypeNode> formals) {

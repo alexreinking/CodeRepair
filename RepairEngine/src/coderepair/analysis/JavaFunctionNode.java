@@ -16,14 +16,14 @@ public class JavaFunctionNode extends JavaGraphNode implements Serializable {
     public JavaFunctionNode(String name, Collection<JavaTypeNode> formals,
                             JavaTypeNode output, JavaFunctionSynthesizer synthesizer) {
         StringJoiner args = new StringJoiner(" x ");
-        for (JavaTypeNode formal : formals) args.add(formal.getClassName());
+        for (JavaTypeNode formal : formals) args.add(formal.getName());
         inputs.addAll(formals);
 
         this.synthesizer = synthesizer;
         this.output = output;
         this.functionName = name;
         this.signature = new ArrayList<JavaTypeNode>(formals);
-        this.name = String.format("%s: (%s) -> %s", this.functionName, args.toString(), output.getClassName());
+        this.name = String.format("%s: (%s) -> %s", this.functionName, args.toString(), output.getName());
     }
 
     public int getTotalFormals() {

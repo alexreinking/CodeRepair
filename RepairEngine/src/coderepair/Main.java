@@ -73,13 +73,14 @@ public class Main {
             @Override
             public void run() {
                 graph[0].resetLocals();
-                graph[0].addLocalVariable("body", "java.lang.String");
-                graph[0].addLocalVariable("sig", "java.lang.String");
+                graph[0].addLocalVariable("regex", "java.lang.String");
+                graph[0].addLocalVariable("inputText", "java.lang.String");
+                graph[0].addLocalVariable("extantPattern", "java.util.regex.Pattern");
                 graph[0].addLocalVariable("inStream", "java.io.InputStream");
                 graph[0].addLocalVariable("outStream", "java.io.InputStream");
 
                 for (String cls : Arrays.asList("java.io.SequenceInputStream", "java.io.BufferedReader",
-                        "java.io.FileInputStream", "java.io.InputStreamReader")) {
+                        "java.io.FileInputStream", "java.io.InputStreamReader", "java.util.regex.Matcher")) {
                     System.out.println("\n============= " + cls + " =============\n");
                     for (CodeSnippet snippet : graph[0].synthesize(cls, 10))
                         System.out.printf("%6f  %s\n", snippet.cost, snippet.code);
