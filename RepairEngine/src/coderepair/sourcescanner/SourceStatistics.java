@@ -25,7 +25,9 @@ public class SourceStatistics implements Plugin {
 
     public SourceStatistics() {
         try {
-            FileInputStream fileInput = new FileInputStream("./data/graph.ser");
+            System.out.println("Loading SourceStatistics plugin.");
+
+            FileInputStream fileInput = new FileInputStream("/home/alex/Development/CodeRepair/data/graph.ser");
             ObjectInputStream in = new ObjectInputStream(fileInput);
             graph = (SynthesisGraph) in.readObject();
             in.close();
@@ -44,7 +46,7 @@ public class SourceStatistics implements Plugin {
 
     @Override
     public String getName() {
-        return "SourceStatistics";
+        return "coderepair.sourcescanner.SourceStatistics";
     }
 
     @Override
@@ -65,15 +67,29 @@ public class SourceStatistics implements Plugin {
         @Override
         public Object visitMethodInvocation(MethodInvocationTree methodInvocationTree, Void aVoid) {
             ExpressionTree methodSelect = methodInvocationTree.getMethodSelect();
-            String outputType = trees.getTypeMirror(new TreePath(getCurrentPath(), methodInvocationTree)).toString();
+            TypeMirror outputTypeMirror = trees.getTypeMirror(new TreePath(getCurrentPath(), methodInvocationTree));
+            String outputType = (outputTypeMirror == null) ? "" : outputTypeMirror.toString();
+            if (outputType.startsWith("<anonymous "))
+                outputType = outputType.substring(11, outputType.length() - 1);
             String functionName = "";
             List<String> argumentTypes = new ArrayList<String>();
-            for (ExpressionTree expressionTree : methodInvocationTree.getArguments())
-                argumentTypes.add(trees.getTypeMirror(new TreePath(getCurrentPath(), expressionTree)).toString());
+            for (ExpressionTree expressionTree : methodInvocationTree.getArguments()) {
+                TypeMirror typeMirror = trees.getTypeMirror(new TreePath(getCurrentPath(), expressionTree));
+                if (typeMirror == null) {
+                    System.err.printf("No type found for %s\n", expressionTree.toString());
+                    return super.visitMethodInvocation(methodInvocationTree, aVoid);
+                }
+                argumentTypes.add(typeMirror.toString());
+            }
 
             if (methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
                 MemberSelectTree memberSelectTree = (MemberSelectTree) methodInvocationTree.getMethodSelect();
                 TypeMirror typeMirror = trees.getTypeMirror(new TreePath(getCurrentPath(), memberSelectTree.getExpression()));
+
+                if (typeMirror == null) {
+                    System.err.printf("No type found for %s\n", memberSelectTree.getExpression().toString());
+                    return super.visitMethodInvocation(methodInvocationTree, aVoid);
+                }
 
                 String ownerType = typeMirror.toString();
                 argumentTypes.add(0, ownerType);
@@ -91,7 +107,14 @@ public class SourceStatistics implements Plugin {
 
         @Override
         public Object visitNewClass(NewClassTree newClassTree, Void aVoid) {
-            String className = trees.getTypeMirror(new TreePath(getCurrentPath(), newClassTree)).toString();
+            TypeMirror typeMirror = trees.getTypeMirror(new TreePath(getCurrentPath(), newClassTree));
+            if (typeMirror == null) {
+                System.err.printf("No type found for %s\n", newClassTree.toString());
+                return super.visitNewClass(newClassTree, aVoid);
+            }
+            String className = typeMirror.toString();
+            if (className.startsWith("<anonymous "))
+                className = className.substring(11, className.length() - 1);
             List<String> argumentTypes = new ArrayList<String>();
             for (ExpressionTree expressionTree : newClassTree.getArguments())
                 argumentTypes.add(trees.getTypeMirror(new TreePath(getCurrentPath(), expressionTree)).toString());
@@ -104,10 +127,11 @@ public class SourceStatistics implements Plugin {
             String formalName = String.format("%s: (%s) -> %s",
                     functionName, String.join(" x ", argumentTypes), outputType);
 
-            JavaGraphNode outputVertex = graph.getVertexByName(outputType);
             JavaFunctionNode functionNode = null;
 
             try {
+                JavaGraphNode outputVertex = graph.getVertexByName(outputType);
+
                 for (JavaGraphNode generatorNode : Graphs.successorListOf(graph, outputVertex))
                     if (generatorNode instanceof JavaFunctionNode) {
                         JavaFunctionNode currentCandidate = (JavaFunctionNode) generatorNode;
@@ -125,10 +149,10 @@ public class SourceStatistics implements Plugin {
                         }
                     }
 
-                if (functionNode != null)
-                    System.out.printf("       Found:\t%s\n", functionNode.getName());
-                else
-                    System.err.printf("     Missing:\t%s\n", formalName);
+//                if (functionNode != null)
+//                    System.out.printf("       Found:\t%s\n", functionNode.getName());
+//                else
+//                    System.err.printf("     Missing:\t%s\n", formalName);
             } catch (IllegalArgumentException e) {
                 System.err.printf("No output type %s found in graph.%n", outputType);
             }

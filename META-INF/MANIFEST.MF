@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Class-Path: antlr-4.4.1-dev-complete.jar jgrapht-core-0.9.0.jar jgraph
+ t-demo-0.9.0.jar jgrapht-core-0.9.0-javadoc.jar jgrapht-core-0.9.0-so
+ urces.jar jgraphx-2.0.0.1.jar jgrapht-ext-0.9.0.jar jgraph-5.13.0.0.j
+ ar tools.jar
+
