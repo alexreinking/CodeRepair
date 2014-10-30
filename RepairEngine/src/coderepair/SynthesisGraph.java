@@ -49,6 +49,8 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
     private transient HashMap<JavaGraphNode, TreeSet<Generator>> synthTable;
     private transient HashMap<JavaGraphNode, TreeSet<CodeSnippet>> snippetTable;
 
+    private transient HashMap<JavaGraphNode, Double> synthCost;
+
     public SynthesisGraph(JavaTypeBuilder nodeManager) {
         this(nodeManager, 10.0);
     }
@@ -71,6 +73,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
     public TreeSet<CodeSnippet> synthesize(String qualifiedName, int nRequested) {
         synthTable = new HashMap<JavaGraphNode, TreeSet<Generator>>();
         snippetTable = new HashMap<JavaGraphNode, TreeSet<CodeSnippet>>();
+        synthCost = new HashMap<JavaGraphNode, Double>();
         JavaGraphNode requestedType = nodeManager.getTypeFromName(qualifiedName);
         satisfyType(requestedType, 0.0);
 
@@ -163,9 +166,13 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
 
     private boolean satisfyType(JavaGraphNode startType, double cost) {
         if (cost > costLimit) return false;
+        if (cost < synthCost.getOrDefault(startType, Double.MAX_VALUE))
+            synthTable.remove(startType);
+
         if (!synthTable.containsKey(startType)) {
             TreeSet<Generator> fragments = new TreeSet<Generator>();
             synthTable.put(startType, fragments);
+            synthCost.put(startType, cost);
 
             try {
                 for (JavaGraphNode funcType : Graphs.successorListOf(this, startType)) {
