@@ -24,7 +24,7 @@ public class JavaTypeNode extends JavaGraphNode implements Serializable {
             else this.packageName = "";
         } else throw new IllegalArgumentException(String.format("'%s' is not a valid Java identifier.", qualifiedName));
 
-        this.primitive = this.packageName.isEmpty();
+        this.primitive = this.packageName.isEmpty() || this.packageName.startsWith("java.lang");
     }
 
     public String getClassName() {

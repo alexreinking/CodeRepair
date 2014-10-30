@@ -5,6 +5,7 @@ import coderepair.analysis.JavaGraphNode;
 import coderepair.analysis.JavaTypeNode;
 import coderepair.antlr.JavaPBaseVisitor;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.jetbrains.generate.tostring.inspection.AbstractToStringInspection;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +51,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
         nodeManager = new JavaTypeBuilder();
         fnFlowGraph = new SynthesisGraph(nodeManager, costLimit);
-        
+
         List<String> primNames = Arrays.asList("byte", "short", "int", "long", "float", "double", "boolean", "char");
         for (String primType : primNames) {
             addTypeToGraph(nodeManager.getTypeFromName(primType));
@@ -124,7 +125,11 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                         }
                     }
                 } else if (memberDeclarationContext.fieldDeclaration() != null) {
-                    // TODO: fill in for public constants
+                    String typeName = memberDeclarationContext.fieldDeclaration().typeName().getText();
+                    String valueName = classNode.getName() + "." + memberDeclarationContext.fieldDeclaration().identifier().getText();
+                    JavaTypeNode valueType = nodeManager.getTypeFromName(typeName);
+                    if (valueType != null && addTypeToGraph(valueType) && !valueType.isPrimitive())
+                        methods.add(nodeManager.makeValue(valueName, typeName));
                 } else {
                     System.err.println("Warning: unknown class member " + memberDeclarationContext.getText());
                 }
@@ -133,22 +138,19 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
         return fnFlowGraph;
     }
 
-    private boolean addTypeToGraph(JavaGraphNode type) {
+    private boolean addTypeToGraph(JavaTypeNode type) {
         if (type.getName().contains("$"))
             return false;
-        if (type instanceof JavaTypeNode) {
-            JavaTypeNode actualType = (JavaTypeNode) type;
-            if (actualType.isPrimitive()) {
-                fnFlowGraph.addVertex(actualType);
+        if (type.isPrimitive()) {
+            fnFlowGraph.addVertex(type);
+            return true;
+        }
+        String packageName = type.getPackageName();
+        for (String okPackage : allowedPackages)
+            if (packageName.startsWith(okPackage) || allowedPackages.size() == 1) {
+                fnFlowGraph.addVertex(type);
                 return true;
             }
-            String packageName = actualType.getPackageName();
-            for (String okPackage : allowedPackages)
-                if (packageName.startsWith(okPackage) || allowedPackages.size() == 1) {
-                    fnFlowGraph.addVertex(type);
-                    return true;
-                }
-        }
         return false;
     }
 }
