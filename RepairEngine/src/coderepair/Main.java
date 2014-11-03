@@ -78,9 +78,9 @@ public class Main {
                 graph[0].addLocalVariable("inStream", "java.io.InputStream");
                 graph[0].addLocalVariable("outStream", "java.io.InputStream");
 
-                for (String cls : Arrays.asList("java.io.BufferedReader", "java.util.regex.Matcher")) {
+                for (String cls : Arrays.asList("java.io.BufferedReader")) {
                     System.out.println("\n============= " + cls + " =============\n");
-//                    for (CodeSnippet snippet : graph[0].synthesize(cls, 10))
+                    for (CodeSnippet snippet : graph[0].synthesize(cls, 10));
 //                        System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
                 }
             }

@@ -76,6 +76,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         synthCost = new HashMap<JavaGraphNode, Double>();
 
         JavaGraphNode requestedType = nodeManager.getTypeFromName(qualifiedName);
+        depth = 0;
         satisfyType(requestedType, 0.0);
 
         Iterator<Map.Entry<JavaGraphNode, TreeSet<Generator>>> iterator = synthTable.entrySet().iterator();
@@ -83,7 +84,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
             if (iterator.next().getValue().isEmpty())
                 iterator.remove();
 
-        dumpTable();
+//        dumpTable();
         return getExpression(requestedType, costLimit, nRequested);
     }
 
@@ -165,13 +166,17 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         }
     }
 
-    private boolean satisfyType(JavaGraphNode startType, double cost) {
-        if (cost > costLimit) return false;
-        if (cost < synthCost.getOrDefault(startType, Double.MAX_VALUE)) {
-            synthCost.put(startType, cost);
+    private String tabbing(int depth) {
+        return new String(new char [depth]).replace("\0", "    ");
+    }
 
-            TreeSet<Generator> fragments = synthTable.getOrDefault(startType, new TreeSet<Generator>());
-            synthTable.put(startType, fragments);
+    private transient int depth;
+    private boolean satisfyType(JavaGraphNode startType, double cost) {
+        TreeSet<Generator> fragments = synthTable.computeIfAbsent(startType, n -> new TreeSet<>());
+        System.out.println(tabbing(depth) + startType.getName());
+        depth++;
+        if (costLimit > cost && cost < synthCost.getOrDefault(startType, Double.MAX_VALUE)) {
+            synthCost.put(startType, cost);
 
             try {
                 for (JavaGraphNode funcType : Graphs.successorListOf(this, startType)) {
@@ -184,6 +189,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
                 throw e;
             }
         }
+        depth--;
         return !synthTable.get(startType).isEmpty();
     }
 
