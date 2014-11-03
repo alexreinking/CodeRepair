@@ -18,6 +18,7 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SourceStatistics implements Plugin {
 
@@ -32,13 +33,7 @@ public class SourceStatistics implements Plugin {
             graph = (SynthesisGraph) in.readObject();
             in.close();
             fileInput.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
@@ -72,7 +67,7 @@ public class SourceStatistics implements Plugin {
             if (outputType.startsWith("<anonymous "))
                 outputType = outputType.substring(11, outputType.length() - 1);
             String functionName = "";
-            List<String> argumentTypes = new ArrayList<String>();
+            List<String> argumentTypes = new ArrayList<>();
             for (ExpressionTree expressionTree : methodInvocationTree.getArguments()) {
                 TypeMirror typeMirror = trees.getTypeMirror(new TreePath(getCurrentPath(), expressionTree));
                 if (typeMirror == null) {
@@ -115,9 +110,7 @@ public class SourceStatistics implements Plugin {
             String className = typeMirror.toString();
             if (className.startsWith("<anonymous "))
                 className = className.substring(11, className.length() - 1);
-            List<String> argumentTypes = new ArrayList<String>();
-            for (ExpressionTree expressionTree : newClassTree.getArguments())
-                argumentTypes.add(trees.getTypeMirror(new TreePath(getCurrentPath(), expressionTree)).toString());
+            List<String> argumentTypes = newClassTree.getArguments().stream().map(expressionTree -> trees.getTypeMirror(new TreePath(getCurrentPath(), expressionTree)).toString()).collect(Collectors.toList());
             matchFunction("new " + className, className, argumentTypes);
             return super.visitNewClass(newClassTree, aVoid);
         }
@@ -136,9 +129,7 @@ public class SourceStatistics implements Plugin {
                     if (generatorNode instanceof JavaFunctionNode) {
                         JavaFunctionNode currentCandidate = (JavaFunctionNode) generatorNode;
                         if (functionName.equals(currentCandidate.getFunctionName())) {
-                            List<String> actualTypes = new ArrayList<String>();
-                            for (JavaTypeNode javaTypeNode : currentCandidate.getSignature())
-                                actualTypes.add(javaTypeNode.getName());
+                            List<String> actualTypes = currentCandidate.getSignature().stream().map(JavaTypeNode::getName).collect(Collectors.toList());
 
                             if (formalName.equals(currentCandidate.getName())) {
                                 functionNode = currentCandidate;

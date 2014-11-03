@@ -6,13 +6,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-/**
- * Created by alexreinking on 10/6/14.
- */
 public class TimedTask {
     private final String taskName;
     private final Runnable task;
-    private final ArrayList<Long> times = new ArrayList<Long>();
+    private final ArrayList<Long> times = new ArrayList<>();
     private int nTrials = 1;
 
     public TimedTask(String taskName, Runnable task) {
@@ -38,49 +35,41 @@ public class TimedTask {
         try {
             if (!taskName.isEmpty()) {
                 PrintWriter writer = new PrintWriter(taskName + ".txt", "UTF-8");
-                for (Long time : times) writer.println(time);
+                times.forEach(writer::println);
                 writer.close();
                 System.out.printf("%s took %dms (best of %d)\n", taskName, times.get(0), nTrials);
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
     }
 
     public TimedTask andThen(final TimedTask next) {
         final TimedTask self = this;
-        return new TimedTask("", new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    self.run();
-                    next.run();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+        return new TimedTask("", () -> {
+            try {
+                self.run();
+                next.run();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         });
     }
 
     public TimedTask orElse(final TimedTask next) {
         final TimedTask self = this;
-        return new TimedTask("", new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    self.run();
-                    return;
-                } catch (Exception e) {
-                    System.err.printf("%s failed. Reason: %s\n", self.taskName, e.getMessage());
-                }
-                try {
-                    next.run();
-                } catch (Exception e) {
-                    System.err.printf("%s failed. Reason: %s\n", next.taskName, e.getMessage());
-                    throw new RuntimeException(e);
-                }
+        return new TimedTask("", () -> {
+            try {
+                self.run();
+                return;
+            } catch (Exception e) {
+                System.err.printf("%s failed. Reason: %s\n", self.taskName, e.getMessage());
+            }
+            try {
+                next.run();
+            } catch (Exception e) {
+                System.err.printf("%s failed. Reason: %s\n", next.taskName, e.getMessage());
+                throw new RuntimeException(e);
             }
         });
     }

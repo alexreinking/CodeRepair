@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.HashMap;
 
 public class JavaTypeBuilder implements Serializable {
-    private final HashMap<String, JavaTypeNode> classTypes = new HashMap<String, JavaTypeNode>();
+    private final HashMap<String, JavaTypeNode> classTypes = new HashMap<>();
 
     JavaTypeNode getTypeFromName(String qualifiedName) {
         if (classTypes.containsKey(qualifiedName))
@@ -34,7 +34,7 @@ public class JavaTypeBuilder implements Serializable {
     }
 
     JavaFunctionNode makeMethod(String name, JavaTypeNode owner, JavaTypeNode output, Collection<JavaTypeNode> formals) {
-        ArrayList<JavaTypeNode> trueFormals = new ArrayList<JavaTypeNode>(1 + formals.size());
+        ArrayList<JavaTypeNode> trueFormals = new ArrayList<>(1 + formals.size());
         trueFormals.add(owner);
         trueFormals.addAll(formals);
         return new JavaFunctionNode(owner.getName() + "." + name, trueFormals, output, new MethodSynthesizer());
@@ -47,7 +47,7 @@ public class JavaTypeBuilder implements Serializable {
     JavaFunctionNode makeValue(String value, String typeName) {
         JavaTypeNode valType = classTypes.get(typeName);
         if (valType == null) throw new RuntimeException("No such type: " + typeName);
-        return new JavaFunctionNode(value, new ArrayList<JavaTypeNode>(), valType, new ValueSynthesizer());
+        return new JavaFunctionNode(value, new ArrayList<>(), valType, new ValueSynthesizer());
     }
 
     JavaFunctionNode makeField(String fieldName, JavaTypeNode valType, JavaTypeNode owner) {

@@ -10,7 +10,7 @@ public class JavaFunctionNode extends JavaGraphNode implements Serializable {
     private final JavaFunctionSynthesizer synthesizer;
     private final String functionName;
     private final List<JavaTypeNode> signature;
-    private final HashSet<JavaTypeNode> inputs = new HashSet<JavaTypeNode>();
+    private final HashSet<JavaTypeNode> inputs = new HashSet<>();
     private final JavaTypeNode output;
 
     public JavaFunctionNode(String name, Collection<JavaTypeNode> formals,
@@ -22,7 +22,7 @@ public class JavaFunctionNode extends JavaGraphNode implements Serializable {
         this.synthesizer = synthesizer;
         this.output = output;
         this.functionName = name;
-        this.signature = new ArrayList<JavaTypeNode>(formals);
+        this.signature = new ArrayList<>(formals);
         this.name = String.format("%s: (%s) -> %s", this.functionName, args.toString(), output.getName());
     }
 

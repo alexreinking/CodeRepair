@@ -5,7 +5,6 @@ import coderepair.analysis.JavaGraphNode;
 import coderepair.analysis.JavaTypeNode;
 import coderepair.antlr.JavaPBaseVisitor;
 import org.antlr.v4.runtime.misc.NotNull;
-import org.jetbrains.generate.tostring.inspection.AbstractToStringInspection;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,18 +14,18 @@ import java.util.List;
 import static coderepair.antlr.JavaPParser.*;
 
 public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
-    private final HashSet<String> allowedPackages = new HashSet<String>();
-    private final HashSet<JavaFunctionNode> methods = new HashSet<JavaFunctionNode>();
+    private final HashSet<String> allowedPackages = new HashSet<>();
+    private final HashSet<JavaFunctionNode> methods = new HashSet<>();
     private final double costLimit;
     private SynthesisGraph fnFlowGraph = null;
     private JavaTypeBuilder nodeManager;
 
     public GraphBuilder() {
-        this(new ArrayList<String>(), 10.0);
+        this(new ArrayList<>(), 10.0);
     }
 
     public GraphBuilder(double costLimit) {
-        this(new ArrayList<String>(), costLimit);
+        this(new ArrayList<>(), costLimit);
     }
 
     public GraphBuilder(List<String> packages) {
@@ -58,8 +57,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
             addTypeToGraph(nodeManager.getTypeFromName(primType + "[]"));
         }
 
-        for (ClassDeclarationContext classDeclarationContext : ctx.classDeclaration())
-            visitClassDeclaration(classDeclarationContext);
+        ctx.classDeclaration().forEach(this::visitClassDeclaration);
 
         for (JavaFunctionNode method : methods) {
             fnFlowGraph.addVertex(method);
@@ -79,7 +77,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
             classNode.setConcrete(false);
 
         if (addTypeToGraph(classNode)) {
-            List<TypeNameContext> superTypes = new ArrayList<TypeNameContext>();
+            List<TypeNameContext> superTypes = new ArrayList<>();
             if (ctx.extension() != null && ctx.extension().typeList() != null)
                 superTypes.addAll(ctx.extension().typeList().typeName());
             if (ctx.implementation() != null && ctx.implementation().typeList() != null)
@@ -95,7 +93,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                 MethodDeclarationContext method = memberDeclarationContext.methodDeclaration();
                 if (method != null) {
                     boolean badFormal = false;
-                    List<JavaTypeNode> formals = new ArrayList<JavaTypeNode>();
+                    List<JavaTypeNode> formals = new ArrayList<>();
                     if (method.typeList() != null) {
                         for (TypeNameContext formal : method.typeList().typeName()) {
                             JavaTypeNode formalType = nodeManager.getTypeFromName(formal.getText());

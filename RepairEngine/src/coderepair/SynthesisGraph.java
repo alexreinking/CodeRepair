@@ -16,35 +16,27 @@ import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.*;
+import java.util.stream.Collectors;
 
-public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, DefaultWeightedEdge> implements Serializable {
-    private static final IntegerNameProvider<JavaGraphNode> idProvider = new IntegerNameProvider<JavaGraphNode>();
-
-    private static final VertexNameProvider<JavaGraphNode> nameProvider = new VertexNameProvider<JavaGraphNode>() {
-        @Override
-        public String getVertexName(JavaGraphNode type) {
-            return type.getName();
+public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, DefaultWeightedEdge>
+        implements Serializable {
+    private static final IntegerNameProvider<JavaGraphNode> idProvider = new IntegerNameProvider<>();
+    private static final VertexNameProvider<JavaGraphNode> nameProvider = JavaGraphNode::getName;
+    private static final ComponentAttributeProvider<JavaGraphNode> colorProvider = component -> {
+        if (component instanceof JavaTypeNode) {
+            HashMap<String, String> attrMap = new HashMap<>();
+            attrMap.put("fontcolor", "white");
+            attrMap.put("fillcolor", "blue");
+            attrMap.put("shape", "box");
+            attrMap.put("style", "filled");
+            return attrMap;
         }
-    };
-
-    private static final ComponentAttributeProvider<JavaGraphNode> colorProvider = new ComponentAttributeProvider<JavaGraphNode>() {
-        @Override
-        public Map<String, String> getComponentAttributes(JavaGraphNode component) {
-            if (component instanceof JavaTypeNode) {
-                HashMap<String, String> attrMap = new HashMap<String, String>();
-                attrMap.put("fontcolor", "white");
-                attrMap.put("fillcolor", "blue");
-                attrMap.put("shape", "box");
-                attrMap.put("style", "filled");
-                return attrMap;
-            }
-            return null;
-        }
+        return null;
     };
 
     private final JavaTypeBuilder nodeManager;
     private final double costLimit;
-    private final ArrayList<JavaGraphNode> currentLocals = new ArrayList<JavaGraphNode>();
+    private final ArrayList<JavaGraphNode> currentLocals = new ArrayList<>();
 
     private transient HashMap<JavaGraphNode, TreeSet<Generator>> synthTable;
     private transient HashMap<JavaGraphNode, TreeSet<CodeSnippet>> snippetTable;
@@ -71,12 +63,11 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
     }
 
     public TreeSet<CodeSnippet> synthesize(String qualifiedName, int nRequested) {
-        synthTable = new HashMap<JavaGraphNode, TreeSet<Generator>>();
-        snippetTable = new HashMap<JavaGraphNode, TreeSet<CodeSnippet>>();
-        synthCost = new HashMap<JavaGraphNode, Double>();
+        synthTable = new HashMap<>();
+        snippetTable = new HashMap<>();
+        synthCost = new HashMap<>();
 
         JavaGraphNode requestedType = nodeManager.getTypeFromName(qualifiedName);
-        depth = 0;
         satisfyType(requestedType, 0.0);
 
         Iterator<Map.Entry<JavaGraphNode, TreeSet<Generator>>> iterator = synthTable.entrySet().iterator();
@@ -90,24 +81,25 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
 
     private TreeSet<CodeSnippet> getExpression(JavaGraphNode requestedType, double remaining, int nRequested) {
         if (synthTable.get(requestedType) == null)
-            return new TreeSet<CodeSnippet>();
+            return new TreeSet<>();
         if (snippetTable.containsKey(requestedType))
             return snippetTable.get(requestedType);
 
-        TreeSet<CodeSnippet> snippets = new TreeSet<CodeSnippet>();
-        for (Generator generator : synthTable.get(requestedType))
-            if (generator.cost < remaining) {
-                double nextCost = remaining - generator.cost;
-                if (generator.type instanceof JavaFunctionNode) {
-                    JavaFunctionNode fGen = (JavaFunctionNode) generator.type;
-                    List<TreeSet<CodeSnippet>> choices = new ArrayList<TreeSet<CodeSnippet>>();
-                    for (JavaGraphNode input : fGen.getSignature())
-                        choices.add(getExpression(input, nextCost, nRequested));
-                    addFunctionPossibilities(
-                            snippets, fGen, generator.cost, choices, 0,
-                            new CodeSnippet[choices.size()], nRequested);
-                }
+        TreeSet<CodeSnippet> snippets = new TreeSet<>();
+        synthTable.get(requestedType).stream().filter(generator -> generator.cost < remaining).forEach(generator -> {
+            double nextCost = remaining - generator.cost;
+            if (generator.type instanceof JavaFunctionNode) {
+                JavaFunctionNode fGen = (JavaFunctionNode) generator.type;
+
+                List<TreeSet<CodeSnippet>> choices =
+                        fGen.getSignature().stream().map(input -> getExpression(input, nextCost, nRequested))
+                                .collect(Collectors.toList());
+
+                addFunctionPossibilities(
+                        snippets, fGen, generator.cost, choices, 0,
+                        new CodeSnippet[choices.size()], nRequested);
             }
+        });
 
         if (!snippets.isEmpty())
             snippetTable.put(requestedType, snippets);
@@ -166,39 +158,29 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         }
     }
 
-    private String tabbing(int depth) {
-        return new String(new char [depth]).replace("\0", "    ");
-    }
 
-    private transient int depth;
     private boolean satisfyType(JavaGraphNode startType, double cost) {
-        TreeSet<Generator> fragments = synthTable.computeIfAbsent(startType, n -> new TreeSet<>());
-        System.out.println(tabbing(depth) + startType.getName());
-        depth++;
-        if (costLimit > cost && cost < synthCost.getOrDefault(startType, Double.MAX_VALUE)) {
-            synthCost.put(startType, cost);
+        if (cost > costLimit) return false;
 
-            try {
-                for (JavaGraphNode funcType : Graphs.successorListOf(this, startType)) {
-                    double edgeWeight = getEdgeWeight(getEdge(startType, funcType));
-                    if (satisfyFunction(funcType, cost + edgeWeight))
-                        fragments.add(new Generator(funcType, edgeWeight));
-                }
-            } catch (IllegalArgumentException e) {
-                System.err.println("Failed to satisfy " + startType.getName());
-                throw e;
-            }
+        TreeSet<Generator> fragments = synthTable.computeIfAbsent(startType, t -> new TreeSet<>());
+        if (cost < synthCost.getOrDefault(startType, Double.MAX_VALUE)) {
+            Graphs.successorListOf(this, startType).stream().filter(funcType -> {
+                double functionCost = cost + getWeight(startType, funcType);
+                return functionCost <= costLimit
+                        && Graphs.successorListOf(this, funcType).stream()
+                        .allMatch(inputType -> satisfyType(inputType,
+                                functionCost + getWeight(funcType, inputType)));
+            }).forEach(funcType -> {
+                fragments.add(new Generator(funcType, getWeight(startType, funcType)));
+                synthCost.put(startType, cost);
+            });
         }
-        depth--;
+
         return !synthTable.get(startType).isEmpty();
     }
 
-    private boolean satisfyFunction(JavaGraphNode funcType, double cost) {
-        if (cost > costLimit) return false;
-        boolean satisfied = true;
-        for (JavaGraphNode inputType : Graphs.successorListOf(this, funcType))
-            satisfied &= satisfyType(inputType, cost + getEdgeWeight(getEdge(funcType, inputType)));
-        return satisfied;
+    private double getWeight(JavaGraphNode startType, JavaGraphNode funcType) {
+        return getEdgeWeight(getEdge(startType, funcType));
     }
 
     public void addLocalVariable(String value, String qualifiedType) {
@@ -210,7 +192,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
     }
 
     public void resetLocals() {
-        for (JavaGraphNode currentLocal : currentLocals) removeVertex(currentLocal);
+        currentLocals.forEach(this::removeVertex);
         currentLocals.clear();
     }
 

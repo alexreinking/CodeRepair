@@ -3,6 +3,7 @@ package coderepair.synthesis;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MethodSynthesizer extends JavaFunctionSynthesizer implements Serializable {
     @Override
@@ -15,8 +16,6 @@ public class MethodSynthesizer extends JavaFunctionSynthesizer implements Serial
 
     private List<String> getStrings(List<CodeSnippet> snippets)
     {
-        List<String> args = new ArrayList<String>(snippets.size());
-        for (CodeSnippet snippet : snippets) args.add(snippet.code);
-        return args;
+        return new ArrayList<>(snippets.stream().map(snippet -> snippet.code).collect(Collectors.toList()));
     }
 }
