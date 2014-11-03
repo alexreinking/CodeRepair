@@ -166,13 +166,11 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
 
     private boolean satisfyType(JavaGraphNode startType, double cost) {
         if (cost > costLimit) return false;
-        if (cost < synthCost.getOrDefault(startType, Double.MAX_VALUE))
-            synthTable.remove(startType);
-
-        if (!synthTable.containsKey(startType)) {
-            TreeSet<Generator> fragments = new TreeSet<Generator>();
-            synthTable.put(startType, fragments);
+        if (cost < synthCost.getOrDefault(startType, Double.MAX_VALUE)) {
             synthCost.put(startType, cost);
+
+            TreeSet<Generator> fragments = synthTable.getOrDefault(startType, new TreeSet<Generator>());
+            synthTable.put(startType, fragments);
 
             try {
                 for (JavaGraphNode funcType : Graphs.successorListOf(this, startType)) {

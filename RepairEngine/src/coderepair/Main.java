@@ -73,9 +73,8 @@ public class Main {
             @Override
             public void run() {
                 graph[0].resetLocals();
-                graph[0].addLocalVariable("regex", "java.lang.String");
+                graph[0].addLocalVariable("fileName", "java.lang.String");
                 graph[0].addLocalVariable("inputText", "java.lang.String");
-                graph[0].addLocalVariable("extantPattern", "java.util.regex.Pattern");
                 graph[0].addLocalVariable("inStream", "java.io.InputStream");
                 graph[0].addLocalVariable("outStream", "java.io.InputStream");
 
