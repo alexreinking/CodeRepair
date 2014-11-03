@@ -74,6 +74,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         synthTable = new HashMap<JavaGraphNode, TreeSet<Generator>>();
         snippetTable = new HashMap<JavaGraphNode, TreeSet<CodeSnippet>>();
         synthCost = new HashMap<JavaGraphNode, Double>();
+
         JavaGraphNode requestedType = nodeManager.getTypeFromName(qualifiedName);
         satisfyType(requestedType, 0.0);
 
@@ -82,7 +83,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
             if (iterator.next().getValue().isEmpty())
                 iterator.remove();
 
-//        dumpTable();
+        dumpTable();
         return getExpression(requestedType, costLimit, nRequested);
     }
 
@@ -115,10 +116,10 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
     private void addSnippet(TreeSet<CodeSnippet> snippets, CodeSnippet poss, int nRequested) {
         if (poss.cost <= costLimit)
             if (snippets.size() >= nRequested) {
-                CodeSnippet better = snippets.pollLast();
-                if (better == null) return;
-                if (poss.cost < better.cost) better = poss;
-                snippets.add(better);
+                CodeSnippet worstInSet = snippets.pollLast();
+                if (worstInSet == null) return;
+                if (poss.compareTo(worstInSet) < 0) worstInSet = poss;
+                snippets.add(worstInSet);
             } else {
                 snippets.add(poss);
             }
@@ -159,7 +160,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         for (Map.Entry<JavaGraphNode, TreeSet<Generator>> entry : synthTable.entrySet()) {
             System.out.println("Generators for " + entry.getKey().getName() + ":");
             for (Generator fragment : entry.getValue())
-                System.out.printf("\t%s:%s%n", fragment.type.getName(), fragment.cost);
+                System.out.printf("\t%6f  %s%n", fragment.cost, fragment.type.getName());
             System.out.println();
         }
     }

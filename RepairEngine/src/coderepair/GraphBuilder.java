@@ -124,12 +124,19 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                             methods.add(newFunc);
                         }
                     }
-                } else if (memberDeclarationContext.fieldDeclaration() != null) {
+                } else if (memberDeclarationContext.fieldDeclaration() != null
+                        && memberDeclarationContext.fieldDeclaration().modifiers().STATIC() != null) {
                     String typeName = memberDeclarationContext.fieldDeclaration().typeName().getText();
                     String valueName = classNode.getName() + "." + memberDeclarationContext.fieldDeclaration().identifier().getText();
                     JavaTypeNode valueType = nodeManager.getTypeFromName(typeName);
                     if (valueType != null && addTypeToGraph(valueType) && !valueType.isPrimitive())
                         methods.add(nodeManager.makeValue(valueName, typeName));
+                } else if(memberDeclarationContext.fieldDeclaration() != null) {
+                    String typeName = memberDeclarationContext.fieldDeclaration().typeName().getText();
+                    String fieldName = memberDeclarationContext.fieldDeclaration().identifier().getText();
+                    JavaTypeNode valueType = nodeManager.getTypeFromName(typeName);
+                    if (valueType != null && addTypeToGraph(valueType) && !valueType.isPrimitive())
+                        methods.add(nodeManager.makeField(fieldName, valueType, classNode));
                 } else {
                     System.err.println("Warning: unknown class member " + memberDeclarationContext.getText());
                 }

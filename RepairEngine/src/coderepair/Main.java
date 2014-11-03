@@ -24,7 +24,7 @@ public class Main {
                 try {
                     JavaPLexer lexer = new JavaPLexer(new ANTLRFileStream(inFile));
                     JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
-                    graphBuilder[0] = new GraphBuilder(10.0);
+                    graphBuilder[0] = new GraphBuilder(5.5);
                     parseTree[0] = parser.javap();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -78,11 +78,10 @@ public class Main {
                 graph[0].addLocalVariable("inStream", "java.io.InputStream");
                 graph[0].addLocalVariable("outStream", "java.io.InputStream");
 
-                for (String cls : Arrays.asList("java.io.SequenceInputStream", "java.io.BufferedReader",
-                        "java.io.FileInputStream", "java.io.InputStreamReader", "java.util.regex.Matcher")) {
+                for (String cls : Arrays.asList("java.io.BufferedReader", "java.util.regex.Matcher")) {
                     System.out.println("\n============= " + cls + " =============\n");
-                    for (CodeSnippet snippet : graph[0].synthesize(cls, 10))
-                        System.out.printf("%6f  %s\n", snippet.cost, snippet.code);
+//                    for (CodeSnippet snippet : graph[0].synthesize(cls, 10))
+//                        System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
                 }
             }
         });

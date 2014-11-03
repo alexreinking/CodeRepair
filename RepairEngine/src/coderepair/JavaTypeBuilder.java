@@ -44,9 +44,13 @@ public class JavaTypeBuilder implements Serializable {
         return new JavaFunctionNode(owner.getName() + "." + name, formals, output, new StaticFunctionSynthesizer());
     }
 
-    public JavaFunctionNode makeValue(String value, String typeName) {
+    JavaFunctionNode makeValue(String value, String typeName) {
         JavaTypeNode valType = classTypes.get(typeName);
         if (valType == null) throw new RuntimeException("No such type: " + typeName);
         return new JavaFunctionNode(value, new ArrayList<JavaTypeNode>(), valType, new ValueSynthesizer());
+    }
+
+    JavaFunctionNode makeField(String fieldName, JavaTypeNode valType, JavaTypeNode owner) {
+        return new JavaFunctionNode(fieldName, Arrays.asList(owner), valType, new ValueSynthesizer());
     }
 }
