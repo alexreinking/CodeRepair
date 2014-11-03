@@ -59,11 +59,11 @@ public class Main {
         TimedTask synthesize = new TimedTask("Synthesis", () -> {
             graph[0].resetLocals();
             graph[0].addLocalVariable("fileName", "java.lang.String");
-//            graph[0].addLocalVariable("inputText", "java.lang.String");
-//            graph[0].addLocalVariable("inStream", "java.io.InputStream");
-//            graph[0].addLocalVariable("outStream", "java.io.InputStream");
+            graph[0].addLocalVariable("inputText", "java.lang.String");
+            graph[0].addLocalVariable("inStream", "java.io.InputStream");
+            graph[0].addLocalVariable("outStream", "java.io.InputStream");
 
-            for (String cls : Arrays.asList("java.io.BufferedReader")) {
+            for (String cls : Arrays.asList("java.io.BufferedReader", "java.util.regex.Matcher")) {
                 System.out.println("\n============= " + cls + " =============\n");
                 for (CodeSnippet snippet : graph[0].synthesize(cls, 10))
                     System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
