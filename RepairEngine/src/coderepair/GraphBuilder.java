@@ -16,24 +16,14 @@ import static coderepair.antlr.JavaPParser.*;
 public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     private final HashSet<String> allowedPackages = new HashSet<>();
     private final HashSet<JavaFunctionNode> methods = new HashSet<>();
-    private final double costLimit;
     private SynthesisGraph fnFlowGraph = null;
     private JavaTypeBuilder nodeManager;
 
     public GraphBuilder() {
-        this(new ArrayList<>(), 10.0);
-    }
-
-    public GraphBuilder(double costLimit) {
-        this(new ArrayList<>(), costLimit);
+        this(new ArrayList<>());
     }
 
     public GraphBuilder(List<String> packages) {
-        this(packages, 10.0);
-    }
-
-    public GraphBuilder(List<String> packages, double costLimit) {
-        this.costLimit = costLimit;
         allowedPackages.addAll(packages);
         allowedPackages.add("java.lang");
     }
@@ -49,7 +39,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     @Override
     public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
         nodeManager = new JavaTypeBuilder();
-        fnFlowGraph = new SynthesisGraph(nodeManager, costLimit);
+        fnFlowGraph = new SynthesisGraph(nodeManager);
 
         List<String> primNames = Arrays.asList("byte", "short", "int", "long", "float", "double", "boolean", "char");
         for (String primType : primNames) {
@@ -129,7 +119,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                     JavaTypeNode valueType = nodeManager.getTypeFromName(typeName);
                     if (valueType != null && addTypeToGraph(valueType) && !valueType.isPrimitive())
                         methods.add(nodeManager.makeValue(valueName, typeName));
-                } else if(memberDeclarationContext.fieldDeclaration() != null) {
+                } else if (memberDeclarationContext.fieldDeclaration() != null) {
                     String typeName = memberDeclarationContext.fieldDeclaration().typeName().getText();
                     String fieldName = memberDeclarationContext.fieldDeclaration().identifier().getText();
                     JavaTypeNode valueType = nodeManager.getTypeFromName(typeName);

@@ -2,10 +2,7 @@ package coderepair;
 
 import coderepair.analysis.JavaFunctionNode;
 import coderepair.analysis.JavaTypeNode;
-import coderepair.synthesis.CastSynthesizer;
-import coderepair.synthesis.MethodSynthesizer;
-import coderepair.synthesis.StaticFunctionSynthesizer;
-import coderepair.synthesis.ValueSynthesizer;
+import coderepair.synthesis.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,7 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
-public class JavaTypeBuilder implements Serializable {
+class JavaTypeBuilder implements Serializable {
     private final HashMap<String, JavaTypeNode> classTypes = new HashMap<>();
 
     JavaTypeNode getTypeFromName(String qualifiedName) {
@@ -51,6 +48,6 @@ public class JavaTypeBuilder implements Serializable {
     }
 
     JavaFunctionNode makeField(String fieldName, JavaTypeNode valType, JavaTypeNode owner) {
-        return new JavaFunctionNode(fieldName, Arrays.asList(owner), valType, new ValueSynthesizer());
+        return new JavaFunctionNode(fieldName, Arrays.asList(owner), valType, new FieldSynthesizer());
     }
 }

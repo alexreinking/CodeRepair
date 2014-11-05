@@ -3,6 +3,7 @@ package coderepair;
 import coderepair.antlr.JavaPLexer;
 import coderepair.antlr.JavaPParser;
 import coderepair.synthesis.CodeSnippet;
+import coderepair.synthesis.CodeSynthesis;
 import coderepair.util.TimedTask;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
@@ -22,7 +23,7 @@ public class Main {
             try {
                 JavaPLexer lexer = new JavaPLexer(new ANTLRFileStream(inFile));
                 JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
-                graphBuilder[0] = new GraphBuilder(10.0);
+                graphBuilder[0] = new GraphBuilder();
                 parseTree[0] = parser.javap();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -63,9 +64,11 @@ public class Main {
             graph[0].addLocalVariable("inStream", "java.io.InputStream");
             graph[0].addLocalVariable("outStream", "java.io.InputStream");
 
-            for (String cls : Arrays.asList("java.io.BufferedReader", "java.util.regex.Matcher")) {
+            for (String cls : Arrays.asList("java.io.BufferedReader")) {
                 System.out.println("\n============= " + cls + " =============\n");
-                for (CodeSnippet snippet : graph[0].synthesize(cls, 10))
+                CodeSynthesis synthesis = new CodeSynthesis(graph[0]);
+
+                for (CodeSnippet snippet : synthesis.synthesize(cls, 7.0, 10))
                     System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
             }
         });
