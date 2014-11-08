@@ -3,18 +3,18 @@ package coderepair.synthesis;
 import coderepair.SynthesisGraph;
 import coderepair.analysis.JavaFunctionNode;
 import coderepair.analysis.JavaGraphNode;
+import coderepair.analysis.JavaTypeNode;
 import org.jetbrains.annotations.NotNull;
-import org.jgrapht.Graphs;
+import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.traverse.ClosestFirstIterator;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class CodeSynthesis {
     private final SynthesisGraph synthesisGraph;
-    private AbstractMap<JavaGraphNode, SortedSet<Generator>> synthTable;
-    private AbstractMap<JavaGraphNode, SortedSet<CodeSnippet>> snippetTable;
-    private AbstractMap<JavaGraphNode, Double> synthCost;
+    private final Map<JavaGraphNode, SortedSet<Generator>> synthTable = new HashMap<>();
+    private final Map<JavaGraphNode, SortedSet<CodeSnippet>> snippetTable = new HashMap<>();
     private double costLimit = 0.0;
 
     public CodeSynthesis(SynthesisGraph synthesisGraph) {
@@ -22,21 +22,23 @@ public class CodeSynthesis {
     }
 
     public SortedSet<CodeSnippet> synthesize(String qualifiedName, double costLimit, int nRequested) {
-        synthTable = new ConcurrentHashMap<>();
-        snippetTable = new ConcurrentHashMap<>();
-        synthCost = new ConcurrentHashMap<>();
+        synthTable.clear();
+        snippetTable.clear();
         this.costLimit = costLimit;
 
         JavaGraphNode requestedType = synthesisGraph.getVertexByName(qualifiedName);
-        satisfyType(requestedType, costLimit);
 
-        Iterator<Map.Entry<JavaGraphNode, SortedSet<Generator>>> iterator = synthTable.entrySet().iterator();
-        while (iterator.hasNext())
-            if (iterator.next().getValue().isEmpty())
-                iterator.remove();
+        ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> radiusOrdering
+                = new ClosestFirstIterator<>(synthesisGraph, requestedType, costLimit);
+        while (radiusOrdering.hasNext()) {
+            JavaGraphNode next = radiusOrdering.next();
+            if (next instanceof JavaFunctionNode) {
+                JavaTypeNode output = ((JavaFunctionNode) next).getOutput();
+                synthTable.computeIfAbsent(output, t -> new TreeSet<>())
+                        .add(new Generator(next, synthesisGraph.getWeight(output, next)));
+            }
+        }
 
-//        dumpTable();
-        System.out.println("Gathered possibilities...");
         return getExpression(requestedType, costLimit, nRequested);
     }
 
@@ -46,24 +48,24 @@ public class CodeSynthesis {
         if (snippetTable.containsKey(requestedType))
             return snippetTable.get(requestedType);
 
-        TreeSet<CodeSnippet> snippets = new TreeSet<>();
+        SortedSet<CodeSnippet> snippets = new TreeSet<>();
         synthTable.get(requestedType)
-                .parallelStream()
+                .stream()
                 .filter(generator -> generator.cost < remaining)
                 .forEach(generator -> {
-            double nextCost = remaining - generator.cost;
-            if (generator.type instanceof JavaFunctionNode) {
-                JavaFunctionNode fGen = (JavaFunctionNode) generator.type;
+                    double nextCost = remaining - generator.cost;
+                    if (generator.type instanceof JavaFunctionNode) {
+                        JavaFunctionNode fGen = (JavaFunctionNode) generator.type;
 
-                List<SortedSet<CodeSnippet>> choices =
-                        fGen.getSignature().stream().map(input -> getExpression(input, nextCost, nRequested))
-                                .collect(Collectors.toList());
+                        List<SortedSet<CodeSnippet>> choices =
+                                fGen.getSignature().stream().map(input -> getExpression(input, nextCost, nRequested))
+                                        .collect(Collectors.toList());
 
-                addFunctionPossibilities(
-                        snippets, fGen, generator.cost, choices, 0,
-                        new CodeSnippet[choices.size()], nRequested);
-            }
-        });
+                        addFunctionPossibilities(
+                                snippets, fGen, generator.cost, choices, 0,
+                                new CodeSnippet[choices.size()], nRequested);
+                    }
+                });
 
         if (!snippets.isEmpty())
             snippetTable.put(requestedType, snippets);
@@ -112,35 +114,6 @@ public class CodeSynthesis {
                 }
             }
         }
-    }
-
-    public void dumpTable() {
-        for (Map.Entry<JavaGraphNode, SortedSet<Generator>> entry : synthTable.entrySet()) {
-            System.out.println("Generators for " + entry.getKey().getName() + ":");
-            for (Generator fragment : entry.getValue())
-                System.out.printf("\t%6f  %s%n", fragment.cost, fragment.type.getName());
-            System.out.println();
-        }
-    }
-
-    boolean satisfyType(JavaGraphNode startType, double remaining) {
-        if (remaining < 0.0) return false;
-
-        SortedSet<Generator> fragments = synthTable.computeIfAbsent(startType, t -> Collections.synchronizedSortedSet(new TreeSet<>()));
-        if (remaining >= synthCost.getOrDefault(startType, 0.0)) {
-            Graphs.successorListOf(synthesisGraph, startType).parallelStream().filter(funcType -> {
-                double afterFunction = remaining - synthesisGraph.getWeight(startType, funcType);
-                return afterFunction >= 0.0
-                        && Graphs.successorListOf(synthesisGraph, funcType).parallelStream()
-                        .allMatch(inputType -> satisfyType(inputType,
-                                afterFunction + synthesisGraph.getWeight(funcType, inputType)));
-            }).forEach(funcType -> {
-                fragments.add(new Generator(funcType, synthesisGraph.getWeight(startType, funcType)));
-                synthCost.put(startType, remaining);
-            });
-        }
-
-        return !synthTable.get(startType).isEmpty();
     }
 
     private static class Generator implements Comparable<Generator> {

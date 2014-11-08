@@ -68,7 +68,7 @@ public class Main {
                 System.out.println("\n============= " + cls + " =============\n");
                 CodeSynthesis synthesis = new CodeSynthesis(graph[0]);
 
-                for (CodeSnippet snippet : synthesis.synthesize(cls, 7.0, 10))
+                for (CodeSnippet snippet : synthesis.synthesize(cls, 5.0, 10))
                     System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
             }
         });

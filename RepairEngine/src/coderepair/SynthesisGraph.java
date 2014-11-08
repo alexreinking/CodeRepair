@@ -3,8 +3,6 @@ package coderepair;
 import coderepair.analysis.JavaFunctionNode;
 import coderepair.analysis.JavaGraphNode;
 import coderepair.analysis.JavaTypeNode;
-import coderepair.synthesis.CodeSnippet;
-import coderepair.synthesis.CodeSynthesis;
 import org.jgrapht.ext.ComponentAttributeProvider;
 import org.jgrapht.ext.DOTExporter;
 import org.jgrapht.ext.IntegerNameProvider;
@@ -14,7 +12,8 @@ import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 import java.io.Serializable;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, DefaultWeightedEdge>
         implements Serializable {
@@ -40,6 +39,10 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         this.nodeManager = nodeManager;
     }
 
+    public ArrayList<JavaGraphNode> getCurrentLocals() {
+        return currentLocals;
+    }
+
     public void exportToFile(Writer outputStream) {
         new DOTExporter<JavaGraphNode, DefaultWeightedEdge>(idProvider, nameProvider, null, colorProvider, null)
                 .export(outputStream, this);
@@ -57,7 +60,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         JavaFunctionNode newLocal = nodeManager.makeValue(value, qualifiedType);
         if (addVertex(newLocal)) {
             currentLocals.add(newLocal);
-            setEdgeWeight(addEdge(newLocal.getOutput(), newLocal), -1.0);
+            setEdgeWeight(addEdge(newLocal.getOutput(), newLocal), 0.0);
         }
     }
 
