@@ -64,7 +64,8 @@ public class Main {
             graph[0].addLocalVariable("inStream", "java.io.InputStream");
             graph[0].addLocalVariable("outStream", "java.io.InputStream");
 
-            for (String cls : Arrays.asList("java.io.BufferedReader")) {
+            for (String cls : Arrays.asList("java.io.SequenceInputStream", "java.io.BufferedReader",
+                    "java.io.FileInputStream", "java.io.InputStreamReader", "java.util.regex.Matcher")) {
                 System.out.println("\n============= " + cls + " =============\n");
                 CodeSynthesis synthesis = new CodeSynthesis(graph[0]);
 

@@ -51,7 +51,7 @@ public class CodeSynthesis {
         SortedSet<CodeSnippet> snippets = new TreeSet<>();
         synthTable.get(requestedType)
                 .stream()
-                .filter(generator -> generator.cost < remaining)
+                .filter(generator -> generator.cost <= remaining)
                 .forEach(generator -> {
                     double nextCost = remaining - generator.cost;
                     if (generator.type instanceof JavaFunctionNode) {
