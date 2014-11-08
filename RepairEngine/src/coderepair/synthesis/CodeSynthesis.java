@@ -28,10 +28,10 @@ public class CodeSynthesis {
 
         JavaGraphNode requestedType = synthesisGraph.getVertexByName(qualifiedName);
 
-        ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> radiusOrdering
+        ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> costLimitBall
                 = new ClosestFirstIterator<>(synthesisGraph, requestedType, costLimit);
-        while (radiusOrdering.hasNext()) {
-            JavaGraphNode next = radiusOrdering.next();
+        while (costLimitBall.hasNext()) {
+            JavaGraphNode next = costLimitBall.next();
             if (next instanceof JavaFunctionNode) {
                 JavaTypeNode output = ((JavaFunctionNode) next).getOutput();
                 synthTable.computeIfAbsent(output, t -> new TreeSet<>())
@@ -73,45 +73,32 @@ public class CodeSynthesis {
     }
 
     void addSnippet(SortedSet<CodeSnippet> snippets, CodeSnippet poss, int nRequested) {
-        if (poss.cost < costLimit)
-            if (snippets.size() >= nRequested) {
-                CodeSnippet worstInSet = snippets.last();
-                snippets.remove(worstInSet);
-                if (worstInSet == null) return;
-                if (poss.compareTo(worstInSet) < 0) worstInSet = poss;
-                snippets.add(worstInSet);
-            } else {
-                snippets.add(poss);
-            }
-    }
-
-    private double sumSnips(CodeSnippet snips[]) {
-        double tot = 0.0;
-        for (CodeSnippet snip : snips) tot += snip.cost;
-        return tot;
+        if (snippets.size() >= nRequested) {
+            CodeSnippet worstInSet = snippets.last();
+            snippets.remove(worstInSet);
+            if (worstInSet == null) return;
+            if (poss.compareTo(worstInSet) < 0) worstInSet = poss;
+            snippets.add(worstInSet);
+        } else {
+            snippets.add(poss);
+        }
     }
 
     void addFunctionPossibilities(
             SortedSet<CodeSnippet> snippets, JavaFunctionNode functionType,
-            double baseCost, List<SortedSet<CodeSnippet>> synths,
+            double currentCost, List<SortedSet<CodeSnippet>> synths,
             int pos, CodeSnippet paramArray[], int nRequested) {
         if (synths.size() == 0) {
-            String code = functionType.synthesize(new CodeSnippet[]{});
-            addSnippet(snippets, new CodeSnippet(code, baseCost), nRequested);
+            addSnippet(snippets, new CodeSnippet(functionType.synthesize(new CodeSnippet[]{}), currentCost), nRequested);
+        } else if (pos == paramArray.length) {
+            addSnippet(snippets, new CodeSnippet(functionType.synthesize(paramArray), currentCost), nRequested);
         } else {
-            SortedSet<CodeSnippet> snips = synths.get(pos);
-            if (pos + 1 == paramArray.length) {
-                for (CodeSnippet snip : snips) {
-                    paramArray[pos] = snip;
-                    String code = functionType.synthesize(paramArray);
-                    double cost = sumSnips(paramArray);
-                    addSnippet(snippets, new CodeSnippet(code, baseCost + cost), nRequested);
-                }
-            } else {
-                for (CodeSnippet snip : snips) {
-                    paramArray[pos] = snip;
-                    addFunctionPossibilities(snippets, functionType, baseCost, synths, pos + 1, paramArray, nRequested);
-                }
+            for (CodeSnippet snip : synths.get(pos)) {
+                paramArray[pos] = snip;
+                double nextCost = currentCost + snip.cost;
+                if (nextCost > costLimit) break; // thanks, sorted order!
+                addFunctionPossibilities(snippets, functionType, nextCost,
+                        synths, pos + 1, paramArray, nRequested);
             }
         }
     }
