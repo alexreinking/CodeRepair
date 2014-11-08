@@ -1,4 +1,6 @@
-package coderepair.synthesis;
+package coderepair.synthesis.types;
+
+import coderepair.synthesis.CodeSnippet;
 
 import java.io.Serializable;
 import java.util.ArrayList;

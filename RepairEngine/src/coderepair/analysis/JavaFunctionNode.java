@@ -1,7 +1,7 @@
 package coderepair.analysis;
 
 import coderepair.synthesis.CodeSnippet;
-import coderepair.synthesis.JavaFunctionSynthesizer;
+import coderepair.synthesis.types.JavaFunctionSynthesizer;
 
 import java.io.Serializable;
 import java.util.*;

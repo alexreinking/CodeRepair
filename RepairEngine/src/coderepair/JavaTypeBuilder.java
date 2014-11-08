@@ -2,7 +2,7 @@ package coderepair;
 
 import coderepair.analysis.JavaFunctionNode;
 import coderepair.analysis.JavaTypeNode;
-import coderepair.synthesis.*;
+import coderepair.synthesis.types.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;

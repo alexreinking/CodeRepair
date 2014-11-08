@@ -43,33 +43,32 @@ public class CodeSynthesis {
     }
 
     SortedSet<CodeSnippet> getExpression(JavaGraphNode requestedType, double remaining, int nRequested) {
-        if (synthTable.get(requestedType) == null)
-            return new TreeSet<>();
-        if (snippetTable.containsKey(requestedType))
-            return snippetTable.get(requestedType);
+        if (synthTable.get(requestedType) == null) return Collections.emptySortedSet();
 
-        SortedSet<CodeSnippet> snippets = new TreeSet<>();
-        synthTable.get(requestedType)
-                .stream()
-                .filter(generator -> generator.cost <= remaining)
-                .forEach(generator -> {
-                    double nextCost = remaining - generator.cost;
-                    if (generator.type instanceof JavaFunctionNode) {
-                        JavaFunctionNode fGen = (JavaFunctionNode) generator.type;
+        SortedSet<CodeSnippet> codeSnippets = snippetTable.computeIfAbsent(requestedType, type -> {
+            SortedSet<CodeSnippet> snippets = new TreeSet<>();
+            synthTable.get(requestedType)
+                    .stream()
+                    .filter(generator -> generator.cost <= remaining)
+                    .forEach(generator -> {
+                        if (generator.type instanceof JavaFunctionNode) {
+                            JavaFunctionNode fGen = (JavaFunctionNode) generator.type;
 
-                        List<SortedSet<CodeSnippet>> choices =
-                                fGen.getSignature().stream().map(input -> getExpression(input, nextCost, nRequested))
-                                        .collect(Collectors.toList());
+                            List<SortedSet<CodeSnippet>> choices =
+                                    fGen.getSignature()
+                                            .stream()
+                                            .map(input -> getExpression(input, remaining - generator.cost, nRequested))
+                                            .collect(Collectors.toList());
 
-                        addFunctionPossibilities(
-                                snippets, fGen, generator.cost, choices, 0,
-                                new CodeSnippet[choices.size()], nRequested);
-                    }
-                });
+                            addFunctionPossibilities(
+                                    snippets, fGen, generator.cost, choices, 0,
+                                    new CodeSnippet[choices.size()], nRequested);
+                        }
+                    });
+            return (snippets.isEmpty()) ? null : snippets;
+        });
 
-        if (!snippets.isEmpty())
-            snippetTable.put(requestedType, snippets);
-        return snippets;
+        return (codeSnippets == null) ? Collections.emptySortedSet() : codeSnippets;
     }
 
     void addSnippet(SortedSet<CodeSnippet> snippets, CodeSnippet poss, int nRequested) {
@@ -88,9 +87,7 @@ public class CodeSynthesis {
             SortedSet<CodeSnippet> snippets, JavaFunctionNode functionType,
             double currentCost, List<SortedSet<CodeSnippet>> synths,
             int pos, CodeSnippet paramArray[], int nRequested) {
-        if (synths.size() == 0) {
-            addSnippet(snippets, new CodeSnippet(functionType.synthesize(new CodeSnippet[]{}), currentCost), nRequested);
-        } else if (pos == paramArray.length) {
+        if (pos == paramArray.length) {
             addSnippet(snippets, new CodeSnippet(functionType.synthesize(paramArray), currentCost), nRequested);
         } else {
             for (CodeSnippet snip : synths.get(pos)) {
