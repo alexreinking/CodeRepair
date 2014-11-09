@@ -25,7 +25,7 @@ public class Main {
             try {
                 JavaPLexer lexer = new JavaPLexer(new ANTLRFileStream(inFile));
                 JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
-                graphBuilder[0] = new GraphBuilder();
+                graphBuilder[0] = new GraphBuilder(Arrays.asList("java.io", "java.util"));
                 parseTree[0] = parser.javap();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -66,10 +66,10 @@ public class Main {
                 System.out.println("\n============= " + type + " =============\n");
 
                 CodeSynthesis synthesis = new CodeSynthesis(synthesisGraph);
-                synthesis.enforce("java.lang.String", new CodeSnippet("fileName", 0.0));
-                synthesis.enforce("java.lang.String", new CodeSnippet("inputText", 0.0));
-                synthesis.enforce("java.io.InputStream", new CodeSnippet("inStream", 0.0));
-                synthesis.enforce("java.io.InputStream", new CodeSnippet("outStream", 0.0));
+                synthesisGraph.addFreeExpression("fileName", "java.lang.String");
+                synthesisGraph.addFreeExpression("inputText", "java.lang.String");
+                synthesisGraph.addFreeExpression("inStream", "java.io.InputStream");
+                synthesisGraph.addFreeExpression("outStream", "java.io.InputStream");
 
                 for (CodeSnippet snippet : synthesis.synthesize(type, 5.0, 10))
                     System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
@@ -81,8 +81,6 @@ public class Main {
             synthesisGraph.addFreeExpression("fileName", "java.lang.String");
 
             CodeSynthesis synthesis = new CodeSynthesis(synthesisGraph);
-            synthesis.strongEnforce("boolean", new CodeSnippet("true", 0.0));
-            synthesis.strongEnforce("int", new CodeSnippet("compLevel", 0.0));
 
             Optional<CodeSnippet> bestSnippetOpt;
             CodeSnippet bestSnippet;
@@ -104,6 +102,9 @@ public class Main {
             synthesis.strongEnforce("java.io.FileInputStream", new CodeSnippet(bestSnippet.code, 0.0));
 
             /* Stage 2 */
+            synthesis.strongEnforce("boolean", new CodeSnippet("true", 0.0));
+            synthesis.strongEnforce("int", new CodeSnippet("compLevel", 0.0));
+
             bestSnippetOpt = synthesis.synthesize("java.util.zip.DeflaterInputStream", 7.0, 10)
                     .stream()
                     .min((snip1, snip2) -> {
