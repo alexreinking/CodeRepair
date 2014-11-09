@@ -10,7 +10,6 @@ import org.antlr.v4.runtime.BufferedTokenStream;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.SortedSet;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -24,7 +23,7 @@ public class Main {
             try {
                 JavaPLexer lexer = new JavaPLexer(new ANTLRFileStream(inFile));
                 JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
-                graphBuilder[0] = new GraphBuilder();
+                graphBuilder[0] = new GraphBuilder(Arrays.asList("java.io", "java.util"));
                 parseTree[0] = parser.javap();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -60,10 +59,10 @@ public class Main {
 
         TimedTask synthesize = new TimedTask("Synthesis", () -> {
             graph[0].resetLocals();
-            graph[0].addLocalVariable("fileName", "java.lang.String");
-            graph[0].addLocalVariable("inputText", "java.lang.String");
-            graph[0].addLocalVariable("inStream", "java.io.InputStream");
-            graph[0].addLocalVariable("outStream", "java.io.InputStream");
+            graph[0].addFreeExpression("fileName", "java.lang.String");
+            graph[0].addFreeExpression("inputText", "java.lang.String");
+            graph[0].addFreeExpression("inStream", "java.io.InputStream");
+            graph[0].addFreeExpression("outStream", "java.io.InputStream");
 
             for (String cls : Arrays.asList("java.io.SequenceInputStream", "java.io.BufferedReader",
                     "java.io.FileInputStream", "java.io.InputStreamReader", "java.util.regex.Matcher")) {
@@ -75,31 +74,6 @@ public class Main {
             }
         });
 
-        TimedTask repair = new TimedTask("Repair", () -> {
-            graph[0].resetLocals();
-            graph[0].addLocalVariable("\"fileName.txt\"", "java.lang.String");
-
-            System.out.println("\n============= java.io.BufferedReader (R) =============\n");
-            CodeSynthesis synthesis = new CodeSynthesis(graph[0]);
-            SortedSet<CodeSnippet> snippets = synthesis
-                    .biasTowards(Arrays.asList(
-                            new CodeSynthesis.FunctionSignature("new java.io.BufferedReader", "java.io.BufferedReader", "java.io.Reader")
-                    ))
-                    .biasAgainst(Arrays.asList(    // compensate for the lack of stochastic weights
-                            new CodeSynthesis.FunctionSignature("new java.io.PipedReader", "java.io.PipedReader")
-                    ))
-                    .synthesize("java.io.BufferedReader", 5.0, 10);
-
-            System.out.println();
-
-            for (CodeSnippet snippet : snippets)
-                System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
-
-            synthesis.removeBias();
-
-            System.out.println();
-        });
-
-        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(repair.times(20)).run();
+        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(synthesize.times(20)).run();
     }
 }

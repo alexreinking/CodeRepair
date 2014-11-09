@@ -139,6 +139,8 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
             return true;
         }
         String packageName = type.getPackageName();
+        if(packageName.startsWith("sun.") || packageName.startsWith("com.sun."))
+            return false;
         for (String okPackage : allowedPackages)
             if (packageName.startsWith(okPackage) || allowedPackages.size() == 1) {
                 fnFlowGraph.addVertex(type);
