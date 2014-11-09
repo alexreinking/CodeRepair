@@ -10,6 +10,8 @@ import org.antlr.v4.runtime.BufferedTokenStream;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -23,7 +25,7 @@ public class Main {
             try {
                 JavaPLexer lexer = new JavaPLexer(new ANTLRFileStream(inFile));
                 JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
-                graphBuilder[0] = new GraphBuilder(Arrays.asList("java.io", "java.util"));
+                graphBuilder[0] = new GraphBuilder();
                 parseTree[0] = parser.javap();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -58,22 +60,84 @@ public class Main {
         });
 
         TimedTask synthesize = new TimedTask("Synthesis", () -> {
-            graph[0].resetLocals();
-            graph[0].addFreeExpression("fileName", "java.lang.String");
-            graph[0].addFreeExpression("inputText", "java.lang.String");
-            graph[0].addFreeExpression("inStream", "java.io.InputStream");
-            graph[0].addFreeExpression("outStream", "java.io.InputStream");
-
-            for (String cls : Arrays.asList("java.io.SequenceInputStream", "java.io.BufferedReader",
+            SynthesisGraph synthesisGraph = graph[0];
+            for (String type : Arrays.asList("java.io.SequenceInputStream", "java.io.BufferedReader",
                     "java.io.FileInputStream", "java.io.InputStreamReader", "java.util.regex.Matcher")) {
-                System.out.println("\n============= " + cls + " =============\n");
-                CodeSynthesis synthesis = new CodeSynthesis(graph[0]);
+                System.out.println("\n============= " + type + " =============\n");
 
-                for (CodeSnippet snippet : synthesis.synthesize(cls, 5.0, 10))
+                CodeSynthesis synthesis = new CodeSynthesis(synthesisGraph);
+                synthesis.enforce("java.lang.String", new CodeSnippet("fileName", 0.0));
+                synthesis.enforce("java.lang.String", new CodeSnippet("inputText", 0.0));
+                synthesis.enforce("java.io.InputStream", new CodeSnippet("inStream", 0.0));
+                synthesis.enforce("java.io.InputStream", new CodeSnippet("outStream", 0.0));
+
+                for (CodeSnippet snippet : synthesis.synthesize(type, 5.0, 10))
                     System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
             }
         });
 
-        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(synthesize.times(20)).run();
+        TimedTask simulatedRepair = new TimedTask("Repair-ish", () -> {
+            SynthesisGraph synthesisGraph = graph[0];
+            synthesisGraph.addFreeExpression("fileName", "java.lang.String");
+
+            CodeSynthesis synthesis = new CodeSynthesis(synthesisGraph);
+            synthesis.strongEnforce("boolean", new CodeSnippet("true", 0.0));
+            synthesis.strongEnforce("int", new CodeSnippet("compLevel", 0.0));
+
+            Optional<CodeSnippet> bestSnippetOpt;
+            CodeSnippet bestSnippet;
+
+            /* Stage 1 */
+            bestSnippetOpt = synthesis.synthesize("java.io.FileInputStream", 7.0, 10)
+                    .stream()
+                    .min((snip1, snip2) -> {
+                        HashSet<CodeSnippet> enforcedSnippets = new HashSet<>();
+                        synthesis.getEnforcedSnippets().values().forEach(enforcedSnippets::addAll);
+
+                        double div1 = Math.pow(2.0, enforcedSnippets.stream().filter(s -> snip1.code.contains(s.code)).count());
+                        double div2 = Math.pow(2.0, enforcedSnippets.stream().filter(s -> snip2.code.contains(s.code)).count());
+                        return Double.compare(snip1.cost / div1, snip2.cost / div2);
+                    });
+
+            bestSnippet = bestSnippetOpt.get();
+            System.out.printf("* %6f  %s%n", bestSnippet.cost, bestSnippet.code);
+            synthesis.strongEnforce("java.io.FileInputStream", new CodeSnippet(bestSnippet.code, 0.0));
+
+            /* Stage 2 */
+            bestSnippetOpt = synthesis.synthesize("java.util.zip.DeflaterInputStream", 7.0, 10)
+                    .stream()
+                    .min((snip1, snip2) -> {
+                        HashSet<CodeSnippet> enforcedSnippets = new HashSet<>();
+                        synthesis.getEnforcedSnippets().values().forEach(enforcedSnippets::addAll);
+
+                        double div1 = Math.pow(2.0, enforcedSnippets.stream().filter(s -> snip1.code.contains(s.code)).count());
+                        double div2 = Math.pow(2.0, enforcedSnippets.stream().filter(s -> snip2.code.contains(s.code)).count());
+                        return Double.compare(snip1.cost / div1, snip2.cost / div2);
+                    });
+
+            bestSnippet = bestSnippetOpt.get();
+            System.out.printf("* %6f  %s%n", bestSnippet.cost, bestSnippet.code);
+            synthesis.strongEnforce("java.util.zip.DeflaterInputStream", new CodeSnippet(bestSnippet.code, 0.0));
+
+            /* Stage 3 */
+            synthesis.strongEnforce("int", new CodeSnippet("buffSize", 0.0));
+
+            bestSnippetOpt = synthesis.synthesize("java.io.BufferedInputStream", 7.0, 10)
+                    .stream()
+                    .min((snip1, snip2) -> {
+                        HashSet<CodeSnippet> enforcedSnippets = new HashSet<>();
+                        synthesis.getEnforcedSnippets().values().forEach(enforcedSnippets::addAll);
+
+                        double div1 = Math.pow(2.0, enforcedSnippets.stream().filter(s -> snip1.code.contains(s.code)).count());
+                        double div2 = Math.pow(2.0, enforcedSnippets.stream().filter(s -> snip2.code.contains(s.code)).count());
+                        return Double.compare(snip1.cost / div1, snip2.cost / div2);
+                    });
+
+            bestSnippet = bestSnippetOpt.get();
+            System.out.printf("* %6f  %s%n", bestSnippet.cost, bestSnippet.code);
+            synthesis.strongEnforce("java.io.BufferedInputStream", new CodeSnippet(bestSnippet.code, 0.0));
+        });
+
+        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(simulatedRepair).run();
     }
 }
