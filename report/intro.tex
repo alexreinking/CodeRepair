@@ -1,2 +1,119 @@
 \section{Introduction}
 \ourTool is a tool and a graph algorithm for synthesizing expressions of a certain type in a programming language. As an algorithm, it subsumes the previous work, InSynth \citep{InSynth} while extending it to also repair ill-typed expressions. We believe that this construction will prove useful a useful tool for synthesis in other contexts, as well.
+
+Software development provides a high degree of freedom and
+many different approaches can be adopted for writing
+code, yet when writing a program, the developer needs to follow
+the strict rules determined by the programming language. While coding, the developer often knows the
+approximate structure of the desired expressions but still may write code
+that does not compile, because some fragments are ill-typed.
+Such mistakes occur mainly because the developer does not
+know, by heart, how to choose and properly combine all the necessary
+declarations visible from the scope\footnote{We use the term ``declarations'' 
+to refer to all the elements visible in the scope, such as variables, functions, and class
+hierarchy declarations}.
+Moreover, modern libraries often evolve into complex 
+application programming interfaces (APIs) that provide
+a large number of declarations. For this reason 
+it is hard, if not impossible, to learn the specifics of
+the declarations and their utilization.
+
+In a typical scenario when code does not compile, the compiler outputs
+an error message with the expression that is at the source of the
+error. Still, on many occasions the written expression reflects the
+intended structure of the code. In this paper we define an algorithm that
+automatically repairs code expressions based on the hinted structure
+of the ill-typed code. It finds well typed expressions that are as close as 
+possible to the given (potentially) ill-typed expression - we call such an
+input expression, a {\em backbone} expression. The algorithm can be applied 
+in interactive scenarios like IDE code completion, to rank expressions 
+based on their similarity to ill-typed code. Preferably, the best
+suggestions will fix the code keeping its overall structure.
+Another application is in providing automated repair in the compilation process.
+
+In our previous work we developed a tool called InSynth
+\cite{GveroETAL13CompleteCompletionTypesWeights} that automatically
+synthesizes code snippets based on the given type constraints. InSynth
+considers all user-defined declarations, together with any imported API
+calls, when performing the synthesis. In principle, a na\" ive algorithm for code repair based on InSynth
+could to solve the repair problem. The algorithm would first extend the
+initial environment with all type declarations that could be derived from the
+given ill-typed expression. Using the new environment we would run the
+InSynth algorithm. Because the InSynth algorithm is complete,
+eventually it will generate expressions (if they exist) following the
+structure of the given backbone expression. However, this may not be
+practical because the type inhabitation problem is a PSPACE-complete
+problem and the ranks of resulting expressions is determined using heuristic
+that ignores given ill-typed expression. The aim of our approach is to 
+design a better and more efficient algorithm that is well-suited for
+repairing ill-typed expressions.
+
+The input to our algorithm is an ill-typed, backbone expression. We propose
+two different algorithms. The first algorithm generates one well-typed expression
+that strictly follows the structure of the input expression. It decomposes
+the problem into finding connections between individual symbols in the
+backbone expression. The connections are build using a given set of
+repair declarations. Each connection represents a partial expression.
+We find the smallest such expressions using a weights mechanism.
+When we find all the partial expressions, we combine them following 
+the original structure of the backbone expression. The algorithm 
+simultaneously fixes all type errors in a given expression.
+The second algorithm searches for the best solutions, not only
+following the initial backbone expression, but also creating new ones
+that are mutations of the original one. This might lead us to a
+set of more interesting solutions in the case when the developer does not
+provide us with the best initial backbone expression. Additionally, this approach 
+allows completeness in sense that we are able to generate all 
+expressions with the given type, similarly as in InSynth, but now ranked 
+by similarity to the given backbone expression. The algorithm also 
+implements A* search that steer us towards the most desirable
+solutions.
+
+A research on improving the software development process covers a large number of topics such as an automated
+program repair
+\cite{LeGoues:2012:ROI:2330163.2330296,WeiETAL10AutomatedFixingProgramsContracts,PeiETAL11CodebasedAutomatedProgramFixing},
+enhancements of compilation process messages
+\cite{Burke87apractical,Hammond198451,Lerner:2007:STM:1250734.1250783}, and
+providing assistance to developers through inference of code
+\cite{GveroETAL13CompleteCompletionTypesWeights,MandelinetALL2005Jungloid,KneussETAL13SynthesisModuloRecursiveFunctions,KuncakETAL13ExecutingSpecificationsSynthesisConstraintSolvingInvitedTalk,PerelmanGBG12}.
+As a result, a vast number of tools was created around a common
+high-level goal of facilitating software development.
+The manner in which such tools operate can be roughly divided into two
+categories: (1) as automated processes within the compiler 
+(2) or as development assistants that require a certain level of
+interaction, usually through an IDE interface.
+Many of the techniques behind these tools such as parsing error recovery by altering the
+input \cite{Burke87apractical}, a heuristic search for syntactically
+correct terms \cite{PerelmanGBG12}, a modification of
+abstract syntax trees and types \cite{Lerner:2007:STM:1250734.1250783}, and an inference
+of semantically correct code fragments
+\cite{KneussETAL13SynthesisModuloRecursiveFunctions}, share common insights.
+Motivated by the advances in both the theory of programming languages and
+techniques that are foundations of tools for software development, our
+approach addresses the problem of code repair from a new perspective,
+by providing an algorithm that extends existing and incorporates new
+ideas. The reason why our approach goes beyond the existing line of
+work is three-fold: (1) the approach tries to solve more general code
+repair problems constrained with the structure of given ill-typed
+terms, (2) it focuses on repairing programs in as much accurate way as
+possible according to the given hint and weight heuristics, while
+providing useful theoretical guarantees about the utilized repair
+algorithms, (3) it is fitting for realization as both an interactive
+and automated software development tool.
+
+The contributions of this paper are:
+\begin{itemize}
+	\item We formulate the problem of repairing ill-typed expressions.
+	As input to the problem we take a backbone expression and 
+	the set of repair declarations. We introduce weak long normal 
+	form that allows a systematic search and a construction of the well-typed expressions.
+	We identify special symbols used to extend the expressiveness of the input.
+	\item We propose a novel repair calculus that specifies the rules that
+	we use to derive a well-typed term from a backbone expression.
+	The calculus describes how to fix a term using declarations with multiple arguments.
+	\item We propose an algorithm that finds the best well-typed expression based on 
+	weights system introduced in \cite{GveroETAL13CompleteCompletionTypesWeights}.
+    We show that the algorithm is polynomial given a certain class of ill-typed expressions.
+    \item We present a sound and complete algorithm that takes the ill-typed expression and 
+    finds a set of best solutions. The algorithm is based on A* search.
+\end{itemize}
