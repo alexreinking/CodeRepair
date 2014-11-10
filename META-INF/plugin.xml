@@ -25,7 +25,7 @@
         <className>com.intellij.codeInsight.intention.CodeRepairIntention</className>
         <category>Code Repair</category>
     </intentionAction>
-      <completion.contributor language="JAVA" implementationClass="com.simpleplugin.SimpleCompletionContributor"/>
+      <completion.contributor language="JAVA" implementationClass="edu.yale.reinking.SmartContributor"/>
   </extensions>
 
 </idea-plugin>

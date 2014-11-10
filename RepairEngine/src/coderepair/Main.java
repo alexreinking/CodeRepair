@@ -25,7 +25,7 @@ public class Main {
             try {
                 JavaPLexer lexer = new JavaPLexer(new ANTLRFileStream(inFile));
                 JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
-                graphBuilder[0] = new GraphBuilder(Arrays.asList("java.io", "java.util"));
+                graphBuilder[0] = new GraphBuilder(Arrays.asList("java"));
                 parseTree[0] = parser.javap();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -66,10 +66,10 @@ public class Main {
                 System.out.println("\n============= " + type + " =============\n");
 
                 CodeSynthesis synthesis = new CodeSynthesis(synthesisGraph);
-                synthesisGraph.addFreeExpression("fileName", "java.lang.String");
-                synthesisGraph.addFreeExpression("inputText", "java.lang.String");
-                synthesisGraph.addFreeExpression("inStream", "java.io.InputStream");
-                synthesisGraph.addFreeExpression("outStream", "java.io.InputStream");
+                synthesisGraph.addLocalVariable("fileName", "java.lang.String");
+                synthesisGraph.addLocalVariable("inputText", "java.lang.String");
+                synthesisGraph.addLocalVariable("inStream", "java.io.InputStream");
+                synthesisGraph.addLocalVariable("outStream", "java.io.InputStream");
 
                 for (CodeSnippet snippet : synthesis.synthesize(type, 5.0, 10))
                     System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
@@ -78,7 +78,7 @@ public class Main {
 
         TimedTask simulatedRepair = new TimedTask("Repair-ish", () -> {
             SynthesisGraph synthesisGraph = graph[0];
-            synthesisGraph.addFreeExpression("fileName", "java.lang.String");
+            synthesisGraph.addLocalVariable("fileName", "java.lang.String");
 
             CodeSynthesis synthesis = new CodeSynthesis(synthesisGraph);
 
@@ -139,6 +139,6 @@ public class Main {
             synthesis.strongEnforce("java.io.BufferedInputStream", new CodeSnippet(bestSnippet.code, 0.0));
         });
 
-        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(simulatedRepair).run();
+        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(synthesize).run();
     }
 }

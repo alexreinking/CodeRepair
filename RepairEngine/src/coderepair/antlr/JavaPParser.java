@@ -1,4 +1,4 @@
-// Generated from /home/alex/Development/CodeRepair/RepairEngine/JavaP.g4 by ANTLR 4.4.1-dev
+// Generated from /Users/alexreinking/Development/CodeRepair/RepairEngine/JavaP.g4 by ANTLR 4.4.1-dev
 package coderepair.antlr;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -24,7 +24,7 @@ public class JavaPParser extends Parser {
 		THROWS=31, TRANSIENT=32, VOID=33, VOLATILE=34, WILDCARD=35, ELLIPSIS=36, 
 		PACKAGEINFO=37, SEPARATOR=38, ArrayBrackets=39, BaseIdentifier=40, WS=41;
 	public static final String[] tokenNames = {
-		"<INVALID>", "'{'", "'>'", "')'", "','", "'('", "'<'", "'}'", "';'", "'abstract'", 
+		"<INVALID>", "'('", "')'", "';'", "'{'", "'<'", "','", "'}'", "'>'", "'abstract'", 
 		"'boolean'", "'byte'", "'char'", "'class'", "'double'", "'extends'", "'final'", 
 		"'float'", "'implements'", "'int'", "'interface'", "'long'", "'native'", 
 		"'private'", "'protected'", "'public'", "'short'", "'static'", "'strictfp'", 
@@ -63,11 +63,11 @@ public class JavaPParser extends Parser {
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 	public static class JavapContext extends ParserRuleContext {
-		public ClassDeclarationContext classDeclaration(int i) {
-			return getRuleContext(ClassDeclarationContext.class,i);
-		}
 		public List<ClassDeclarationContext> classDeclaration() {
 			return getRuleContexts(ClassDeclarationContext.class);
+		}
+		public ClassDeclarationContext classDeclaration(int i) {
+			return getRuleContext(ClassDeclarationContext.class,i);
 		}
 		public JavapContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -122,26 +122,26 @@ public class JavaPParser extends Parser {
 	}
 
 	public static class ClassDeclarationContext extends ParserRuleContext {
-		public List<MemberDeclarationContext> memberDeclaration() {
-			return getRuleContexts(MemberDeclarationContext.class);
-		}
 		public TypeNameContext typeName() {
 			return getRuleContext(TypeNameContext.class,0);
-		}
-		public MemberDeclarationContext memberDeclaration(int i) {
-			return getRuleContext(MemberDeclarationContext.class,i);
-		}
-		public ImplementationContext implementation() {
-			return getRuleContext(ImplementationContext.class,0);
 		}
 		public ExtensionContext extension() {
 			return getRuleContext(ExtensionContext.class,0);
 		}
+		public ImplementationContext implementation() {
+			return getRuleContext(ImplementationContext.class,0);
+		}
+		public List<MemberDeclarationContext> memberDeclaration() {
+			return getRuleContexts(MemberDeclarationContext.class);
+		}
+		public MemberDeclarationContext memberDeclaration(int i) {
+			return getRuleContext(MemberDeclarationContext.class,i);
+		}
+		public TerminalNode CLASS() { return getToken(JavaPParser.CLASS, 0); }
 		public TerminalNode INTERFACE() { return getToken(JavaPParser.INTERFACE, 0); }
 		public ModifiersContext modifiers() {
 			return getRuleContext(ModifiersContext.class,0);
 		}
-		public TerminalNode CLASS() { return getToken(JavaPParser.CLASS, 0); }
 		public ClassDeclarationContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -192,11 +192,11 @@ public class JavaPParser extends Parser {
 				}
 			}
 
-			setState(43); match(T__7);
+			setState(43); match(T__4);
 			setState(47);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__2) | (1L << ABSTRACT) | (1L << BOOLEAN) | (1L << BYTE) | (1L << CHAR) | (1L << DOUBLE) | (1L << FINAL) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NATIVE) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << SHORT) | (1L << STATIC) | (1L << STRICTFP) | (1L << SYNCHRONIZED) | (1L << TRANSIENT) | (1L << VOID) | (1L << VOLATILE) | (1L << PACKAGEINFO) | (1L << BaseIdentifier))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__3) | (1L << ABSTRACT) | (1L << BOOLEAN) | (1L << BYTE) | (1L << CHAR) | (1L << DOUBLE) | (1L << FINAL) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NATIVE) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << SHORT) | (1L << STATIC) | (1L << STRICTFP) | (1L << SYNCHRONIZED) | (1L << TRANSIENT) | (1L << VOID) | (1L << VOLATILE) | (1L << PACKAGEINFO) | (1L << BaseIdentifier))) != 0)) {
 				{
 				{
 				setState(44); memberDeclaration();
@@ -221,11 +221,11 @@ public class JavaPParser extends Parser {
 	}
 
 	public static class MemberDeclarationContext extends ParserRuleContext {
-		public FieldDeclarationContext fieldDeclaration() {
-			return getRuleContext(FieldDeclarationContext.class,0);
-		}
 		public MethodDeclarationContext methodDeclaration() {
 			return getRuleContext(MethodDeclarationContext.class,0);
+		}
+		public FieldDeclarationContext fieldDeclaration() {
+			return getRuleContext(FieldDeclarationContext.class,0);
 		}
 		public MemberDeclarationContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -278,9 +278,6 @@ public class JavaPParser extends Parser {
 	}
 
 	public static class MethodDeclarationContext extends ParserRuleContext {
-		public GenericsContext generics() {
-			return getRuleContext(GenericsContext.class,0);
-		}
 		public List<TypeNameContext> typeName() {
 			return getRuleContexts(TypeNameContext.class);
 		}
@@ -292,6 +289,9 @@ public class JavaPParser extends Parser {
 		}
 		public TypeNameContext typeName(int i) {
 			return getRuleContext(TypeNameContext.class,i);
+		}
+		public GenericsContext generics() {
+			return getRuleContext(GenericsContext.class,0);
 		}
 		public ModifiersContext modifiers() {
 			return getRuleContext(ModifiersContext.class,0);
@@ -325,7 +325,7 @@ public class JavaPParser extends Parser {
 			setState(56); modifiers();
 			setState(58);
 			_la = _input.LA(1);
-			if (_la==T__2) {
+			if (_la==T__3) {
 				{
 				setState(57); generics();
 				}
@@ -340,7 +340,7 @@ public class JavaPParser extends Parser {
 				break;
 			}
 			setState(63); typeName(0);
-			setState(64); match(T__3);
+			setState(64); match(T__7);
 			setState(66);
 			_la = _input.LA(1);
 			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BOOLEAN) | (1L << BYTE) | (1L << CHAR) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << SHORT) | (1L << VOID) | (1L << PACKAGEINFO) | (1L << BaseIdentifier))) != 0)) {
@@ -349,7 +349,7 @@ public class JavaPParser extends Parser {
 				}
 			}
 
-			setState(68); match(T__5);
+			setState(68); match(T__6);
 			setState(70);
 			_la = _input.LA(1);
 			if (_la==THROWS) {
@@ -358,7 +358,7 @@ public class JavaPParser extends Parser {
 				}
 			}
 
-			setState(72); match(T__0);
+			setState(72); match(T__5);
 			}
 		}
 		catch (RecognitionException re) {
@@ -376,11 +376,11 @@ public class JavaPParser extends Parser {
 		public TypeNameContext typeName() {
 			return getRuleContext(TypeNameContext.class,0);
 		}
-		public ModifiersContext modifiers() {
-			return getRuleContext(ModifiersContext.class,0);
-		}
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
+		}
+		public ModifiersContext modifiers() {
+			return getRuleContext(ModifiersContext.class,0);
 		}
 		public FieldDeclarationContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -410,7 +410,7 @@ public class JavaPParser extends Parser {
 			setState(74); modifiers();
 			setState(75); typeName(0);
 			setState(76); identifier();
-			setState(77); match(T__0);
+			setState(77); match(T__5);
 			}
 		}
 		catch (RecognitionException re) {
@@ -425,10 +425,10 @@ public class JavaPParser extends Parser {
 	}
 
 	public static class ThrowsBlockContext extends ParserRuleContext {
-		public TerminalNode THROWS() { return getToken(JavaPParser.THROWS, 0); }
 		public TypeListContext typeList() {
 			return getRuleContext(TypeListContext.class,0);
 		}
+		public TerminalNode THROWS() { return getToken(JavaPParser.THROWS, 0); }
 		public ThrowsBlockContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -510,7 +510,7 @@ public class JavaPParser extends Parser {
 				if ( _alt==1 ) {
 					{
 					{
-					setState(83); match(T__4);
+					setState(83); match(T__2);
 					setState(84); typeName(0);
 					}
 					} 
@@ -533,17 +533,17 @@ public class JavaPParser extends Parser {
 	}
 
 	public static class ModifiersContext extends ParserRuleContext {
-		public TerminalNode PUBLIC() { return getToken(JavaPParser.PUBLIC, 0); }
-		public TerminalNode TRANSIENT() { return getToken(JavaPParser.TRANSIENT, 0); }
-		public TerminalNode FINAL() { return getToken(JavaPParser.FINAL, 0); }
 		public TerminalNode NATIVE() { return getToken(JavaPParser.NATIVE, 0); }
-		public TerminalNode PROTECTED() { return getToken(JavaPParser.PROTECTED, 0); }
-		public TerminalNode PRIVATE() { return getToken(JavaPParser.PRIVATE, 0); }
 		public TerminalNode ABSTRACT() { return getToken(JavaPParser.ABSTRACT, 0); }
+		public TerminalNode FINAL() { return getToken(JavaPParser.FINAL, 0); }
 		public TerminalNode STATIC() { return getToken(JavaPParser.STATIC, 0); }
-		public TerminalNode VOLATILE() { return getToken(JavaPParser.VOLATILE, 0); }
-		public TerminalNode SYNCHRONIZED() { return getToken(JavaPParser.SYNCHRONIZED, 0); }
 		public TerminalNode STRICTFP() { return getToken(JavaPParser.STRICTFP, 0); }
+		public TerminalNode TRANSIENT() { return getToken(JavaPParser.TRANSIENT, 0); }
+		public TerminalNode PROTECTED() { return getToken(JavaPParser.PROTECTED, 0); }
+		public TerminalNode VOLATILE() { return getToken(JavaPParser.VOLATILE, 0); }
+		public TerminalNode PUBLIC() { return getToken(JavaPParser.PUBLIC, 0); }
+		public TerminalNode SYNCHRONIZED() { return getToken(JavaPParser.SYNCHRONIZED, 0); }
+		public TerminalNode PRIVATE() { return getToken(JavaPParser.PRIVATE, 0); }
 		public ModifiersContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -693,15 +693,15 @@ public class JavaPParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(117); match(T__2);
+			setState(117); match(T__3);
 			setState(118); genericParameter(0);
 			setState(123);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while (_la==T__4) {
+			while (_la==T__2) {
 				{
 				{
-				setState(119); match(T__4);
+				setState(119); match(T__2);
 				setState(120); genericParameter(0);
 				}
 				}
@@ -709,7 +709,7 @@ public class JavaPParser extends Parser {
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
-			setState(126); match(T__6);
+			setState(126); match(T__0);
 			}
 		}
 		catch (RecognitionException re) {
@@ -724,21 +724,21 @@ public class JavaPParser extends Parser {
 	}
 
 	public static class GenericParameterContext extends ParserRuleContext {
+		public TerminalNode SUPER() { return getToken(JavaPParser.SUPER, 0); }
 		public TypeNameContext typeName() {
 			return getRuleContext(TypeNameContext.class,0);
 		}
-		public TerminalNode SUPER() { return getToken(JavaPParser.SUPER, 0); }
 		public GenericParameterContext genericParameter() {
 			return getRuleContext(GenericParameterContext.class,0);
 		}
 		public TypeListContext typeList() {
 			return getRuleContext(TypeListContext.class,0);
 		}
-		public TerminalNode WILDCARD() { return getToken(JavaPParser.WILDCARD, 0); }
-		public TerminalNode EXTENDS() { return getToken(JavaPParser.EXTENDS, 0); }
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
+		public TerminalNode EXTENDS() { return getToken(JavaPParser.EXTENDS, 0); }
+		public TerminalNode WILDCARD() { return getToken(JavaPParser.WILDCARD, 0); }
 		public GenericParameterContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -933,29 +933,29 @@ public class JavaPParser extends Parser {
 	}
 
 	public static class TypeNameContext extends ParserRuleContext {
-		public GenericsContext generics() {
-			return getRuleContext(GenericsContext.class,0);
-		}
-		public TerminalNode INT() { return getToken(JavaPParser.INT, 0); }
-		public TerminalNode FLOAT() { return getToken(JavaPParser.FLOAT, 0); }
-		public TerminalNode LONG() { return getToken(JavaPParser.LONG, 0); }
-		public TerminalNode SEPARATOR() { return getToken(JavaPParser.SEPARATOR, 0); }
-		public TerminalNode VOID() { return getToken(JavaPParser.VOID, 0); }
-		public TerminalNode DOUBLE() { return getToken(JavaPParser.DOUBLE, 0); }
-		public TerminalNode ELLIPSIS() { return getToken(JavaPParser.ELLIPSIS, 0); }
-		public TerminalNode BYTE() { return getToken(JavaPParser.BYTE, 0); }
-		public TerminalNode BOOLEAN() { return getToken(JavaPParser.BOOLEAN, 0); }
 		public List<TypeNameContext> typeName() {
 			return getRuleContexts(TypeNameContext.class);
 		}
+		public TerminalNode SEPARATOR() { return getToken(JavaPParser.SEPARATOR, 0); }
+		public TerminalNode ELLIPSIS() { return getToken(JavaPParser.ELLIPSIS, 0); }
+		public TerminalNode BYTE() { return getToken(JavaPParser.BYTE, 0); }
+		public IdentifierContext identifier() {
+			return getRuleContext(IdentifierContext.class,0);
+		}
+		public TerminalNode BOOLEAN() { return getToken(JavaPParser.BOOLEAN, 0); }
+		public TerminalNode INT() { return getToken(JavaPParser.INT, 0); }
+		public TerminalNode DOUBLE() { return getToken(JavaPParser.DOUBLE, 0); }
+		public TerminalNode FLOAT() { return getToken(JavaPParser.FLOAT, 0); }
+		public TerminalNode ArrayBrackets() { return getToken(JavaPParser.ArrayBrackets, 0); }
+		public TerminalNode SHORT() { return getToken(JavaPParser.SHORT, 0); }
+		public TerminalNode LONG() { return getToken(JavaPParser.LONG, 0); }
+		public TerminalNode VOID() { return getToken(JavaPParser.VOID, 0); }
 		public TypeNameContext typeName(int i) {
 			return getRuleContext(TypeNameContext.class,i);
 		}
-		public TerminalNode ArrayBrackets() { return getToken(JavaPParser.ArrayBrackets, 0); }
-		public TerminalNode SHORT() { return getToken(JavaPParser.SHORT, 0); }
 		public TerminalNode CHAR() { return getToken(JavaPParser.CHAR, 0); }
-		public IdentifierContext identifier() {
-			return getRuleContext(IdentifierContext.class,0);
+		public GenericsContext generics() {
+			return getRuleContext(GenericsContext.class,0);
 		}
 		public TypeNameContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -1208,22 +1208,22 @@ public class JavaPParser extends Parser {
 		"\2\34\u00b4\3\2\2\2\36 \5\4\3\2\37\36\3\2\2\2 #\3\2\2\2!\37\3\2\2\2!\""+
 		"\3\2\2\2\"\3\3\2\2\2#!\3\2\2\2$%\5\20\t\2%&\t\2\2\2&(\5\32\16\2\')\5\26"+
 		"\f\2(\'\3\2\2\2()\3\2\2\2)+\3\2\2\2*,\5\30\r\2+*\3\2\2\2+,\3\2\2\2,-\3"+
-		"\2\2\2-\61\7\3\2\2.\60\5\6\4\2/.\3\2\2\2\60\63\3\2\2\2\61/\3\2\2\2\61"+
+		"\2\2\2-\61\7\6\2\2.\60\5\6\4\2/.\3\2\2\2\60\63\3\2\2\2\61/\3\2\2\2\61"+
 		"\62\3\2\2\2\62\64\3\2\2\2\63\61\3\2\2\2\64\65\7\t\2\2\65\5\3\2\2\2\66"+
 		"9\5\b\5\2\679\5\n\6\28\66\3\2\2\28\67\3\2\2\29\7\3\2\2\2:<\5\20\t\2;="+
 		"\5\22\n\2<;\3\2\2\2<=\3\2\2\2=?\3\2\2\2>@\5\32\16\2?>\3\2\2\2?@\3\2\2"+
-		"\2@A\3\2\2\2AB\5\32\16\2BD\7\7\2\2CE\5\16\b\2DC\3\2\2\2DE\3\2\2\2EF\3"+
-		"\2\2\2FH\7\5\2\2GI\5\f\7\2HG\3\2\2\2HI\3\2\2\2IJ\3\2\2\2JK\7\n\2\2K\t"+
-		"\3\2\2\2LM\5\20\t\2MN\5\32\16\2NO\5\34\17\2OP\7\n\2\2P\13\3\2\2\2QR\7"+
-		"!\2\2RS\5\16\b\2S\r\3\2\2\2TY\5\32\16\2UV\7\6\2\2VX\5\32\16\2WU\3\2\2"+
+		"\2@A\3\2\2\2AB\5\32\16\2BD\7\3\2\2CE\5\16\b\2DC\3\2\2\2DE\3\2\2\2EF\3"+
+		"\2\2\2FH\7\4\2\2GI\5\f\7\2HG\3\2\2\2HI\3\2\2\2IJ\3\2\2\2JK\7\5\2\2K\t"+
+		"\3\2\2\2LM\5\20\t\2MN\5\32\16\2NO\5\34\17\2OP\7\5\2\2P\13\3\2\2\2QR\7"+
+		"!\2\2RS\5\16\b\2S\r\3\2\2\2TY\5\32\16\2UV\7\b\2\2VX\5\32\16\2WU\3\2\2"+
 		"\2X[\3\2\2\2YW\3\2\2\2YZ\3\2\2\2Z\17\3\2\2\2[Y\3\2\2\2\\^\t\3\2\2]\\\3"+
 		"\2\2\2]^\3\2\2\2^`\3\2\2\2_a\7\35\2\2`_\3\2\2\2`a\3\2\2\2ac\3\2\2\2bd"+
 		"\7\22\2\2cb\3\2\2\2cd\3\2\2\2df\3\2\2\2eg\7 \2\2fe\3\2\2\2fg\3\2\2\2g"+
 		"i\3\2\2\2hj\7\30\2\2ih\3\2\2\2ij\3\2\2\2jl\3\2\2\2km\7\13\2\2lk\3\2\2"+
 		"\2lm\3\2\2\2mo\3\2\2\2np\7$\2\2on\3\2\2\2op\3\2\2\2pr\3\2\2\2qs\7\"\2"+
 		"\2rq\3\2\2\2rs\3\2\2\2su\3\2\2\2tv\7\36\2\2ut\3\2\2\2uv\3\2\2\2v\21\3"+
-		"\2\2\2wx\7\b\2\2x}\5\24\13\2yz\7\6\2\2z|\5\24\13\2{y\3\2\2\2|\177\3\2"+
-		"\2\2}{\3\2\2\2}~\3\2\2\2~\u0080\3\2\2\2\177}\3\2\2\2\u0080\u0081\7\4\2"+
+		"\2\2\2wx\7\7\2\2x}\5\24\13\2yz\7\b\2\2z|\5\24\13\2{y\3\2\2\2|\177\3\2"+
+		"\2\2}{\3\2\2\2}~\3\2\2\2~\u0080\3\2\2\2\177}\3\2\2\2\u0080\u0081\7\n\2"+
 		"\2\u0081\23\3\2\2\2\u0082\u0083\b\13\1\2\u0083\u0087\5\34\17\2\u0084\u0087"+
 		"\5\32\16\2\u0085\u0087\7%\2\2\u0086\u0082\3\2\2\2\u0086\u0084\3\2\2\2"+
 		"\u0086\u0085\3\2\2\2\u0087\u0090\3\2\2\2\u0088\u0089\f\4\2\2\u0089\u008a"+

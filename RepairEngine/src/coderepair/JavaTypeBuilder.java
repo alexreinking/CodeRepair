@@ -34,7 +34,7 @@ class JavaTypeBuilder implements Serializable {
         ArrayList<JavaTypeNode> trueFormals = new ArrayList<>(1 + formals.size());
         trueFormals.add(owner);
         trueFormals.addAll(formals);
-        return new JavaFunctionNode(owner.getName() + "." + name, trueFormals, output, new MethodSynthesizer());
+        return new JavaFunctionNode(name, trueFormals, output, new MethodSynthesizer());
     }
 
     JavaFunctionNode makeStaticMethod(String name, JavaTypeNode owner, JavaTypeNode output, Collection<JavaTypeNode> formals) {

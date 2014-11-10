@@ -121,11 +121,15 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         return getEdgeWeight(getEdge(startType, funcType));
     }
 
-    public void addFreeExpression(String value, String qualifiedType) {
+    public void addLocalVariable(String value, String qualifiedType) {
+        addLocalVariable(value, qualifiedType, 0.0);
+    }
+
+    public void addLocalVariable(String value, String qualifiedType, double desiredCost) {
         JavaFunctionNode newLocal = nodeManager.makeValue(value, qualifiedType);
         if (addVertex(newLocal)) {
             currentLocals.add(newLocal);
-            setEdgeWeight(addEdge(newLocal.getOutput(), newLocal), 0.0);
+            setEdgeWeight(addEdge(newLocal.getOutput(), newLocal), desiredCost);
         }
     }
 
