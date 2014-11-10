@@ -28,12 +28,6 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
         allowedPackages.add("java.lang");
     }
 
-    private double costForFunction(JavaFunctionNode method) {
-        if (method.getFunctionName().equals("<cast>"))
-            return method.getOutput().isConcrete() ? 0.0 : 0.0;
-        return 1 + method.getTotalFormals();
-    }
-
     @Override
     public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
         nodeManager = new JavaTypeBuilder();
@@ -56,6 +50,30 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
         }
 
         return fnFlowGraph;
+    }
+
+    private boolean addTypeToGraph(JavaTypeNode type) {
+        if (type.getName().contains("$"))
+            return false;
+        if (type.isPrimitive()) {
+            fnFlowGraph.addVertex(type);
+            return true;
+        }
+        String packageName = type.getPackageName();
+        if (packageName.startsWith("sun.") || packageName.startsWith("com.sun."))
+            return false;
+        for (String okPackage : allowedPackages)
+            if (packageName.startsWith(okPackage) || allowedPackages.size() == 1) {
+                fnFlowGraph.addVertex(type);
+                return true;
+            }
+        return false;
+    }
+
+    private double costForFunction(JavaFunctionNode method) {
+        if (method.getFunctionName().equals("<cast>"))
+            return method.getOutput().isConcrete() ? 0.0 : 0.0;
+        return 1 + method.getTotalFormals();
     }
 
     @Override
@@ -97,7 +115,8 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                     if (badFormal) continue;
 
                     if (method.typeName().size() == 1) {
-                        methods.add(nodeManager.makeConstructor(classNode, formals));
+                        if (classNode.isConcrete())
+                            methods.add(nodeManager.makeConstructor(classNode, formals));
                     } else {
                         JavaTypeNode outType = nodeManager.getTypeByName(method.typeName().get(0).getText());
                         if (addTypeToGraph(outType)) {
@@ -113,7 +132,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                 } else if (memberDeclarationContext.fieldDeclaration() != null
                         && memberDeclarationContext.fieldDeclaration().modifiers().STATIC() != null) {
                     String typeName = memberDeclarationContext.fieldDeclaration().typeName().getText();
-                    String valueName = classNode.getName() + "." + memberDeclarationContext.fieldDeclaration().identifier().getText();
+                    String valueName = classNode.getClassName() + "." + memberDeclarationContext.fieldDeclaration().identifier().getText();
                     JavaTypeNode valueType = nodeManager.getTypeByName(typeName);
                     if (valueType != null && addTypeToGraph(valueType) && !valueType.isPrimitive())
                         methods.add(nodeManager.makeValue(valueName, typeName));
@@ -129,23 +148,5 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
             }
         }
         return fnFlowGraph;
-    }
-
-    private boolean addTypeToGraph(JavaTypeNode type) {
-        if (type.getName().contains("$"))
-            return false;
-        if (type.isPrimitive()) {
-            fnFlowGraph.addVertex(type);
-            return true;
-        }
-        String packageName = type.getPackageName();
-        if(packageName.startsWith("sun.") || packageName.startsWith("com.sun."))
-            return false;
-        for (String okPackage : allowedPackages)
-            if (packageName.startsWith(okPackage) || allowedPackages.size() == 1) {
-                fnFlowGraph.addVertex(type);
-                return true;
-            }
-        return false;
     }
 }

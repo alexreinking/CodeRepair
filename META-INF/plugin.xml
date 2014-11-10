@@ -1,30 +1,31 @@
 <idea-plugin version="2">
-  <id>edu.yale.cs.CodeRepair</id>
-  <name>Java Code Repair</name>
-  <version>1.0</version>
-  <vendor email="alex.reinking@yale.edu" url="http://cs.yale.edu">Yale University</vendor>
+    <id>edu.yale.cpsc.CodeRepair</id>
+    <name>Winston for IntelliJ</name>
+    <version>1.0</version>
+    <vendor email="alex.reinking@yale.edu" url="http://cpsc.yale.edu">Yale University</vendor>
 
-  <description><![CDATA[
+    <description><![CDATA[
       Repairs common type-errors in Java Code.
     ]]></description>
 
-  <change-notes>
-  </change-notes>
+    <change-notes>
+    </change-notes>
 
-  <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="131"/>
+    <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+    <idea-version since-build="131"/>
 
-  <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
-       on how to target different products -->
-  <!-- uncomment to enable plugin in all products
-  <depends>com.intellij.modules.lang</depends>
-  -->
+    <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
 
-  <extensions defaultExtensionNs="com.intellij">
-    <intentionAction>
-        <className>com.intellij.codeInsight.intention.CodeRepairIntention</className>
-        <category>Code Repair</category>
-    </intentionAction>
-  </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <intentionAction>
+            <className>com.intellij.codeInsight.intention.CodeRepairIntention</className>
+            <category>Code Repair</category>
+        </intentionAction>
+        <completion.contributor language="JAVA" implementationClass="edu.yale.cpsc.winston.SynthesisContributor"/>
+    </extensions>
 
 </idea-plugin>

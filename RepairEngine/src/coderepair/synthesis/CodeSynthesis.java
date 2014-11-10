@@ -75,9 +75,9 @@ public class CodeSynthesis {
         if (synthTable.get(requestedType) == null) return Collections.emptySortedSet();
         if (snippetTable.containsKey(requestedType)) return snippetTable.get(requestedType);
 
-        SortedSet<CodeSnippet> snippets = new TreeSet<>();
+        SortedSet<CodeSnippet> snippets = Collections.synchronizedSortedSet(new TreeSet<>());
         synthTable.get(requestedType)
-                .stream()
+                .parallelStream()
                 .filter(generator -> generator.cost <= remaining)
                 .forEach(generator -> {
                     if (generator.type instanceof JavaFunctionNode) {
