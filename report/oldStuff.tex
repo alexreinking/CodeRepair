@@ -36,3 +36,24 @@ expressions with the given type, similarly as in InSynth, but now ranked
 by similarity to the given backbone expression. The algorithm also 
 implements A* search that steer us towards the most desirable
 solutions.
+
+
+
+The contributions of this paper are:
+\begin{itemize}
+	\item We formulate the problem of repairing ill-typed expressions.
+	As input to the problem we take a backbone expression and 
+	the set of repair declarations. We introduce weak long normal 
+	form that allows a systematic search and a construction of the well-typed expressions.
+	We identify special symbols used to extend the expressiveness of the input.
+	\item We propose a novel repair calculus that specifies the rules that
+	we use to derive a well-typed term from a backbone expression.
+	The calculus describes how to fix a term using declarations with multiple arguments.
+	\item We propose an algorithm that finds the best well-typed expression based on 
+	weights system introduced in \cite{GveroETAL13CompleteCompletionTypesWeights}.
+    We show that the algorithm is polynomial given a certain class of ill-typed expressions.
+    \item We present a sound and complete algorithm that takes the ill-typed expression and 
+    finds a set of best solutions. The algorithm is based on A* search.
+\end{itemize}
+
+
