@@ -13,10 +13,7 @@ import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 import java.io.Serializable;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, DefaultWeightedEdge>
@@ -53,7 +50,21 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
     }
 
     public JavaTypeNode getTypeByName(String qualifiedName) {
-        return nodeManager.getTypeFromName(qualifiedName);
+        return nodeManager.getTypeByName(qualifiedName);
+    }
+
+    public List<JavaTypeNode> getAssignableTypes(JavaTypeNode thisType) {
+        List<JavaTypeNode> superTypes = new LinkedList<>();
+        superTypes.add(thisType);
+        Graphs.predecessorListOf(this, thisType).stream()
+                .filter(javaGraphNode -> javaGraphNode instanceof JavaFunctionNode)
+                .filter(javaGraphNode -> ((JavaFunctionNode )javaGraphNode).getFunctionName().equals("<cast>"))
+                .forEach(javaGraphNode -> {
+                    JavaFunctionNode functionNode = (JavaFunctionNode) javaGraphNode;
+                    JavaTypeNode superType = functionNode.getOutput();
+                    superTypes.addAll(getAssignableTypes(superType));
+                });
+        return superTypes;
     }
 
     // TODO: make this not suck
@@ -110,7 +121,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         return getEdgeWeight(getEdge(startType, funcType));
     }
 
-    public void addLocalVariable(String value, String qualifiedType) {
+    public void addFreeExpression(String value, String qualifiedType) {
         JavaFunctionNode newLocal = nodeManager.makeValue(value, qualifiedType);
         if (addVertex(newLocal)) {
             currentLocals.add(newLocal);

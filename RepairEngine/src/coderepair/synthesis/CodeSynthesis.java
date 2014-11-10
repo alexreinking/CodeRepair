@@ -13,10 +13,14 @@ import java.util.stream.Collectors;
 
 public class CodeSynthesis {
     private final SynthesisGraph synthesisGraph;
-    private final Map<JavaGraphNode, SortedSet<Generator>> synthTable = new HashMap<>();
-    private final Map<JavaGraphNode, SortedSet<CodeSnippet>> snippetTable = new HashMap<>();
-    private final Map<JavaFunctionNode, Double> unbiasedWeights = new HashMap<>();
-    private final HashMap<JavaGraphNode, Double> costLevel = new HashMap<>();
+    private final Map<JavaTypeNode, SortedSet<Generator>> synthTable = new HashMap<>();
+    private final Map<JavaTypeNode, SortedSet<CodeSnippet>> snippetTable = new HashMap<>();
+
+    public Map<JavaTypeNode, SortedSet<CodeSnippet>> getEnforcedSnippets() {
+        return enforcedSnippets;
+    }
+
+    private final Map<JavaTypeNode, SortedSet<CodeSnippet>> enforcedSnippets = new HashMap<>();
     private double costLimit = 0.0;
 
     public CodeSynthesis(SynthesisGraph synthesisGraph) {
@@ -26,10 +30,10 @@ public class CodeSynthesis {
     public SortedSet<CodeSnippet> synthesize(String qualifiedName, double costLimit, int nRequested) {
         synthTable.clear();
         snippetTable.clear();
-        costLevel.clear();
         this.costLimit = costLimit;
 
         JavaGraphNode requestedType = synthesisGraph.getTypeByName(qualifiedName);
+        Stack<JavaTypeNode> typesByDistance = new Stack<>();
 
         ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> costLimitBall
                 = new ClosestFirstIterator<>(synthesisGraph, requestedType, costLimit);
@@ -39,101 +43,59 @@ public class CodeSynthesis {
                 JavaTypeNode output = ((JavaFunctionNode) next).getOutput();
                 synthTable.computeIfAbsent(output, t -> new TreeSet<>())
                         .add(new Generator(next, synthesisGraph.getWeight(output, next)));
-            }
+            } else typesByDistance.push((JavaTypeNode) next);
         }
 
-        return getExpression(requestedType, costLimit, nRequested);
-    }
+        snippetTable.putAll(enforcedSnippets);
 
-    public CodeSynthesis biasTowards(Collection<FunctionSignature> signatures) {
-        for (FunctionSignature signature : signatures) {
-            JavaFunctionNode function = synthesisGraph.lookupFunction(signature.functionName, signature.outputType, signature.argumentTypes);
-            if (function != null) {
-                System.out.println("Favoring " + function.getName());
-
-                JavaTypeNode output = function.getOutput();
-                double oldWeight = synthesisGraph.getWeight(output, function);
-                unbiasedWeights.putIfAbsent(function, oldWeight);
-                synthesisGraph.setEdgeWeight(synthesisGraph.getEdge(output, function), oldWeight / 5.0);
-            }
+        while (!typesByDistance.empty()) {
+            JavaTypeNode top = typesByDistance.pop();
+            double costDeficit = costLimitBall.getShortestPathLength(top);
+            double effectiveCostLimit = costLimit - costDeficit;
+            snippetTable.put(top, getExpression(top, effectiveCostLimit, nRequested));
         }
-        return this;
-    }
-
-    public CodeSynthesis biasAgainst(Collection<FunctionSignature> signatures) {
-        for (FunctionSignature signature : signatures) {
-            JavaFunctionNode function = synthesisGraph.lookupFunction(signature.functionName, signature.outputType, signature.argumentTypes);
-            if (function != null) {
-                System.out.println("Demoting " + function.getName());
-
-                JavaTypeNode output = function.getOutput();
-                double oldWeight = synthesisGraph.getWeight(output, function);
-                unbiasedWeights.putIfAbsent(function, oldWeight);
-                synthesisGraph.setEdgeWeight(synthesisGraph.getEdge(output, function), oldWeight * 5.0);
-            }
-        }
-        return this;
-    }
-
-    public CodeSynthesis forbid(Collection<FunctionSignature> signatures) {
-        for (FunctionSignature signature : signatures) {
-            JavaFunctionNode function = synthesisGraph.lookupFunction(signature.functionName, signature.outputType, signature.argumentTypes);
-            if (function != null) {
-                System.out.println("Forbidding " + function.getName());
-
-                JavaTypeNode output = function.getOutput();
-                double oldWeight = synthesisGraph.getWeight(output, function);
-                unbiasedWeights.putIfAbsent(function, oldWeight);
-                synthesisGraph.setEdgeWeight(synthesisGraph.getEdge(output, function), Double.POSITIVE_INFINITY);
-            }
-        }
-        return this;
-    }
-
-    public CodeSynthesis removeBias() {
-        for (Map.Entry<JavaFunctionNode, Double> functionEntry : unbiasedWeights.entrySet()) {
-            JavaFunctionNode function = functionEntry.getKey();
-            JavaTypeNode output = function.getOutput();
-            synthesisGraph.setEdgeWeight(synthesisGraph.getEdge(output, function), functionEntry.getValue());
-        }
-        return this;
-    }
-
-    SortedSet<CodeSnippet> getExpression(JavaGraphNode requestedType, double remaining, int nRequested) {
-        if (synthTable.get(requestedType) == null) return Collections.emptySortedSet();
-
-        double highestRemaining = costLevel.computeIfAbsent(requestedType, v -> 0.0);
-        if (remaining > highestRemaining)
-            snippetTable.compute(requestedType, (k, v) -> {
-                SortedSet<CodeSnippet> snippets = new TreeSet<>();
-                synthTable.get(requestedType)
-                        .stream()
-                        .filter(generator -> generator.cost <= remaining)
-                        .forEach(generator -> {
-                            if (generator.type instanceof JavaFunctionNode) {
-                                JavaFunctionNode fGen = (JavaFunctionNode) generator.type;
-
-                                double nextCost = remaining - generator.cost;
-
-                                generator.cost *= 2.0;
-                                List<SortedSet<CodeSnippet>> choices =
-                                        fGen.getSignature()
-                                                .stream()
-                                                .map(input -> getExpression(input, nextCost, nRequested))
-                                                .collect(Collectors.toList());
-                                generator.cost /= 2.0;
-
-                                addFunctionPossibilities(
-                                        snippets, fGen, generator.cost, choices, 0,
-                                        new CodeSnippet[choices.size()], nRequested);
-                            }
-                        });
-
-                costLevel.put(requestedType, remaining);
-                return snippets;
-            });
 
         return snippetTable.getOrDefault(requestedType, Collections.emptySortedSet());
+    }
+
+    public void enforce(String type, CodeSnippet snippet) {
+        enforcedSnippets.computeIfAbsent(synthesisGraph.getTypeByName(type), v -> new TreeSet<>()).add(snippet);
+    }
+
+    public void strongEnforce(String type, CodeSnippet snippet) {
+        for (JavaTypeNode assignableType : synthesisGraph.getAssignableTypes(synthesisGraph.getTypeByName(type)))
+            enforce(assignableType.getName(), snippet);
+    }
+
+    public void relax() {
+        enforcedSnippets.clear();
+    }
+
+    SortedSet<CodeSnippet> getExpression(JavaTypeNode requestedType, double remaining, int nRequested) {
+        if (synthTable.get(requestedType) == null) return Collections.emptySortedSet();
+        if (snippetTable.containsKey(requestedType)) return snippetTable.get(requestedType);
+
+        SortedSet<CodeSnippet> snippets = new TreeSet<>();
+        synthTable.get(requestedType)
+                .stream()
+                .filter(generator -> generator.cost <= remaining)
+                .forEach(generator -> {
+                    if (generator.type instanceof JavaFunctionNode) {
+                        JavaFunctionNode funcGen = (JavaFunctionNode) generator.type;
+
+                        List<SortedSet<CodeSnippet>> choices =
+                                funcGen.getSignature()
+                                        .stream()
+                                        .map(input -> getExpression(input, remaining - generator.cost, nRequested))
+                                        .collect(Collectors.toList());
+
+                        addFunctionPossibilities(
+                                snippets, funcGen, generator.cost, choices, 0,
+                                new CodeSnippet[choices.size()], nRequested);
+                    }
+                });
+
+        return snippets;
     }
 
     void addSnippet(SortedSet<CodeSnippet> snippets, CodeSnippet poss, int nRequested) {
@@ -166,9 +128,9 @@ public class CodeSynthesis {
     }
 
     public static class FunctionSignature {
-        public String functionName;
-        public String outputType;
-        public List<String> argumentTypes;
+        public final String functionName;
+        public final String outputType;
+        public final List<String> argumentTypes;
 
         public FunctionSignature(String functionName, String outputType, String... argumentTypes) {
             this.functionName = functionName;
@@ -179,7 +141,7 @@ public class CodeSynthesis {
 
     private static class Generator implements Comparable<Generator> {
         public final JavaGraphNode type;
-        public double cost;
+        public final double cost;
 
         private Generator(JavaGraphNode type, double cost) {
             this.type = type;
