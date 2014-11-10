@@ -1,4 +1,4 @@
-package edu.yale.reinking;
+package edu.yale.cpsc.winston;
 
 import coderepair.SynthesisGraph;
 import coderepair.synthesis.CodeSnippet;
@@ -15,13 +15,15 @@ import org.jetbrains.annotations.NotNull;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.Enumeration;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 import static com.intellij.patterns.StandardPatterns.or;
 
 // Adapted from: https://github.com/JetBrains/intellij-community/blob/ff16ce78a1e0ddb6e67fd1dbc6e6a597e20d483a/java/compiler/impl/src/com/intellij/compiler/classFilesIndex/chainsSearch/completion/MethodsChainsCompletionContributor.java
-public class SmartContributor extends CompletionContributor {
+public class SynthesisContributor extends CompletionContributor {
     private static final String graphFileName = "/Users/alexreinking/Development/CodeRepair/data/graph.ser";
     private static final SynthesisGraph graph;
 
@@ -36,7 +38,6 @@ public class SmartContributor extends CompletionContributor {
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-
         graph = theGraph;
     }
 
@@ -55,7 +56,13 @@ public class SmartContributor extends CompletionContributor {
     private static final ElementPattern<? extends PsiElement> METHOD_PARAM_PATTERN =
             psiElement().withSuperParent(3, PsiMethodCallExpressionImpl.class);
 
-    public SmartContributor() {
+    public SynthesisContributor() {
+        try {
+            Enumeration<URL> resources = getClass().getClassLoader().getResources("");
+            while(resources.hasMoreElements()) System.out.println(resources.nextElement());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         extend(CompletionType.SMART, ASSIGNMENT_PATTERN, new CompletionProvider<CompletionParameters>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters,
@@ -75,7 +82,7 @@ public class SmartContributor extends CompletionContributor {
         });
     }
 
-    private static SynthesisCompletionContext getTypeName(CompletionParameters parameters) {
+    private SynthesisCompletionContext getTypeName(CompletionParameters parameters) {
         final PsiElement parent = PsiTreeUtil.getParentOfType(parameters.getPosition(),
                 PsiAssignmentExpression.class, PsiLocalVariable.class, PsiMethodCallExpression.class);
         if (parent == null) return null;
@@ -116,9 +123,9 @@ public class SmartContributor extends CompletionContributor {
         return new SynthesisCompletionContext(typeName, variableName, element);
     }
 
-    private static void addLocalsToGraph(SynthesisGraph graph,
-                                         SynthesisCompletionContext context,
-                                         CompletionParameters parameters) {
+    private void addLocalsToGraph(SynthesisGraph graph,
+                                  SynthesisCompletionContext context,
+                                  CompletionParameters parameters) {
         final PsiElement position = parameters.getPosition();
         final PsiMethod containingMethod = PsiTreeUtil.getParentOfType(position, PsiMethod.class);
         if (containingMethod == null) return;

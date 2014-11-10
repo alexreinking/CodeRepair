@@ -27,7 +27,7 @@ class JavaTypeBuilder implements Serializable {
     }
 
     JavaFunctionNode makeConstructor(JavaTypeNode type, Collection<JavaTypeNode> formals) {
-        return new JavaFunctionNode("new " + type.getName(), formals, type, new StaticFunctionSynthesizer());
+        return new JavaFunctionNode("new " + type.getClassName(), formals, type, new StaticFunctionSynthesizer());
     }
 
     JavaFunctionNode makeMethod(String name, JavaTypeNode owner, JavaTypeNode output, Collection<JavaTypeNode> formals) {
@@ -38,7 +38,7 @@ class JavaTypeBuilder implements Serializable {
     }
 
     JavaFunctionNode makeStaticMethod(String name, JavaTypeNode owner, JavaTypeNode output, Collection<JavaTypeNode> formals) {
-        return new JavaFunctionNode(owner.getName() + "." + name, formals, output, new StaticFunctionSynthesizer());
+        return new JavaFunctionNode(owner.getClassName() + "." + name, formals, output, new StaticFunctionSynthesizer());
     }
 
     JavaFunctionNode makeValue(String value, String typeName) {
