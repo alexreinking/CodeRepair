@@ -15,8 +15,8 @@ import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
-        final String inFile = "./data/rt.javap";
-        final String graphFile = "./data/graph.ser";
+        final String inFile = "./resources/rt.javap";
+        final String graphFile = "./resources/graph.ser";
         final JavaPParser.JavapContext[] parseTree = new JavaPParser.JavapContext[1];
         final SynthesisGraph[] graph = new SynthesisGraph[1];
         final GraphBuilder[] graphBuilder = new GraphBuilder[1];
@@ -139,6 +139,6 @@ public class Main {
             synthesis.strongEnforce("java.io.BufferedInputStream", new CodeSnippet(bestSnippet.code, 0.0));
         });
 
-        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(synthesize).run();
+        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(simulatedRepair).run();
     }
 }

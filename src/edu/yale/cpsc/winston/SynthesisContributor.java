@@ -5,6 +5,7 @@ import coderepair.synthesis.CodeSnippet;
 import coderepair.synthesis.CodeSynthesis;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
@@ -15,16 +16,14 @@ import org.jetbrains.annotations.NotNull;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.net.URL;
 import java.util.Arrays;
-import java.util.Enumeration;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 import static com.intellij.patterns.StandardPatterns.or;
 
 // Adapted from: https://github.com/JetBrains/intellij-community/blob/ff16ce78a1e0ddb6e67fd1dbc6e6a597e20d483a/java/compiler/impl/src/com/intellij/compiler/classFilesIndex/chainsSearch/completion/MethodsChainsCompletionContributor.java
 public class SynthesisContributor extends CompletionContributor {
-    private static final String graphFileName = "/Users/alexreinking/Development/CodeRepair/data/graph.ser";
+    private static final String graphFileName = "/Users/alexreinking/Development/CodeRepair/resources/graph.ser";
     private static final SynthesisGraph graph;
 
     static {
@@ -57,12 +56,6 @@ public class SynthesisContributor extends CompletionContributor {
             psiElement().withSuperParent(3, PsiMethodCallExpressionImpl.class);
 
     public SynthesisContributor() {
-        try {
-            Enumeration<URL> resources = getClass().getClassLoader().getResources("");
-            while(resources.hasMoreElements()) System.out.println(resources.nextElement());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         extend(CompletionType.SMART, ASSIGNMENT_PATTERN, new CompletionProvider<CompletionParameters>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters,
@@ -74,7 +67,7 @@ public class SynthesisContributor extends CompletionContributor {
 
                 SynthesisCompletionContext ctx = getTypeName(parameters);
                 if (ctx != null) {
-                    addLocalsToGraph(graph, ctx, parameters);
+                    addLocalsToGraph(synthesis, ctx, parameters);
                     for (CodeSnippet codeSnippet : synthesis.synthesize(ctx.typeName, 5.0, 10))
                         completionResultSet.addElement(LookupElementBuilder.create(codeSnippet.code));
                 }
@@ -123,7 +116,7 @@ public class SynthesisContributor extends CompletionContributor {
         return new SynthesisCompletionContext(typeName, variableName, element);
     }
 
-    private void addLocalsToGraph(SynthesisGraph graph,
+    private void addLocalsToGraph(CodeSynthesis synthesis,
                                   SynthesisCompletionContext context,
                                   CompletionParameters parameters) {
         final PsiElement position = parameters.getPosition();
@@ -141,9 +134,8 @@ public class SynthesisContributor extends CompletionContributor {
                 boolean isPrivate = field.hasModifierProperty(PsiModifier.PRIVATE);
                 boolean isPackageLocal = field.hasModifierProperty(PsiModifier.PACKAGE_LOCAL);
                 String fieldName = field.getName();
-                if ((isPublic || isProtected ||
-                        ((isPrivate || isPackageLocal) &&
-                                aClass.isEquivalentTo(containingClass))) && !fieldName.equals(context.variableName)) {
+                if ((isPublic || isProtected || (isPrivate || isPackageLocal) && aClass.isEquivalentTo(containingClass))
+                        && !context.variableName.equals(fieldName)) {
                     graph.addLocalVariable(fieldName, field.getType().getCanonicalText(), 0.5);
                 }
             }
