@@ -15,11 +15,30 @@
 \usepackage[scaled]{helvet}     % see www.ctan.org/get/macros/latex/required/psnfss/psnfss2e.pdf
 \usepackage{url}                % format URLs
 \usepackage{listings}           % format code
+    \usepackage{colonequals}    % yes, seriously
 \usepackage[]{algorithm2e}      % write up algorithms
 \usepackage{enumitem}           % adjust spacing in enums
 \usepackage{xspace}             % Ensure correct spacing after text macros
 \usepackage[colorlinks=true,allcolors=blue,breaklinks,draft=false]{hyperref}
+\usepackage[dvipsnames]{xcolor}
 \usepackage{defs}
+\lstset{
+language=Java,
+basicstyle=\small\sffamily,
+showspaces=false,
+showstringspaces=false,
+showtabs=false,
+frame=none,
+tabsize=2,
+captionpos=b,
+breaklines=true,
+breakatwhitespace=true,
+breakautoindent=true,
+escapeinside={\%*}{*)},
+linewidth=0.5\textwidth
+}
+
+
 
 \begin{document}
 
@@ -34,6 +53,7 @@
 
 \input{intro}
 \input{examples}
+\input{preliminaries}
 \input{algorithm}
 \input{related}
 %\input{theirStuff}	
