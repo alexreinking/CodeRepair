@@ -46,7 +46,6 @@ typeStack $\leftarrow$ \KwNew Stack\;
 Note that in \ref{proc:synthesize}, all sets are maintained in sorted order using a tree data structure, and \textit{genTable} and \textit{snippetTable} are both hash tables of these sets.
 
 The next procedure, \ref{proc:getExpression}, goes through each possible generator for a given type and attempts to satisfy its parameter types recursively. It checks the memoization table before computing to avoid repeating work. The recursion itself is straight-forward: for each function that can generate the requested type, attempt to satisfy each one of its parameters, add all those whose parameters were satisfied and whose total cost is beneath the limit $L$, and keep only the best $N$ encountered. Larger values of $N$, of course, increase the time required at this stage.
-
 \begin{procedure}
 \lIf{$\tau$ $\in$ snipT}{\Return{snipT[$\tau$]}}
 snips $\leftarrow$ $\{\}$ \;
@@ -70,8 +69,9 @@ gens $\leftarrow$ genT[$\sigma$] \;
 \caption{GetExpressions(genT, snipT, $\sigma$, $L$, $N$)}
 \label{proc:getExpression}
 \end{procedure}
-
 Since $L$ and $N$ simply limit the search, setting both to $\infty$ enables a search of the entire possible space of expressions that generate type $\tau$.
+
+Once the results from \ref{proc:synthesize} have been obtained, the built up expression can be converted into a string by recursively applying a string formatting function appropriate for the color of each generator in the expression.
 
 \subsection{Repair Procedure}
 

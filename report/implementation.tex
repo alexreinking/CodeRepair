@@ -1,0 +1,25 @@
+\section{Implementation}
+The primary goal of our implementation was to produce a library that can handle these queries, and a tool that provides an interface in an IDE setting. We provide a full implementation of the algorithm described, along with a plugin for IntelliJ IDEA that adds a repair intention, and enhances its autocomplete feature through the \ref{proc:synthesize} procedure.
+
+Although the definitions of type and map for our algorithm are language-agnostic, our implementation targets Java for its ease of analysis. In Java, we add type nodes to the graph for each class and for each primitive type. The map nodes are derived from methods, static functions, constructors, local methods, and values (which take void to their own data type), and are colored according to each category.
+
+For our testing, we devised a simple system of costs for each type of node. (See Table \ref{impl:costs}) These costs are applied only to the output edges on the map nodes. The weights elsewhere are set to $0$. Despite its simplicity, we found that this cost assignment yielded good results in practice, as the desired expressions always appeared very early in our evaluations. \alex{We should assemble some benchmarks}.
+
+\begin{table}[h]
+  \centering
+  \renewcommand{\arraystretch}{1.25}
+  \begin{tabularx}{0.75\linewidth}{| X | X |}
+    \hline
+    \textbf{Type} & \textbf{Cost} \\ \hline
+    Up-casts & $0$ \\ \hline
+    Fields  & $1$ \\ \hline
+    Methods & $1 + k$ \\ \hline
+    Constructors & $1 + k$ \\ \hline
+  \end{tabularx}
+  \caption{Costs for output edges in Java. $k$ is the number of arguments the associated map takes}
+  \label{impl:costs}
+\end{table}
+
+To construct the graph for the Java target, rather than writing a full parser for the Java language and analyzing the sources, or relying on the JVM's reflection capabilities to search for method signatures, we opted to write a simpler parser for the output of \texttt{javap}, the standard JDK class file disassembler. The \texttt{javap} tool can write to standard output just the public definitions for every class in a jar file, which affords us the ability to easily filter out certain packages or classes before creating the graph using existing tools. In particular, it was necessary to remove the \texttt{sun.*} set of packages, since they are incompatible with OpenJDK, and contain implementation details of the Oracle JVM.
+
+\clearpage
