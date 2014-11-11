@@ -41,7 +41,7 @@ public class CodeSynthesis {
             JavaGraphNode next = costLimitBall.next();
             if (next instanceof JavaFunctionNode) {
                 JavaTypeNode output = ((JavaFunctionNode) next).getOutput();
-                synthTable.computeIfAbsent(output, t -> new TreeSet<>())
+                synthTable.computeIfAbsent(output, t -> new BoundedSortedSet<>(nRequested))
                         .add(new Generator(next, synthesisGraph.getWeight(output, next)));
             } else typesByDistance.push((JavaTypeNode) next);
         }
@@ -75,7 +75,7 @@ public class CodeSynthesis {
         if (synthTable.get(requestedType) == null) return Collections.emptySortedSet();
         if (snippetTable.containsKey(requestedType)) return snippetTable.get(requestedType);
 
-        SortedSet<CodeSnippet> snippets = Collections.synchronizedSortedSet(new TreeSet<>());
+        SortedSet<CodeSnippet> snippets = Collections.synchronizedSortedSet(new BoundedSortedSet<>(nRequested));
         synthTable.get(requestedType)
                 .parallelStream()
                 .filter(generator -> generator.cost <= remaining)
@@ -91,7 +91,7 @@ public class CodeSynthesis {
 
                         addFunctionPossibilities(
                                 snippets, funcGen, generator.cost, choices, 0,
-                                new CodeSnippet[choices.size()], nRequested);
+                                new CodeSnippet[choices.size()]);
                     }
                 });
 
@@ -113,29 +113,17 @@ public class CodeSynthesis {
     void addFunctionPossibilities(
             SortedSet<CodeSnippet> snippets, JavaFunctionNode functionType,
             double currentCost, List<SortedSet<CodeSnippet>> synths,
-            int pos, CodeSnippet paramArray[], int nRequested) {
+            int pos, CodeSnippet paramArray[]) {
         if (pos == paramArray.length) {
-            addSnippet(snippets, new CodeSnippet(functionType.synthesize(paramArray), currentCost), nRequested);
+            snippets.add(new CodeSnippet(functionType.synthesize(paramArray), currentCost));
         } else {
             for (CodeSnippet snip : synths.get(pos)) {
                 paramArray[pos] = snip;
                 double nextCost = currentCost + snip.cost;
                 if (nextCost > costLimit) break; // thanks, sorted order!
                 addFunctionPossibilities(snippets, functionType, nextCost,
-                        synths, pos + 1, paramArray, nRequested);
+                        synths, pos + 1, paramArray);
             }
-        }
-    }
-
-    public static class FunctionSignature {
-        public final String functionName;
-        public final String outputType;
-        public final List<String> argumentTypes;
-
-        public FunctionSignature(String functionName, String outputType, String... argumentTypes) {
-            this.functionName = functionName;
-            this.outputType = outputType;
-            this.argumentTypes = Arrays.asList(argumentTypes);
         }
     }
 

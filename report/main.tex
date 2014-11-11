@@ -15,12 +15,20 @@
 \usepackage[scaled]{helvet}     % see www.ctan.org/get/macros/latex/required/psnfss/psnfss2e.pdf
 \usepackage{url}                % format URLs
 \usepackage{listings}           % format code
-    \usepackage{colonequals}    % yes, seriously
-\usepackage[]{algorithm2e}      % write up algorithms
+\usepackage{colonequals}        % yes, seriously
 \usepackage{enumitem}           % adjust spacing in enums
 \usepackage{xspace}             % Ensure correct spacing after text macros
 \usepackage[colorlinks=true,allcolors=blue,breaklinks,draft=false]{hyperref}
 \usepackage[dvipsnames]{xcolor}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}      % write up algorithms
+\usepackage{lipsum}
+\usepackage[pdftex]{graphicx}
+\usepackage{amsmath}
+\usepackage{tabularx}
+%
+% Custom Packages
+%
+\usepackage{graphviz}
 \usepackage{defs}
 \lstset{
 language=Java,
@@ -41,6 +49,7 @@ linewidth=0.5\textwidth
 
 
 \begin{document}
+\lstset{language=Java}
 
 \title{\ourTool: It Fixes Things}
 \authorinfo{Alex Reinking}{Yale University}{alexander.reinking@yale.edu}
@@ -55,6 +64,8 @@ linewidth=0.5\textwidth
 \input{examples}
 \input{preliminaries}
 \input{algorithm}
+\input{implementation}
+% \input{evaluation}
 \input{related}
 %\input{theirStuff}	
 \input{oldStuff}
