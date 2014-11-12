@@ -21,5 +21,3 @@ For our testing, we devised a simple system of costs for each type of node. (See
 \end{table}
 
 To construct the graph for the Java target, rather than writing a full parser for the Java language and analyzing the sources, or relying on the JVM's reflection capabilities to search for method signatures, we opted to write a simpler parser for the output of \texttt{javap}, the standard JDK class file disassembler. The \texttt{javap} tool can write to standard output just the public definitions for every class in a jar file, which affords us the ability to easily filter out certain packages or classes before creating the graph using existing tools. In particular, it was necessary to remove the \texttt{sun.*} set of packages, since they are incompatible with OpenJDK, and contain implementation details of the Oracle JVM.
-
-\clearpage
