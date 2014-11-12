@@ -1,17 +1,32 @@
 \section{Motivating Examples}
 \label{sec:examples}
 
-After the initial JVM warm-up?  
-
-The following series of examples will demonstrate how to apply \ourTool in practical software
-development. These examples are written in the Java programming
-language. As formally defined in Sec.~\ref{sec:preliminaries},
-as input our algorithm takes terms in applicative long normal
-form, which closely corresponds to expressivity of the Java programming language.
-To emphasize the significance in practical software development, 
-we choose examples from a set of the real code examples (most of them featured at
+We first illustrate how \ourTool works and the nature of repair with the usage of
+familiar API calls from the Java standard library, reflecting along the way on the differences between our and other tools for code completion and repair. To emphasize the significance in practical software development, 
+our examples are chosen from a set of the real code examples (most of them featured at
 \url{http://www.java2s.com/}{}).
 
+\subsection{\ourTool as a Synthesis Tool}
+
+Figure~\ref{fig:screenshot1} is a screen capture showing that \ourTool is also
+a synthesis tool. In the scenario in Fig.~\ref{fig:screenshot1} the user already wrote some parts of the code, and now she 
+needs to write a matcher. After declaring a variable,
+she invokes \ourTool, which suggests a list of well-typed expressions that would fit here. Hopefully, the desired code is also among the returned results. It is the case in this particular example, and the user selects the third 
+result, which is then automatically inserted in the program. The number of the results returned by \ourTool can be easily adjusted; it is one of the parameters of our tool. In 
+Section~\ref{sec:algorithm} we explain how to generate results which are most likely to be useful to the program at the point when 
+
+
+%After the initial JVM warm-up?  
+%
+%The following series of examples will demonstrate how to apply \ourTool in practical software
+%development. These examples are written in the Java programming
+%language. As formally defined in Sec.~\ref{sec:preliminaries},
+%as input our algorithm takes terms in applicative long normal
+%form, which closely corresponds to expressivity of the Java programming language.
+%To emphasize the significance in practical software development, 
+%we choose examples from a set of the real code examples (most of them featured at
+%\url{http://www.java2s.com/}{}).
+%
 %
 %
 %We first illustrate our approach and the nature of repair with the usage of
