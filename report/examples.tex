@@ -12,8 +12,15 @@ Figure~\ref{fig:screenshot1} is a screen capture showing that \ourTool is also
 a synthesis tool. In the scenario in Fig.~\ref{fig:screenshot1} the user already wrote some parts of the code, and now she 
 needs to write a matcher. After declaring a variable,
 she invokes \ourTool, which suggests a list of well-typed expressions that would fit here. Hopefully, the desired code is also among the returned results. It is the case in this particular example, and the user selects the third 
-result, which is then automatically inserted in the program. The number of the results returned by \ourTool can be easily adjusted; it is one of the parameters of our tool. In 
-Section~\ref{sec:algorithm} we explain how to generate results which are most likely to be useful to the program at the point when 
+result, which is then automatically inserted in the program. The number of the results returned by \ourTool can be easily adjusted in the settings of the tool. 
+
+Finding useful code snippets is an important aspect of every synthesis tool: it is not enough that 
+the synthesized code can compile -- in addition it should also be the code that the user had in mind. It is not always possible to guess correctly the user's intentions, but as we show in Section~\ref{sec:evaluation}, \ourTool 
+
+
+In Section~\ref{sec:algorithm} we explain how to generate ``most desired'' results. We use
+the system of costs associated 
+
 
 
 %After the initial JVM warm-up?  
