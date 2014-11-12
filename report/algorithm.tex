@@ -1,18 +1,30 @@
 \section{Algorithm Description}
+\label{sec:algorithm}
 
 This section describes an algorithm used to repair ill-typed expressions. The algorithm takes as input an ill-typed expression to be repaired, and two tuning parameters used to guide the internal queries: $N$, the number of possible subexpressions to consider for any type, and $L$, the maximum allowable cost for an expression to be returned. These bounds are necessary to avoid entering an infinitely-deep recursion -- it is not uncommon for classes to accept instances of themselves -- and to control the runtime of the algorithm. \ourTool has access to the environment via the \textit{synthesis graph}, which should be precomputed for libraries, and extended as necessary in an IDE setting.
 
 As a subroutine, \ourTool uses a graph-search-based algorithm for expression synthesis. This portion of the algorithm is of independent value, and can be called directly using our tool.
 
 \subsection{Synthesis Graph Construction}
+\label{sec:algorithm:graph}
 
 The data structure central to \ourTool is a colored, directed, weighted, simple bipartite graph $G = (V = V_t \cup V_m, E, w, c)$ between \textit{type} nodes ($V_t$) and \textit{map} nodes ($V_m$), henceforth the \textit{synthesis graph}. A type is any concrete data type, and a map is any language entity that produces exactly one such data type (possibly void) from zero or more types, i.e. it can be modeled by some map $f : (\tau_1 \times \cdots \times \tau_k) \to \sigma$. In the synthesis graph, for each map, an incoming edge is drawn from its co-domain, and outgoing edges are drawn from the map to each type in its domain. These relationships capture the notions that each type or map can be \textit{constructed from} or \textit{satisfied by} other maps or types, respectively.
 
 The weights on the synthesis graph represent the \textit{cost} incurred by including the edge as a part of a candidate snippet. These costs can be derived according to simple heuristics, or computed by examining the frequency of usage over a large corpus. It is important only that no negative costs be assigned anywhere in the graph, and that methods that are more important are valued more than those that are not. The algorithm evaluates candidate expressions by considering their \textit{cost}, not their \textit{value}, so lower edge costs are considered better. Lastly, the synthesis graph is colored according to which language structure added the node to the graph, e.g. constructors, methods, public fields, and the like. These groups color the graph, and are used by the synthesis procedure to decide how to construct the code snippets that ultimately serve as output.
 
+Figure \ref{examplegraph} illustrates a neighborhood of the graph around BufferedReader, a common Java class.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.75\linewidth]{exampleGraph.png}
+\caption{A subset of a ball of cost-radius $3$ surrounding \texttt{BufferedReader}. The path to \texttt{PipedReader} forms the only valid expression derivable from this graph. The boxed nodes are types, while the ovular nodes are maps.\label{examplegraph}}
+\end{figure}
+
 \subsection{Type Inference}
 
-Since it is often the case that very general types, such as integers and strings, carry additional meaning, the synthesis graph must be extended to include abstract type information that encodes whether a particular argument is, for example, a counter, a file descriptor, or an untyped enumeration, in the case of an integer, or in the case of a string, a URL, a file name, or a regular expression. There are already standard approaches for doing this; Lackwit is such a tool for C/C++ programs \cite{DBLP:conf/icse/OCallahanJ97}. Once the abstract types have been identified, they can be added to the graph as subtypes of \texttt{String}, \texttt{int}, etc., with a small, but non-zero cost for ``downcasting'' a normal string or integer to the specific abstract type. This penalty ensures that those expressions that respect the abstract types are preferred over those that don't.
+Since it is often the case that very general types, such as integers and strings, carry additional meaning, the synthesis graph must be extended to include abstract type information that encodes whether a particular argument is, for example, a counter, a file descriptor, or an untyped enumeration, in the case of an integer, or in the case of a string, a URL, a file name, or a regular expression. There are already standard approaches for doing this; Lackwit is such a tool for C language programs \cite{DBLP:conf/icse/OCallahanJ97}. Once the abstract types have been identified, they can be added to the graph as subtypes of \texttt{String}, \texttt{int}, etc., with a small, but non-zero cost for ``downcasting'' a normal string or integer to the specific abstract type. This penalty ensures that those expressions that respect the abstract types are preferred over those that don't.
+
+Although this is technically an optional step in so far as it does not pose a challenge to correctness, it serves as a highly-effective heuristic for guiding the search. Even though the returned expressions are always correctly-typed, they might still throw runtime errors; the additional type information recovered by this step reduces the chance of that happening.
 
 \subsection{Synthesis Procedure}
 
@@ -103,4 +115,4 @@ $S \leftarrow S \cup \{x_1,\ldots,x_k\}$ \;
 \caption{Repair($G$, expr, $L$, $N$)}\label{proc:repair}
 \end{procedure}
 
-\lipsum[1-28]
+\lipsum[1-24]

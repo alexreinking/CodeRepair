@@ -1,5 +1,6 @@
 package coderepair;
 
+import coderepair.analysis.JavaGraphNode;
 import coderepair.analysis.JavaTypeNode;
 import coderepair.antlr.JavaPLexer;
 import coderepair.antlr.JavaPParser;
@@ -8,11 +9,21 @@ import coderepair.synthesis.CodeSynthesis;
 import coderepair.util.TimedTask;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
+import org.jgraph.JGraph;
+import org.jgrapht.ext.JGraphModelAdapter;
+import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.graph.DirectedSubgraph;
+import org.jgrapht.graph.Subgraph;
+import org.jgrapht.traverse.ClosestFirstIterator;
 
+import javax.swing.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -116,6 +127,24 @@ public class Main {
             synthesis.strongEnforce("java.io.BufferedInputStream", new CodeSnippet(bestSnippet.code, 0.0));
         });
 
-        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(simulatedRepair.times(20)).run();
+        TimedTask exportGraph = new TimedTask("Export", () -> {
+            try {
+                ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> iterator
+                        = new ClosestFirstIterator<>(graph[0], graph[0].getTypeByName("java.io.BufferedReader"), 3.0);
+
+                Set<JavaGraphNode> vertices = new HashSet<>();
+                while(iterator.hasNext())
+                    vertices.add(iterator.next());
+
+                DirectedSubgraph<JavaGraphNode, DefaultWeightedEdge> subgraph
+                        = new DirectedSubgraph<>(graph[0], vertices, graph[0].edgeSet());
+
+                SynthesisGraph.exportToFile(Files.newBufferedWriter(Paths.get("./resources/graph.dot")), subgraph);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(synthesize).run();
     }
 }

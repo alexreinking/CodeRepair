@@ -3,6 +3,8 @@ package coderepair;
 import coderepair.analysis.JavaFunctionNode;
 import coderepair.analysis.JavaGraphNode;
 import coderepair.analysis.JavaTypeNode;
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.ext.ComponentAttributeProvider;
 import org.jgrapht.ext.DOTExporter;
@@ -17,9 +19,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, DefaultWeightedEdge>
-        implements Serializable {
+        implements Serializable, DirectedGraph<JavaGraphNode, DefaultWeightedEdge> {
     private static final IntegerNameProvider<JavaGraphNode> idProvider = new IntegerNameProvider<>();
-    private static final VertexNameProvider<JavaGraphNode> nameProvider = JavaGraphNode::getName;
+    private static final VertexNameProvider<JavaGraphNode> nameProvider = node -> {
+        if (node instanceof JavaFunctionNode)
+            return ((JavaFunctionNode) node).getFunctionName();
+        return node.getName();
+    };
     private static final ComponentAttributeProvider<JavaGraphNode> colorProvider = component -> {
         if (component instanceof JavaTypeNode) {
             HashMap<String, String> attrMap = new HashMap<>();
@@ -45,8 +51,12 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
     }
 
     public void exportToFile(Writer outputStream) {
+        exportToFile(outputStream, this);
+    }
+
+    public static void exportToFile(Writer outputStream, Graph<JavaGraphNode, DefaultWeightedEdge> graph) {
         new DOTExporter<JavaGraphNode, DefaultWeightedEdge>(idProvider, nameProvider, null, colorProvider, null)
-                .export(outputStream, this);
+                .export(outputStream, graph);
     }
 
     public JavaTypeNode getTypeByName(String qualifiedName) {
