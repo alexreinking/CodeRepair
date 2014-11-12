@@ -1,4 +1,6 @@
 \section{Implementation}
+\label{sec:implementatio}
+
 The primary goal of our implementation was to produce a library that can handle these queries, and a tool that provides an interface in an IDE setting. We provide a full implementation of the algorithm described, along with a plugin for IntelliJ IDEA that adds a repair intention, and enhances its autocomplete feature through the \ref{proc:synthesize} procedure.
 
 Although the definitions of type and map for our algorithm are language-agnostic, our implementation targets Java for its ease of analysis. In Java, we add type nodes to the graph for each class and for each primitive type. The map nodes are derived from methods, static functions, constructors, local methods, and values (which take void to their own data type), and are colored according to each category.
