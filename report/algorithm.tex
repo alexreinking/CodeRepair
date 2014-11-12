@@ -48,8 +48,7 @@ typeStack $\leftarrow$ \KwNew Stack\;
 	snippetTable[$\sigma$] $\leftarrow$ \ref{proc:getExpression}(genTable, snippetTable, $\sigma$, $l$, $N$) \;
 }
 \Return{snippetTable[$\tau$]}\;
-\caption{Synthesize($G$, $\tau$, $L$, $N$)}
-\label{proc:synthesize}
+\caption{Synthesize($G$, $\tau$, $L$, $N$)}\label{proc:synthesize}
 \end{procedure}
 
 Note that in \ref{proc:synthesize}, all sets are maintained in sorted order using a tree data structure, and \textit{genTable} and \textit{snippetTable} are both hash tables of these sets.
@@ -59,7 +58,7 @@ Once the results from \ref{proc:synthesize} have been obtained, the built up exp
 The subroutine \ref{proc:getExpression} goes through each possible generator for a given type and attempts to satisfy its argument types recursively. It checks a memoization table before computing the set of expressions to avoid repeating work. The recursion itself is straight-forward: for each function that can generate the requested type, attempt to satisfy all of its parameters, add all those whose parameters were satisfied and whose total cost is beneath the limit $L$, keeping only the best $N$ encountered.
 \begin{procedure}
 \lIf{$\tau$ $\in$ snipT}{\Return{snipT[$\tau$]}}
-snips $\leftarrow$ $\{\}$ \;
+snips $\leftarrow$ $\{\}$ \; \label{proc:getExpression:snipInit}
 gens $\leftarrow$ genT[$\sigma$] \;
 \ForEach{$(f : (\tau_1 \times \cdots \times \tau_k) \to \sigma, w')$ $\in$ gens}{
 	\lIf{$w' > L$}{\KwContinue}
@@ -77,15 +76,33 @@ gens $\leftarrow$ genT[$\sigma$] \;
 	}
 }
 \Return{snippets}
-\caption{GetExpressions(genT, snipT, $\sigma$, $L$, $N$)}
-\label{proc:getExpression}
+\caption{GetExpressions(genT, snipT, $\sigma$, $L$, $N$)}\label{proc:getExpression}
 \end{procedure}
 
 \subsection{Repair Procedure}
 We are now ready to describe the repair procedure. The key step in our approach is biasing the synthesis towards those subexpressions of the broken expression that are, in fact, correctly-typed. The reasoning behind this is intuitive; if a user specifies that she would like to create a new type from some specific components, the search should be optimized to favor using those same components.
 
-To this end, we modify the \ref{proc:getExpression} procedure to accept an initial map, supplied by the repair procedure, which will reduce the cost of each result by a factor of $2^{n}$, where $n$ is the number of expressions in the initial map which occur in the current result. This change occurs on line \ref{proc:getExpression:cost} of \ref{proc:getExpression}, where \textit{cost} should be divided by $2^{n}$. This scheme has a few distinct advantages: first, it will very strongly prefer those expressions that occurred as part of the given incorrect expression; second, in cases where more than one element of the same type is required, it will favor diversity over homogeneity; and finally, if no subexpressions are supplied, then the modified algorithm degenerates into its original form.
+To do this, we modify the \ref{proc:getExpression} procedure to accept a preference map, \textit{pref}, supplied by the repair procedure. The preference map contains a set of subexpressions (indexed by their type) which will be used to bias the search in their favor. We modify \ref{proc:getExpression} so that line \ref{proc:getExpression:snipInit} initializes \textit{snips} with \textit{pref[$\tau$]}, rather than the empty set, and line \ref{proc:getExpression:cost} reduces the cost of each result by a factor of $2^{n}$, where $n$ is the number of expressions in the preference map which occur in $f(args)$. Since \ref{proc:getExpression} is a subroutine of \ref{proc:synthesize}, we must add an argument to its signature in order to forward the preference map to \ref{proc:getExpression}.
 
-% \digraph[scale=0.5]{MyGraph}{rankdir=LR; a->b; b->c}
+This scheme has a few distinct advantages: first, it will very strongly prefer those expressions that occurred as part of the given incorrect expression; second, in cases where more than one element of the same type is required, it will favor diversity over homogeneity (ie. if both $a$ and $b$ were specified, it will try to use both); and finally, if no subexpressions are supplied, then the modified algorithm degenerates into its original form.
 
-\lipsum[1-32]
+With this modification in place, the repair algorithm proceeds from the bottom up. When we insert an expression  in to \textit{pref}, we will say that we have \textit{enforced} that expression. So, for each broken subexpression in the given expression, we first enforce all of its correctly-typed child expressions and then initiate a synthesis on the current subexpression. If any of its children are not correctly typed, we recurse and repair them first.
+
+Notice that this means the repaired subexpressions will also be enforced. This behavior is desirable since it favors reusing the computations made before when synthesis occurs at a higher level. Additionally, this process  only enforces those literals that are contained within a given subexpression, so that two disjoint subexpressions do not interfere while initiating a nested repair.
+
+\begin{procedure}
+\lIf{expr is well-typed}{\Return{(expr, $\{\}$)}}
+$f: (x_1: \tau_1, \ldots, x_k: \tau_k): \sigma$ $\leftarrow$ expr\;
+\tcc{$S$ is the preference map}
+$S \leftarrow \{\}$ \;
+\ForEach{$x \in \{x_1,\ldots,x_k\}$}{
+	$(x, S_x) \leftarrow$ \ref{proc:repair}($x$, $L$, $N$)\;
+	$S \leftarrow S \cup S_x$ \;
+}
+$S \leftarrow S \cup \{x_1,\ldots,x_k\}$ \;
+\tcc{enforce $S$ via fifth argument}
+\Return{(\ref{proc:synthesize}($G$, $\sigma$, $L$, $N$, $S$), $S$)}
+\caption{Repair($G$, expr, $L$, $N$)}\label{proc:repair}
+\end{procedure}
+
+\lipsum[1-28]
