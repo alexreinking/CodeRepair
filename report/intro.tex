@@ -46,10 +46,13 @@ In this paper we describe a tool, called \ourTool, which
 automatically repairs code expressions based on the hinted structure
 of the ill-typed code. \ourTool finds well typed expressions that are as close as 
 possible to the given (potentially) ill-typed expression - we call such an
-input expression, a {\em backbone} expression. Additionally, \ourTool can also be 
+input expression, a {\em backbone} expression. 
+
+Additionally, \ourTool can also be 
 seen as a synthesis tool. It extends the functionality described in \cite{MandelinetALL2005Jungloid, GveroETAL13CompleteCompletionTypesWeights, PerelmanGBG12}.
-A user does not need to provide a backbone expression -- it is sufficient to declare a variable of an arbitrary type. Based on that type \ourTool can synthesize corresponding code fragments. In the light of the program repair, the synthesis aspect of \ourTool can be 
-considered as a repair of the empty expression. 
+In the light of the program repair, the synthesis aspect of \ourTool can be 
+considered as a repair of the empty expression. A user does not need to provide a backbone expression -- it is sufficient to declare a variable of an arbitrary type. Based on that type \ourTool can synthesize corresponding code fragments. The synthesized code has the given type and it can contain user defined 
+values, as well as methods from the API. 
 
 Our tool can be applied in interactive scenarios like IDE code completion, to rank expressions 
 based on their similarity to ill-typed code. Preferably, the best
@@ -58,8 +61,8 @@ Another application is in providing automated repair in the compilation process.
 
 \ourTool is a tool based on a graph algorithm for synthesizing expressions of a certain type in a programming language. As an algorithm, a synthesis process is further 
 extended so that it also repairs ill-typed expressions. We believe that this construction will prove useful a useful tool for synthesis in other contexts, as well.
-\ruzica{we need to say more here about the algorithm }
-\alex{test}
+\ruzica{we need to say more here about the algorithm, talk about costs }
+
 
 
 A research on improving the software development process covers a large number of topics such as an automated
