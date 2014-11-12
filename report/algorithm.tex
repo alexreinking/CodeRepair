@@ -1,11 +1,20 @@
 \clearpage
 
 \section{Algorithm Description}
-\subsection{Graph Construction}
 
-The data structure central to \ourTool is a colored, directed, weighted, simple bipartite graph $G = (V = V_t \cup V_m, E, w, c)$ between \textit{type} nodes ($V_t$) and \textit{map} nodes ($V_m$). A type is any concrete data type, and a map is any language entity that produces exactly one such data type (possibly void) from zero or more types, i.e. it can be modeled by some map $f : (\tau_1 \times \cdots \times \tau_k) \to \sigma$. In the graph, for each map, an incoming edge is drawn from its co-domain, and outgoing edges are drawn from the map to each type in its domain. These relationships capture the notions that each type or map can be \textit{constructed from} or \textit{satisfied by} other maps or types, respectively.
+This section describes an algorithm used to repair ill-typed expressions. The algorithm takes as input an ill-typed expression to be repaired, and two tuning parameters used to guide the internal queries: $N$, the number of possible subexpressions to consider for any type, and $L$, the maximum allowable cost for an expression to be returned. These bounds are necessary to avoid entering an infinitely-deep recursion -- it is not uncommon for classes to accept instances of themselves -- and to control the runtime of the algorithm. \ourTool has access to the environment via the \textit{synthesis graph}, which should be precomputed for libraries, and extended as necessary in an IDE setting.
 
-The weights on the graph represent the \textit{cost} incurred by including the edge as a part of a candidate snippet. These weights can be derived according to simple heuristics, or computed by examining the frequency of usage over a large corpus. It is important only that no negative costs be assigned anywhere in the graph, and that methods that are more important are valued more than those that are not. The algorithm evaluates candidate expressions by considering their \textit{cost}, not their \textit{value}, so lower edge weights are considered better. Lastly, the graph is colored according to which language structure added the node to the graph, e.g. constructors, methods, public fields, and the like. These groups color the graph, and are used by the synthesis procedure to decide how to construct the code snippets that ultimately serve as output.
+As a subroutine, \ourTool uses a graph-search-based algorithm for expression synthesis. This portion of the algorithm is of independent value, and can be called directly using our tool.
+
+\subsection{Synthesis Graph Construction}
+
+The data structure central to \ourTool is a colored, directed, weighted, simple bipartite graph $G = (V = V_t \cup V_m, E, w, c)$ between \textit{type} nodes ($V_t$) and \textit{map} nodes ($V_m$), henceforth the \textit{synthesis graph}. A type is any concrete data type, and a map is any language entity that produces exactly one such data type (possibly void) from zero or more types, i.e. it can be modeled by some map $f : (\tau_1 \times \cdots \times \tau_k) \to \sigma$. In the synthesis graph, for each map, an incoming edge is drawn from its co-domain, and outgoing edges are drawn from the map to each type in its domain. These relationships capture the notions that each type or map can be \textit{constructed from} or \textit{satisfied by} other maps or types, respectively.
+
+The weights on the synthesis graph represent the \textit{cost} incurred by including the edge as a part of a candidate snippet. These weights can be derived according to simple heuristics, or computed by examining the frequency of usage over a large corpus. It is important only that no negative costs be assigned anywhere in the graph, and that methods that are more important are valued more than those that are not. The algorithm evaluates candidate expressions by considering their \textit{cost}, not their \textit{value}, so lower edge weights are considered better. Lastly, the synthesis graph is colored according to which language structure added the node to the graph, e.g. constructors, methods, public fields, and the like. These groups color the graph, and are used by the synthesis procedure to decide how to construct the code snippets that ultimately serve as output.
+
+\subsection{Type Inference}
+
+Since it is often the case that very general types, such as integers and strings, carry additional meaning, the synthesis graph must be extended to include abstract type information that encodes whether a particular argument is, for example, a counter, a file descriptor, or an untyped enumeration, in the case of an integer, or in the case of a string, a URL, a file name, or a regular expression. There are already standard approaches for doing this; Lackwit is such a tool for C/C++ programs \cite{DBLP:conf/icse/OCallahanJ97}. Once the abstract types have been identified, they can be added to the graph as subtypes of \texttt{String}, \texttt{int}, etc., with a small, but non-zero cost for ``downcasting'' a normal string or integer to the specific abstract type. This penalty ensures that those expressions that respect the abstract types are preferred over those that don't.
 
 \subsection{Synthesis Procedure}
 
@@ -45,7 +54,9 @@ typeStack $\leftarrow$ \KwNew Stack\;
 
 Note that in \ref{proc:synthesize}, all sets are maintained in sorted order using a tree data structure, and \textit{genTable} and \textit{snippetTable} are both hash tables of these sets.
 
-The next procedure, \ref{proc:getExpression}, goes through each possible generator for a given type and attempts to satisfy its parameter types recursively. It checks the memoization table before computing to avoid repeating work. The recursion itself is straight-forward: for each function that can generate the requested type, attempt to satisfy each one of its parameters, add all those whose parameters were satisfied and whose total cost is beneath the limit $L$, and keep only the best $N$ encountered. Larger values of $N$, of course, increase the time required at this stage.
+Once the results from \ref{proc:synthesize} have been obtained, the built up expressions can be converted into strings by recursively applying a string formatting function appropriate for the colors of each generator in the expression. The leaves ($0$-input maps) evaluate to known strings, and fill in the parameters of the maps above them until a complete code snippet is built.
+
+The subroutine \ref{proc:getExpression} goes through each possible generator for a given type and attempts to satisfy its argument types recursively. It checks a memoization table before computing the set of expressions to avoid repeating work. The recursion itself is straight-forward: for each function that can generate the requested type, attempt to satisfy all of its parameters, add all those whose parameters were satisfied and whose total cost is beneath the limit $L$, keeping only the best $N$ encountered.
 \begin{procedure}
 \lIf{$\tau$ $\in$ snipT}{\Return{snipT[$\tau$]}}
 snips $\leftarrow$ $\{\}$ \;
@@ -54,7 +65,7 @@ gens $\leftarrow$ genT[$\sigma$] \;
 	\lIf{$w' > L$}{\KwContinue}
 	$s_i$ $\leftarrow$ \ref{proc:getExpression}(genT, snipT, $\tau_i$, $L - w'$, $N$) $\forall i$\;
 	\ForEach{args $\in$ $s_1 \times \cdots \times s_k$}{
-		cost $\leftarrow$ $w' + \sum_{i=1}^{k} w(args[i])$ \;
+		cost $\leftarrow$ $w' + \sum_{i=1}^{k} w(args[i])$ \; \label{proc:getExpression:cost}
 		exp $\leftarrow$ $(f(args), cost)$ \;
 		\If{cost $\leq L \wedge | \text{snips} | < N$}{
 			snips $\leftarrow$ snips $\cup$ $\{$ exp $\}$ \;
@@ -69,12 +80,12 @@ gens $\leftarrow$ genT[$\sigma$] \;
 \caption{GetExpressions(genT, snipT, $\sigma$, $L$, $N$)}
 \label{proc:getExpression}
 \end{procedure}
-Since $L$ and $N$ simply limit the search, setting both to $\infty$ enables a search of the entire possible space of expressions that generate type $\tau$.
-
-Once the results from \ref{proc:synthesize} have been obtained, the built up expression can be converted into a string by recursively applying a string formatting function appropriate for the color of each generator in the expression.
 
 \subsection{Repair Procedure}
+We are now ready to describe the repair procedure. The key step in our approach is biasing the synthesis towards those subexpressions of the broken expression that are, in fact, correctly-typed. The reasoning behind this is intuitive; if a user specifies that she would like to create a new type from some specific components, the search should be optimized to favor using those same components.
+
+To this end, we modify the \ref{proc:getExpression} procedure to accept an initial map, supplied by the repair procedure, which will reduce the cost of each result by a factor of $2^{n}$, where $n$ is the number of expressions in the initial map which occur in the current result. This change occurs on line \ref{proc:getExpression:cost} of \ref{proc:getExpression}, where \textit{cost} should be divided by $2^{n}$. This scheme has a few distinct advantages: first, it will very strongly prefer those expressions that occurred as part of the given incorrect expression; second, in cases where more than one element of the same type is required, it will favor diversity over homogeneity; and finally, if no subexpressions are supplied, then the modified algorithm degenerates into its original form.
 
 % \digraph[scale=0.5]{MyGraph}{rankdir=LR; a->b; b->c}
 
-\lipsum[1-36]
+\lipsum[1-32]

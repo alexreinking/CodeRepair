@@ -1,5 +1,6 @@
 package coderepair;
 
+import coderepair.analysis.JavaTypeNode;
 import coderepair.antlr.JavaPLexer;
 import coderepair.antlr.JavaPParser;
 import coderepair.synthesis.CodeSnippet;
@@ -87,15 +88,7 @@ public class Main {
 
             /* Stage 1 */
             bestSnippetOpt = synthesis.synthesize("java.io.FileInputStream", 7.0, 10)
-                    .stream()
-                    .min((snip1, snip2) -> {
-                        HashSet<CodeSnippet> enforcedSnippets = new HashSet<>();
-                        synthesis.getEnforcedSnippets().values().forEach(enforcedSnippets::addAll);
-
-                        double div1 = Math.pow(2.0, enforcedSnippets.stream().filter(s -> snip1.code.contains(s.code)).count());
-                        double div2 = Math.pow(2.0, enforcedSnippets.stream().filter(s -> snip2.code.contains(s.code)).count());
-                        return Double.compare(snip1.cost / div1, snip2.cost / div2);
-                    });
+                    .stream().min((snip1, snip2) -> Double.compare(snip1.cost, snip2.cost));
 
             bestSnippet = bestSnippetOpt.get();
             System.out.printf("* %6f  %s%n", bestSnippet.cost, bestSnippet.code);
@@ -106,15 +99,7 @@ public class Main {
             synthesis.strongEnforce("int", new CodeSnippet("compLevel", 0.0));
 
             bestSnippetOpt = synthesis.synthesize("java.util.zip.DeflaterInputStream", 7.0, 10)
-                    .stream()
-                    .min((snip1, snip2) -> {
-                        HashSet<CodeSnippet> enforcedSnippets = new HashSet<>();
-                        synthesis.getEnforcedSnippets().values().forEach(enforcedSnippets::addAll);
-
-                        double div1 = Math.pow(2.0, enforcedSnippets.stream().filter(s -> snip1.code.contains(s.code)).count());
-                        double div2 = Math.pow(2.0, enforcedSnippets.stream().filter(s -> snip2.code.contains(s.code)).count());
-                        return Double.compare(snip1.cost / div1, snip2.cost / div2);
-                    });
+                    .stream().min((snip1, snip2) -> Double.compare(snip1.cost, snip2.cost));
 
             bestSnippet = bestSnippetOpt.get();
             System.out.printf("* %6f  %s%n", bestSnippet.cost, bestSnippet.code);
@@ -124,21 +109,13 @@ public class Main {
             synthesis.strongEnforce("int", new CodeSnippet("buffSize", 0.0));
 
             bestSnippetOpt = synthesis.synthesize("java.io.BufferedInputStream", 7.0, 10)
-                    .stream()
-                    .min((snip1, snip2) -> {
-                        HashSet<CodeSnippet> enforcedSnippets = new HashSet<>();
-                        synthesis.getEnforcedSnippets().values().forEach(enforcedSnippets::addAll);
-
-                        double div1 = Math.pow(2.0, enforcedSnippets.stream().filter(s -> snip1.code.contains(s.code)).count());
-                        double div2 = Math.pow(2.0, enforcedSnippets.stream().filter(s -> snip2.code.contains(s.code)).count());
-                        return Double.compare(snip1.cost / div1, snip2.cost / div2);
-                    });
+                    .stream().min((snip1, snip2) -> Double.compare(snip1.cost, snip2.cost));
 
             bestSnippet = bestSnippetOpt.get();
             System.out.printf("* %6f  %s%n", bestSnippet.cost, bestSnippet.code);
             synthesis.strongEnforce("java.io.BufferedInputStream", new CodeSnippet(bestSnippet.code, 0.0));
         });
 
-        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(simulatedRepair).run();
+        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(simulatedRepair.times(20)).run();
     }
 }
