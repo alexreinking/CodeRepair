@@ -71,10 +71,10 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     }
 
     private double costForFunction(JavaFunctionNode method) {
-        if (method.getFunctionName().startsWith("new") || method.isStatic())
+        if (method.getFunctionName().startsWith("new"))
             return 1 + method.getTotalFormals();
         else if (method.getFunctionName().equals("<cast>"))
-            return 0.0;
+            return 0.01;
         return 1 + (double) method.getTotalFormals() / 2.0;
     }
 

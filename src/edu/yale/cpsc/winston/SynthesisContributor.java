@@ -5,7 +5,6 @@ import coderepair.synthesis.CodeSnippet;
 import coderepair.synthesis.CodeSynthesis;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
@@ -21,7 +20,7 @@ import java.util.Arrays;
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 import static com.intellij.patterns.StandardPatterns.or;
 
-// Adapted from: https://github.com/JetBrains/intellij-community/blob/ff16ce78a1e0ddb6e67fd1dbc6e6a597e20d483a/java/compiler/impl/src/com/intellij/compiler/classFilesIndex/chainsSearch/completion/MethodsChainsCompletionContributor.java
+
 public class SynthesisContributor extends CompletionContributor {
     private static final String graphFileName = "/Users/alexreinking/Development/CodeRepair/resources/graph.ser";
     private static final SynthesisGraph graph;
@@ -42,8 +41,9 @@ public class SynthesisContributor extends CompletionContributor {
 
 
     private static final ElementPattern<PsiElement> ASSIGNMENT_PARENT = or(
-            psiElement().withText(CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED).afterSiblingSkipping(psiElement(PsiWhiteSpace.class),
-                    psiElement(PsiJavaToken.class).withText("="))
+            psiElement().withText(CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED)
+                    .afterSiblingSkipping(psiElement(PsiWhiteSpace.class),
+                            psiElement(PsiJavaToken.class).withText("="))
     );
 
     private static final ElementPattern<? extends PsiElement> ASSIGNMENT_PATTERN =
@@ -68,7 +68,7 @@ public class SynthesisContributor extends CompletionContributor {
                 SynthesisCompletionContext ctx = getTypeName(parameters);
                 if (ctx != null) {
                     addLocalsToGraph(synthesis, ctx, parameters);
-                    for (CodeSnippet codeSnippet : synthesis.synthesize(ctx.typeName, 5.0, 10))
+                    for (CodeSnippet codeSnippet : synthesis.synthesize(ctx.typeName, 6.0, 10))
                         completionResultSet.addElement(LookupElementBuilder.create(codeSnippet.code));
                 }
             }
@@ -136,7 +136,7 @@ public class SynthesisContributor extends CompletionContributor {
                 String fieldName = field.getName();
                 if ((isPublic || isProtected || (isPrivate || isPackageLocal) && aClass.isEquivalentTo(containingClass))
                         && !context.variableName.equals(fieldName)) {
-                    graph.addLocalVariable(fieldName, field.getType().getCanonicalText(), 0.5);
+                    synthesis.enforce(field.getType().getCanonicalText(), new CodeSnippet(fieldName, 0.5));
                 }
             }
         }
@@ -150,11 +150,12 @@ public class SynthesisContributor extends CompletionContributor {
                 for (PsiElement element : ((PsiDeclarationStatement) psiElement).getDeclaredElements()) {
                     if (element instanceof PsiLocalVariable) {
                         PsiLocalVariable localVariable = (PsiLocalVariable) element;
-                        if (!context.variableName.equals(localVariable.getName()))
-                            graph.addLocalVariable(localVariable.getName(), localVariable.getType().getCanonicalText());
+                        if (!context.variableName.equals(localVariable.getName())) {
+                            synthesis.enforce(localVariable.getType().getCanonicalText(),
+                                    new CodeSnippet(localVariable.getName(), 0.5));
+                        }
                     }
                 }
-
             }
         }
     }
