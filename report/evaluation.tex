@@ -1,27 +1,30 @@
 \section{Evaluation}
 \label{sec:evaluation}
 
-In this section we present the results of our tool on some typical-use benchmarks. The runtimes were measured on a computer equipped with 32GB of RAM, a 4-core Intel Xeon E5-1620 CPU clocked at 3.60 GHz, running Red Hat Enterprise Linux Server 7.0 on the Oracle JVM version 8u25. The best times of 50 consecutive trials were recorded to account for variance in process scheduling, cache behavior, and, most importantly, JVM warmup. It was not uncommon to see four or five time speed increases between the best and the worst measurements of the algorithm. This is due to the delay in program optimization afforded by the Just-in-Time (JIT) compiler built in to the JVM.
+In this section we present the results of our tool on some typical-use benchmarks. The runtimes were measured on a university-supplied computer equipped with 32GB of RAM, a 4-core Intel Xeon E5-1620 CPU clocked at 3.60 GHz, running Red Hat Enterprise Linux Server 7.0 on the Oracle JVM version 8u25. The best times of 50 consecutive trials were recorded to account for variance in process scheduling, cache behavior, and, most importantly, JVM warmup. It was not uncommon to see four or five time speed increases between the best and the worst measurements of the algorithm. This is due to the delay in program optimization afforded by the Just-in-Time (JIT) compiler built in to the JVM.
 
 \begin{table*}[t]
   \centering
   \renewcommand{\arraystretch}{1.25}
-  \begin{tabularx}{\textwidth}{| X | l | l | l | l |}
+  \begin{tabularx}{\textwidth}{| X | l | l | l | l | l |}
     \hline
-    \textbf{Benchmark} & \textbf{Type} & \textbf{Running Time (ms)} & \textbf{Size of Ball} & \textbf{Found Snippet} \\ \hline
-	\texttt{SequenceInputStream} & Synthesis & 2   & & \\ \hline
-    \texttt{BufferedReader}      & Synthesis & 6   & & \\ \hline
-    \texttt{FileInputStream}     & Synthesis & 29  & & \\ \hline
-    \texttt{InputStreamReader}   & Synthesis & 7   & & \\ \hline
-    \texttt{Matcher} (regex)     & Synthesis & 53  & & \\ \hline
-    \texttt{AudioClip} (applet)  & Synthesis & 7   & & \\ \hline
-    \texttt{FileInputStream}     & Repair    & $1$         & & \\ \hline
-    \texttt{InputStreamReader}   & Repair    & $1 + k / 2$ & & \\ \hline
-    \texttt{Matcher} (regex)     & Repair    & $1 + k$     & & \\ \hline
-    \texttt{BufferedInputStream} and \texttt{DeflaterInputStream} & Repair    & 380     & & \\ \hline
+    \textbf{Benchmark} & \textbf{Type} & \textbf{Running Time (ms)} & \textbf{Size of Ball (Vertices)} & \textbf{Size of Ball (Edges)} & \textbf{Snippet Rank} \\ \hline
+	\texttt{SequenceInputStream} & Synthesis & $<$ 1 & 141   & 149   & 1 \\ \hline
+    \texttt{FileInputStream}     & Synthesis & 38  & 7832  & 10516 & 1 \\ \hline
+    \texttt{InputStreamReader}   & Synthesis & 29  & 7064  & 9673  & 1 \\ \hline
+    \texttt{Matcher} (regex)     & Synthesis & 93  & 14505 & 24740 & 1 \\ \hline
+    \texttt{InputStream} (from byte array) & Synthesis & 116 & 13163  & 20581  & 2 \\ \hline
+    \texttt{BufferedReader}      & Synthesis & 16  & 3119  & 4225  & 2 \\ \hline
+    \texttt{AudioClip} (applet)  & Synthesis & 27  & 6808  & 9291  & 2 \\ \hline
+    \texttt{BufferedReader}      & Repair    & & & & \\ \hline
+    \texttt{}   & Repair    & & & & \\ \hline
+    \texttt{}   & Repair    & & & & \\ \hline
+    \texttt{BufferedInputStream} and \texttt{DeflaterInputStream} & Repair    & 380     & & & \\ \hline
   \end{tabularx}
-  \caption{Typical-use runtimes for \ourTool in various examples. The entire java standard library (excluding extensions) was imported before running; it consistently took around 5 seconds to load the data set.}
+  \caption{Typical-use runtimes for \ourTool in various examples. The entire Java standard library from \textbf{rt.jar} (except the \texttt{sun.} and \texttt{com.sun.} packages) was used to build the graph before running the benchmarks; it consistently took around 5 seconds to load the data set from its serialized form. They were each initialized with a small environment consisting of two strings, two InputStreams, and an OutputStream}
   \label{eval:runtime}
 \end{table*}
 
-\lipsum[1]
+The benchmarks show both that the tool is accurate and fast enough to operate in an interactive setting. Since the full set of Java libraries need not be imported, the algorithm should run \textit{far} faster in practice, since not too many packages will be imported. Another approach would be to adjust the weights on the graph to bias against crossing package boundaries as was done in \citep{MandelinetALL2005Jungloid}. In our implementation, the IDE plugin loads the same graph as used in the benchmarks, and operates comfortably on-demand as a code completion contributor.
+
+Additionally, these benchmarks show that repair is accurate even in the face of multiple, difficult errors
