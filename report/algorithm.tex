@@ -46,7 +46,6 @@ $(D_t, D_m)$ $\leftarrow$ nodes distance less than $L$ away from $\tau\in V_t$\;
 genTable $\leftarrow$ $\left\{\left\{\right\}\right\}$ \;
 snippetTable $\leftarrow$ $\left\{\left\{\right\}\right\}$ \;
 \ForEach{$(f : (\tau_1 \times \cdots \times \tau_k) \to \sigma) \in D_m$}{
-	\tcc{Keep only the best $N$ elements}
 	genTable[$\tau$] $\leftarrow$ genTable[$\tau$] $\cup$ $\{(f, w(f))\}$ \;
 }
 typeStack $\leftarrow$ \KwNew Stack\;
@@ -92,7 +91,7 @@ gens $\leftarrow$ genT[$\sigma$] \;
 \subsection{Repair Procedure}
 We are now ready to describe the repair procedure. The key step in our approach is biasing the synthesis towards those subexpressions of the backbone expression that are, in fact, correctly-typed. The reasoning behind this is intuitive; if a user specifies that she would like to create a new type from some specific components, the search should be optimized to favor using those same components.
 
-To do this, we modify the \ref{proc:getExpression} procedure to accept a preference map, \textit{pref}, supplied by the repair procedure. The preference map contains a set of subexpressions (indexed by their type) which will be used to bias the search in their favor. We modify \ref{proc:getExpression} so that line \ref{proc:getExpression:snipInit} initializes \textit{snips} with \textit{pref[$\tau$]}, rather than the empty set, and line \ref{proc:getExpression:cost} reduces the cost of each result by a factor of $2^{n}$, where $n$ is the number of expressions in the preference map which occur in $f(args)$. Since \ref{proc:getExpression} is a subroutine of \ref{proc:synthesize}, we must add an argument to its signature in order to forward the preference map to \ref{proc:getExpression}.
+To do this, we modify the \ref{proc:getExpression} procedure to accept a preference map, \textit{pref}, supplied by the repair procedure. The preference map contains a set of subexpressions (indexed by their type) which will be used to bias the search in their favor. We modify \ref{proc:getExpression} so that line \ref{proc:getExpression:snipInit} initializes \textit{snips} with \textit{pref[$\tau$]}, rather than the empty set. We modify the sets to compare snippet costs after reducing by a factor of $2^{n}$, where $n$ is the number of expressions in the preference map which occur in each snippet. This does not adjust the base cost, but is used as a heuristic. Since \ref{proc:getExpression} is a subroutine of \ref{proc:synthesize}, we must add an argument to its signature in order to forward the preference map to \ref{proc:getExpression}.
 
 This scheme has a few distinct advantages: first, it will very strongly prefer those expressions that occurred as part of the given incorrect expression; second, in cases where more than one element of the same type is required, it will favor diversity over homogeneity (ie. if both $a$ and $b$ were specified, it will try to use both); and finally, if no subexpressions are supplied, then the modified algorithm degenerates into its original form.
 

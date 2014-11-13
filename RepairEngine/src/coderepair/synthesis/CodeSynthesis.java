@@ -39,7 +39,7 @@ public class CodeSynthesis {
             JavaGraphNode next = costLimitBall.next();
             if (next instanceof JavaFunctionNode) {
                 JavaTypeNode output = ((JavaFunctionNode) next).getOutput();
-                synthTable.computeIfAbsent(output, t -> new BoundedSortedSet<>(nRequested))
+                synthTable.computeIfAbsent(output, t -> new TreeSet<>())
                         .add(new Generator(next, synthesisGraph.getWeight(output, next)));
             } else typesByDistance.push((JavaTypeNode) next);
         }

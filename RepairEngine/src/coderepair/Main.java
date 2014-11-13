@@ -69,7 +69,8 @@ public class Main {
         TimedTask synthesize = new TimedTask("Synthesis", () -> {
             SynthesisGraph synthesisGraph = graph[0];
             for (String type : Arrays.asList("java.io.SequenceInputStream", "java.io.BufferedReader",
-                    "java.io.FileInputStream", "java.io.InputStreamReader", "java.util.regex.Matcher")) {
+                    "java.io.FileInputStream", "java.io.InputStreamReader", "java.util.regex.Matcher",
+                    "java.applet.AudioClip")) {
                 System.out.println("\n============= " + type + " =============\n");
 
                 CodeSynthesis synthesis = new CodeSynthesis(synthesisGraph);
@@ -84,6 +85,8 @@ public class Main {
         });
 
         TimedTask simulatedRepair = new TimedTask("Repair-ish", () -> {
+            System.out.println();
+
             SynthesisGraph synthesisGraph = graph[0];
             synthesisGraph.resetLocals();
             synthesisGraph.addLocalVariable("fileName", "java.lang.String");
@@ -115,6 +118,8 @@ public class Main {
         });
 
         TimedTask ballGrowth = new TimedTask("Export", () -> {
+            System.out.println();
+
             ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> iterator
                     = new ClosestFirstIterator<>(graph[0], graph[0].getTypeByName("java.io.BufferedReader"), 5.0);
 
@@ -135,8 +140,9 @@ public class Main {
         });
 
         loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph))
-//                .andThen(synthesize)
-                .andThen(simulatedRepair.times(20))
+                .andThen(synthesize)
+                .andThen(simulatedRepair)
+                .andThen(ballGrowth)
                 .run();
     }
 }
