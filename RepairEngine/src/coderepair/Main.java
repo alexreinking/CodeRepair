@@ -1,7 +1,6 @@
 package coderepair;
 
 import coderepair.analysis.JavaGraphNode;
-import coderepair.analysis.JavaTypeNode;
 import coderepair.antlr.JavaPLexer;
 import coderepair.antlr.JavaPParser;
 import coderepair.synthesis.CodeSnippet;
@@ -9,14 +8,10 @@ import coderepair.synthesis.CodeSynthesis;
 import coderepair.util.TimedTask;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
-import org.jgraph.JGraph;
-import org.jgrapht.ext.JGraphModelAdapter;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.DirectedSubgraph;
-import org.jgrapht.graph.Subgraph;
 import org.jgrapht.traverse.ClosestFirstIterator;
 
-import javax.swing.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -94,57 +89,51 @@ public class Main {
 
             CodeSynthesis synthesis = new CodeSynthesis(synthesisGraph);
 
-            Optional<CodeSnippet> bestSnippetOpt;
             CodeSnippet bestSnippet;
 
             /* Stage 1 */
-            bestSnippetOpt = synthesis.synthesize("java.io.FileInputStream", 7.0, 10)
-                    .stream().min((snip1, snip2) -> Double.compare(snip1.cost, snip2.cost));
-
-            bestSnippet = bestSnippetOpt.get();
+            bestSnippet = synthesis.synthesize("java.io.FileInputStream", 7.0, 10).first();
             System.out.printf("* %6f  %s%n", bestSnippet.cost, bestSnippet.code);
-            synthesis.strongEnforce("java.io.FileInputStream", new CodeSnippet(bestSnippet.code, 0.0));
+            synthesis.strongEnforce("java.io.FileInputStream", new CodeSnippet(bestSnippet.code, 0.1));
 
             /* Stage 2 */
-            synthesis.strongEnforce("boolean", new CodeSnippet("true", 0.0));
-            synthesis.strongEnforce("int", new CodeSnippet("compLevel", 0.0));
+            synthesis.strongEnforce("boolean", new CodeSnippet("true", 0.1));
+            synthesis.strongEnforce("int", new CodeSnippet("compLevel", 0.1));
 
-            bestSnippetOpt = synthesis.synthesize("java.util.zip.DeflaterInputStream", 7.0, 10)
-                    .stream().min((snip1, snip2) -> Double.compare(snip1.cost, snip2.cost));
-
-            bestSnippet = bestSnippetOpt.get();
+            bestSnippet = synthesis.synthesize("java.util.zip.DeflaterInputStream", 7.0, 10).first();
             System.out.printf("* %6f  %s%n", bestSnippet.cost, bestSnippet.code);
-            synthesis.strongEnforce("java.util.zip.DeflaterInputStream", new CodeSnippet(bestSnippet.code, 0.0));
+            synthesis.strongEnforce("java.util.zip.DeflaterInputStream", new CodeSnippet(bestSnippet.code, 0.1));
 
             /* Stage 3 */
-            synthesis.strongEnforce("int", new CodeSnippet("buffSize", 0.0));
-
-            bestSnippetOpt = synthesis.synthesize("java.io.BufferedInputStream", 7.0, 10)
-                    .stream().min((snip1, snip2) -> Double.compare(snip1.cost, snip2.cost));
-
-            bestSnippet = bestSnippetOpt.get();
+            synthesis.strongEnforce("int", new CodeSnippet("buffSize", 0.1));
+            bestSnippet = synthesis.synthesize("java.io.BufferedInputStream", 7.0, 10).first();
             System.out.printf("* %6f  %s%n", bestSnippet.cost, bestSnippet.code);
-            synthesis.strongEnforce("java.io.BufferedInputStream", new CodeSnippet(bestSnippet.code, 0.0));
+            synthesis.strongEnforce("java.io.BufferedInputStream", new CodeSnippet(bestSnippet.code, 0.1));
         });
 
-        TimedTask exportGraph = new TimedTask("Export", () -> {
+        TimedTask ballGrowth = new TimedTask("Export", () -> {
+            ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> iterator
+                    = new ClosestFirstIterator<>(graph[0], graph[0].getTypeByName("java.io.BufferedReader"), 5.0);
+
+            Set<JavaGraphNode> vertices = new HashSet<>();
+            while (iterator.hasNext())
+                vertices.add(iterator.next());
+
+            DirectedSubgraph<JavaGraphNode, DefaultWeightedEdge> subgraph
+                    = new DirectedSubgraph<>(graph[0], vertices, graph[0].edgeSet());
+
+            System.out.printf("(Ball) |V| = %d |E| = %d%n", subgraph.vertexSet().size(), subgraph.edgeSet().size());
+            System.out.printf("(Graph) |V| = %d |E| = %d%n", graph[0].vertexSet().size(), graph[0].edgeSet().size());
             try {
-                ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> iterator
-                        = new ClosestFirstIterator<>(graph[0], graph[0].getTypeByName("java.io.BufferedReader"), 3.0);
-
-                Set<JavaGraphNode> vertices = new HashSet<>();
-                while(iterator.hasNext())
-                    vertices.add(iterator.next());
-
-                DirectedSubgraph<JavaGraphNode, DefaultWeightedEdge> subgraph
-                        = new DirectedSubgraph<>(graph[0], vertices, graph[0].edgeSet());
-
                 SynthesisGraph.exportToFile(Files.newBufferedWriter(Paths.get("./resources/graph.dot")), subgraph);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
 
-        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph)).andThen(synthesize).run();
+        loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph))
+//                .andThen(synthesize)
+                .andThen(simulatedRepair.times(100))
+                .run();
     }
 }
