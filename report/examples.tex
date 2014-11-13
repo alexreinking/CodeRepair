@@ -237,18 +237,20 @@ the \lstinline{BufferedInputStream} constructor in a wrong order.
 To correct this error and create a desired expression, 
 \ourTool algorithm has to change the order of
 the \lstinline{BufferedInputStream} arguments in the initial backbone expression.
-After applying a set of further modifications to the arguments we arrive to 
-the new backbone expression, and we recursively continue until we reach leaves in the
-\ourTool graph (cf. Sec.~\ref{sec:algorithm}). Finally, we correct the backbone expression
-by inserting \lstinline{Deflater} constructor. \ourTool suggest the following correction for the above expression:
+After applying a set of further modifications to the arguments, we derive 
+a new backbone expression: 
+\lstinline{DeflaterInputStream(new FileInputStream, compLevel, true)}.
+We recursively continue this procedure until we reach leaves in the
+\ourTool graph (cf. Sec.~\ref{sec:algorithm}). Finally, the algorithm corrects the backbone expression
+by inserting \lstinline{Deflater} constructor. At the end, \ourTool suggest the following correction for the above expression:
 \begin{lstlisting}    
 InputStream input = new BufferedInputStream(new DeflaterInputStream(
   new FileInputStream(fileName), new Deflater(compLevel, true)), buffSize);
 \end{lstlisting}
 \ourTool derive this code snippet in \ruzica{??} milliseconds. 
 
-These examples have shown that our approach can perform a search through a large number of
-possible repair expressions and guides the procedure according to the appropriate metric
+These examples have shown that our algorithm can perform a search through a large number of
+possible repair expressions, and guides the procedure according to an appropriate metric
 that characterizes the distance from the given broken expression.
 
 We hope that \ourTool can indeed perform useful
