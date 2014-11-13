@@ -3,7 +3,7 @@ package coderepair.synthesis;
 import coderepair.SynthesisGraph;
 import coderepair.analysis.JavaGraphNode;
 import coderepair.util.GraphLoader;
-import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
+import coderepair.util.TimedTask;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.DirectedSubgraph;
 import org.jgrapht.traverse.ClosestFirstIterator;
@@ -15,6 +15,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class CodeSynthesisTest {
+    public static final double COST_LIMIT = 4.5;
+    public static final int REQUESTED = 10;
+    public static final int N_TRIALS = 55;
     private CodeSynthesis synthesis = null;
     final private static String inFile = "./resources/rt.javap";
     final private static String graphFile = "./resources/graph.ser";
@@ -49,56 +52,52 @@ public class CodeSynthesisTest {
     }
 
     private void testSynthesis(String type, String desiredCode, double costLimit, int nRequested) throws InterruptedException {
-        System.out.println("\n============= " + type + " =============\n");
+        final boolean[] passed = {false};
 
-        boolean passed = false;
-        for (CodeSnippet snippet : synthesis.synthesize(type, costLimit, nRequested)) {
-            if (snippet.code.equals(desiredCode)) {
-                System.out.print("* ");
-                passed = true;
+        new TimedTask("Synthesis", () -> {
+            System.out.println("\n============= " + type + " =============\n");
+            for (CodeSnippet snippet : synthesis.synthesize(type, costLimit, nRequested)) {
+                if (snippet.code.equals(desiredCode)) {
+                    System.out.print("* ");
+                    passed[0] = true;
+                }
+                System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
             }
-            System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
-        }
+        }).times(N_TRIALS).run();
 
         System.out.println("\nSizes:");
         measureBallSize(type, costLimit);
         Thread.sleep(10);
-        Assert.assertTrue("Synthesis did not return the desired segment", passed);
+        Assert.assertTrue("Synthesis did not return the desired segment", passed[0]);
     }
 
     @Test
-    @BenchmarkOptions(callgc = false, benchmarkRounds = 50, warmupRounds = 5)
     public void testBufferedReader() throws Exception {
-        testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))", 5.0, 10);
+        testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))", COST_LIMIT, REQUESTED);
     }
 
     @Test
-    @BenchmarkOptions(callgc = false, benchmarkRounds = 50, warmupRounds = 5)
     public void testSequenceInputStream() throws Exception {
-        testSynthesis("java.io.SequenceInputStream", "new SequenceInputStream(inStream, System.in)", 5.0, 10);
+        testSynthesis("java.io.SequenceInputStream", "new SequenceInputStream(inStream, System.in)", COST_LIMIT, REQUESTED);
     }
 
     @Test
-    @BenchmarkOptions(callgc = false, benchmarkRounds = 50, warmupRounds = 5)
     public void testFileInputStream() throws Exception {
-        testSynthesis("java.io.FileInputStream", "new FileInputStream(fileName)", 5.0, 10);
+        testSynthesis("java.io.FileInputStream", "new FileInputStream(fileName)", COST_LIMIT, REQUESTED);
     }
 
     @Test
-    @BenchmarkOptions(callgc = false, benchmarkRounds = 50, warmupRounds = 5)
     public void testInputStreamReader() throws Exception {
-        testSynthesis("java.io.InputStreamReader", "new InputStreamReader(inStream)", 5.0, 10);
+        testSynthesis("java.io.InputStreamReader", "new InputStreamReader(inStream)", COST_LIMIT, REQUESTED);
     }
 
     @Test
-    @BenchmarkOptions(callgc = false, benchmarkRounds = 50, warmupRounds = 5)
     public void testMatcher() throws Exception {
-        testSynthesis("java.util.regex.Matcher", "(Pattern.compile(fileName)).matcher(inputText)", 5.0, 10);
+        testSynthesis("java.util.regex.Matcher", "(Pattern.compile(fileName)).matcher(inputText)", COST_LIMIT, REQUESTED);
     }
 
     @Test
-    @BenchmarkOptions(callgc = false, benchmarkRounds = 50, warmupRounds = 5)
     public void testAudioClip() throws Exception {
-        testSynthesis("java.applet.AudioClip", "Applet.newAudioClip(new URL(fileName))", 5.0, 10);
+        testSynthesis("java.applet.AudioClip", "Applet.newAudioClip(new URL(fileName))", COST_LIMIT, REQUESTED);
     }
 }
