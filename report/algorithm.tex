@@ -12,7 +12,7 @@ The data structure central to \ourTool is a colored, directed, weighted, simple 
 
 The weights on the synthesis graph represent the \textit{cost} incurred by including the edge as a part of a candidate snippet. These costs can be derived according to simple heuristics, or computed by examining the frequency of usage over a large corpus. It is important only that no negative costs be assigned anywhere in the graph, and that methods that are more important are valued more than those that are not. The algorithm evaluates candidate expressions by considering their \textit{cost}, not their \textit{value}, so lower edge costs are considered better. Lastly, the synthesis graph is colored according to which language structure added the node to the graph, e.g. constructors, methods, public fields, and the like. These groups color the graph, and are used by the synthesis procedure to decide how to construct the code snippets that ultimately serve as output.
 
-Figure \ref{examplegraph} illustrates a neighborhood of the graph around BufferedReader, a common Java class.
+Figure \ref{examplegraph} illustrates an example portion of a neighborhood in the graph around BufferedReader, a common Java class. The only valid expression derivable from this small neighborhood is \lstinline{new BufferedReader(new PipedReader())}, which is due to the fact that no local variables are included.
 
 \begin{figure}[!htb]
 \centering
@@ -24,13 +24,13 @@ Figure \ref{examplegraph} illustrates a neighborhood of the graph around Buffere
 
 Since it is often the case that very general types, such as integers and strings, carry additional meaning, the synthesis graph must be extended to include abstract type information that encodes whether a particular argument is, for example, a counter, a file descriptor, or an untyped enumeration, in the case of an integer, or in the case of a string, a URL, a file name, or a regular expression. There are already standard approaches for doing this; Lackwit is such a tool for C language programs \cite{DBLP:conf/icse/OCallahanJ97}. Once the abstract types have been identified, they can be added to the graph as subtypes of \texttt{String}, \texttt{int}, etc., with a small, but non-zero cost for ``downcasting'' a normal string or integer to the specific abstract type. This penalty ensures that those expressions that respect the abstract types are preferred over those that don't.
 
-Although this is technically an optional step in so far as it does not pose a challenge to correctness, it serves as a highly-effective heuristic for guiding the search. Even though the returned expressions are always correctly-typed, they might still throw runtime errors; the additional type information recovered by this step reduces the chance of that happening.
+Although this is technically an optional step in so far as removing it does not pose a challenge to correctness, it serves as a highly-effective heuristic for guiding the search. Even though the returned expressions are always correctly-typed, they might still throw runtime errors; the additional type information recovered by this step reduces the chance of that happening.
 
 \subsection{Synthesis Procedure}
 
-Using this graph, we can answer type-inhabitation queries. That is, given a type $\tau$, we seek expressions of that type that are of low cost. Naturally, we have set the costs so that those expressions that are most desirable are found early on by the algorithm. The \ref{proc:synthesize} procedure, outlined below, answers these queries.
+Using this graph, we can answer quantitative type-inhabitation queries. That is, given a type $\tau$, we seek expressions of that type that are of low cost. Naturally, the quality of the expressions returned is tied tightly to the costs. Fortunately, as explained in section \ref{impl:costs}, the \textit{relative} cost of the expressions matters more than the \textit{absolute} costs. Thus, the costs act mostly as a heuristic to guide the search for valid expression trees in the graph.
 
-The method proceeds by growing a Dijkstra shortest path ball in the graph of a specified size. This parameter, $L$, acts as a cost limit for the search, and can be tuned to provide a reasonable balance between speed and accuracy, depending on the chosen valuation scheme. The induced subgraph over those nodes is then recursively searched for type satisfaction by \ref{proc:getExpression}, which is called \textit{leaves-first} to enable memoization of its results. Since each type is passed a limit equal to the greatest possible remaining cost during a search from $\tau$, the whole (reduced) space of results is considered for each type. Once a type is settled, the result is added to a memoization table to speed up future calls.
+The \ref{proc:synthesize} procedure, outlined below, answers these queries by growing a Dijkstra shortest path ball in the graph of a specified size. The parameter, $L$ acts as a cost limit for the search, and can be tuned to provide a reasonable balance between speed and accuracy, depending on the chosen valuation scheme. The induced subgraph over those nodes is then recursively searched for type satisfaction by \ref{proc:getExpression}, which is called \textit{leaves-first} to enable memoization of its results. Since each type is passed a limit equal to the greatest possible remaining cost during a search from $\tau$, the whole (reduced) space of results is considered for each type. Once a type is settled, the result is added to a memoization table to speed up future calls.
 
 The other tuning parameter, $N$, can be provided to bound both the total number of expressions returned and the number of intermediate results at any given depth by $N$. Because all of the possible generators are considered regardless, we can be sure that the algorithm does not miss any possibilities during the search that might appear among the $N$ best results.
 
@@ -113,3 +113,5 @@ $S \leftarrow S \cup \{x_1,\ldots,x_k\}$ \;
 \Return{(\ref{proc:synthesize}($G$, $\sigma$, $L$, $N$, $S$), $S$)}
 \caption{Repair($G$, expr, $L$, $N$)}\label{proc:repair}
 \end{procedure}
+
+Although \ref{proc:repair} as described returns many expressions, none of our tests returned better expressions past the first one, so in a practical setting, letting $N=1$ is acceptable, and could be considered the ``canonical'' repair.
