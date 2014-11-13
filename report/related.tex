@@ -1,20 +1,85 @@
 \section{Related Work}
 \label{sec:related}
 
-We next provide an overview of related work on software repair and other approaches
-that share similar insights, ideas and techniques with our approach.
+We next provide an overview of related work on program repair and other algorithms
+that share similar insights, ideas and techniques with our approach to program repair.
 
-\paragraph{{\bf Code Repair.}} There
-
+\paragraph{{\bf Code Repair.}} 
+Debugging and locating errors in the code \cite{Pavlinovic:2014, Chandra:2011:AD} play 
+an important role in the process of increasing software reliability. Once located, 
+some errors can be easily fixed. Recently we have witnessed to a number of tools that 
+aim to repair parts of code. 
 
 MintHint \citep{MintHint} takes a more complete-program approach to code repair. Where we are using user input to guide synthesis of a correctly-typed expression from an incorrectly-typed one, their tool targets a particular passage that is suspected to carry a bug. MintHint synthesizes some hints in areas the algorithm considers erroneous, by both symbolically and actually executing the code and comparing its output to test cases.
 
-The work by Perleman, et. al. \cite{PerelmanGBG12}
+CodeHint \cite{CodeHint2014ICSE} is a new dynamic approach to software synthesis 
+that combines debugging and dynamic execution. CodeHint can also be used in 
+interactive settings, but the main focus of CodeHint is code generation and not code repair.
+
+\paragraph{{\bf Syntactic error diagnosis and repair}}
+A related line of work considers a syntactic error diagnosis, as well as a recovery and a repair after such errors are found \cite{Hammond198451,Degano:1998:LTH:2245729.2245835}.
+The main target of these schemes is the parsing phase within the compilation process. 
+Although our algorithm focuses on the repair of expressions that are correctly parsed
+according to the appropriate language grammar rules, some similarities may be noted.
+With respect to these techniques and introduced taxonomy, our algorithm may be viewed
+as a type-checking repair scheme that is global, since it considers all the declarations
+in the scope for the repair, and interactive, since the developer can choose between multiple
+offered repair expressions and impact the repair process of subsequent errors. 
+% \ivan{This sentence has more impact if our technique does *not* require a desired type,
+% but rather can potentially offer multiple ones with resulting expressions (e.g.
+% ??(arg1, arg2, \ldots))}
+One of the most representative scheme for dealing with syntactic errors in LR and LL
+parsing is presented in \cite{Burke87apractical}.
+Rather than just trying combinations of insertions, substitutions and deletions
+on a predefined length of the input after an error is detected, our approach
+considers the abstract syntax tree of the given expression and tries to encode all valid combinations of insertions in order to produce one
+or multiple expressions that would successfully type-check.
+
+\paragraph{{\bf Automated inference of program fixes and contracts.}}
+The goal of this line of work
+\cite{WeiETAL11InferringBetterContracts,PeiETAL11CodebasedAutomatedProgramFixing} is fixing
+object-oriented programs according to their
+contracts. One commonality with \ourTool is the common goal of inferring code. 
+In \cite{WeiETAL11InferringBetterContracts,PeiETAL11CodebasedAutomatedProgramFixing} program fixes and contracts are generated based on predefined code templates. Rather than filling 
+the predefined code schemas,
+our approach exhaustively searches through the space of all expressions that
+satisfy the constraint for a successful repair.
+\ourTool derives code and repairs based only on type information, without characterization of program run-time
+behavior.
+
+\paragraph{{\bf Searching for Better Type-error Messages}}
+An interesting work, related to code repairing, has been done on improving type
+errors and corresponding error messages
+\cite{McAdam01repairingtype,Lerner:2006:SSM:1159876.1159887,Lerner:2007:STM:1250734.1250783}.
+Although these approaches use techniques
+to modify type information \cite{McAdam01repairingtype}, as well as the program
+\cite{Lerner:2007:STM:1250734.1250783}, they target the problem of
+unintuitive type-checker's error messages for the purpose of giving better feedback to the developer.
+Our approach focuses on somewhat more ambitious goal of code repair and it does
+this by preserving the type-level information as well as the structure of
+ill-typed expressions.
+Some techniques used in these approaches are similar to the way backbone
+expressions are mutated in our approach, like argument addition and reordering
+\cite{Lerner:2007:STM:1250734.1250783}.
+The crucial difference is that those techniques are utilized only after an
+independent search mechanism determines places for such modifications to be
+done, while our approach finds all suitable repair expressions according
+to the whole backbone expression and the weight heuristic.
+%  and reconstructs certain number of candidate
+% solutions according to the weight metric.
 
 
 
 
-\vspace{-0.5em}
+
+
+\cite{Tansalarak06xsnippet:XSnippet}
+
+
+\cite{Chatterjee:2009:Sniff}
+
+
+
 \paragraph{{\bf Type inference with automatic insertion of coercions.}}
 Several approaches on using coercions within type checking and type inference
 were presented in \cite{Mitchell:1984:CTI:800017.800529,Luo:2008:CPT:1394781.1394785}.
@@ -43,86 +108,7 @@ While both approaches insert coercions only to function arguments, our approach
 considers all combinations of term applications that may produce coercion terms with
 appropriate types, together with any ``boarding'' arguments and mutations that may occur.
 
-\vspace{-0.5em}
-\paragraph{{\bf Automated inference of program fixes and contracts.}}
-% \ivan{TODO: This is an excerpt from the ``Synthesis modulo recursive functions''
-% paper on strongly related inference of program fixes, should be rewritten}
-% We witnessed recent advances in the area of automated program fixing, which
-% relies on techniques for software synthesis
-% \cite{DBLP:journals/corr/abs-1102-1059, Wei:2010:AFP:1831708.1831716}.
-These areas share the common goal of inferring code. They rely on specialized
-search techniques
-\cite{WeiETAL11InferringBetterContracts,PeiETAL11CodebasedAutomatedProgramFixing}.
-Inferred software fixes and contracts are usually code snippets, which are
-synthesized according to the behavioral information gathered about the analyzed program.
-%These techniques focus on fixing object-oriented programs according to their
-%contracts.
-Such characterization is done by analyzing program state across the execution of
-tests;
-state can be defined using user-defined query operations
-\cite{WeiETAL10AutomatedFixingProgramsContracts,WeiETAL11InferringBetterContracts}, and additional expressions extracted from
-the code \cite{PeiETAL11CodebasedAutomatedProgramFixing}.
-%The constructed abstraction abstracts the correct and incorrect visible
-% behavior at important locations in the program (the ones at which correctness
-%properties are violated) and provides guiding information for synthesizing
-% Generation of program fixes and contracts is done using heuristically guided
-% injection of (sequences of) routine calls into predefined code templates.
-Our code repair approach is restricted to applicative long normal form terms and
-considers only type information without characterization of program run-time
-behavior.
-Rather than filling of predefined code schemas at places in the existing code,
-our approach exhaustively searches through the space of all expressions that
-satisfy the constraint of a successful repair, while accounting for mutations of
- code.
-% Our approach does not find errors and infer contracts, but can be utilized for
-% those tasks if the appropriate reformulation of the synthesis problem is made -
-% desired code needs to be in the place of a priori located errors or inside
-% contracts.
 
-\vspace{-0.5em}
-\paragraph{{\bf Syntactic error diagnosis and repair}}
-A related line of work considers syntactic error diagnosis, as well as recovery and repair
-after such errors are found \cite{Hammond198451,Degano:1998:LTH:2245729.2245835}.
-The main target of these schemes is the parsing phase within the compilation process. 
-Although our approach focuses on the repair of expressions that are correctly parsed
-according to the appropriate language grammar rules, some similarities may be noted.
-With respect to the these techniques and introduced taxonomy, our algorithm may be viewed
-as a type-checking repair scheme that is global, since it considers all the declarations
-in the scope for the repair, and interactive, since the developer can choose between multiple
-offered repair expressions and impact the repair process of subsequent errors. 
-% \ivan{This sentence has more impact if our technique does *not* require a desired type,
-% but rather can potentially offer multiple ones with resulting expressions (e.g.
-% ??(arg1, arg2, \ldots))}
-One of the most representative scheme for dealing with syntactic errors in LR and LL
-parsing is presented in \cite{Burke87apractical}.
-Rather than just trying combinations of insertions, substitutions and deletions
-on a predefined length of the input after an error is detected, our approach
-considers the abstract syntax tree of the given expression and tries to encode all valid combinations of insertions in order to produce one
-or multiple expressions that would successfully type-check.
-
-\vspace{-0.5em}
-\paragraph{{\bf Searching for better type-error messages}}
-An interesting work, related to code repairing, has been done on improving type
-errors and corresponding error messages
-\cite{McAdam01repairingtype,Lerner:2006:SSM:1159876.1159887,Lerner:2007:STM:1250734.1250783}.
-% \ivan{we can remove the last citation since it is a workshop paper of
-% \cite{Lerner:2007:STM:1250734.1250783}}
-Although these approaches use techniques
-to modify type information \cite{McAdam01repairingtype}, as well as the program
-\cite{Lerner:2007:STM:1250734.1250783}, they target the problem of
-inappropriate type-checker's error messages for the purpose of giving better feedback to the developer.
-Our approach focuses on somewhat more ambitious goal of code repair and it does
-this by preserving the type-level information as well as the structure of
-ill-typed expressions.
-Some techniques used in these approaches are similar to the way backbone
-expressions are mutated in our approach, like argument addition and reordering
-\cite{Lerner:2007:STM:1250734.1250783}.
-The crucial difference is that those techniques are utilized only after an
-independent search mechanism determines places for such modifications to be
-done, while our approach finds all suitable repair expressions according
-to the whole backbone expression and the weight heuristic.
-%  and reconstructs certain number of candidate
-% solutions according to the weight metric.
 
 \vspace{-0.5em}
 \paragraph{{\bf Frameworks for deductive synthesis and execution of
