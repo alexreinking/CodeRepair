@@ -1,0 +1,59 @@
+In our previous work we developed a tool called InSynth
+\cite{GveroETAL13CompleteCompletionTypesWeights} that automatically
+synthesizes code snippets based on the given type constraints. InSynth
+considers all user-defined declarations, together with any imported API
+calls, when performing the synthesis. In principle, a na\" ive algorithm for code repair based on InSynth
+could to solve the repair problem. The algorithm would first extend the
+initial environment with all type declarations that could be derived from the
+given ill-typed expression. Using the new environment we would run the
+InSynth algorithm. Because the InSynth algorithm is complete,
+eventually it will generate expressions (if they exist) following the
+structure of the given backbone expression. However, this may not be
+practical because the type inhabitation problem is a PSPACE-complete
+problem and the ranks of resulting expressions is determined using heuristic
+that ignores given ill-typed expression. The aim of our approach is to 
+design a better and more efficient algorithm that is well-suited for
+repairing ill-typed expressions.
+
+
+The input to our algorithm is an ill-typed, backbone expression. We propose
+two different algorithms. The first algorithm generates one well-typed expression
+that strictly follows the structure of the input expression. It decomposes
+the problem into finding connections between individual symbols in the
+backbone expression. The connections are build using a given set of
+repair declarations. Each connection represents a partial expression.
+We find the smallest such expressions using a weights mechanism.
+When we find all the partial expressions, we combine them following 
+the original structure of the backbone expression. The algorithm 
+simultaneously fixes all type errors in a given expression.
+The second algorithm searches for the best solutions, not only
+following the initial backbone expression, but also creating new ones
+that are mutations of the original one. This might lead us to a
+set of more interesting solutions in the case when the developer does not
+provide us with the best initial backbone expression. Additionally, this approach 
+allows completeness in sense that we are able to generate all 
+expressions with the given type, similarly as in InSynth, but now ranked 
+by similarity to the given backbone expression. The algorithm also 
+implements A* search that steer us towards the most desirable
+solutions.
+
+
+
+The contributions of this paper are:
+\begin{itemize}
+	\item We formulate the problem of repairing ill-typed expressions.
+	As input to the problem we take a backbone expression and 
+	the set of repair declarations. We introduce weak long normal 
+	form that allows a systematic search and a construction of the well-typed expressions.
+	We identify special symbols used to extend the expressiveness of the input.
+	\item We propose a novel repair calculus that specifies the rules that
+	we use to derive a well-typed term from a backbone expression.
+	The calculus describes how to fix a term using declarations with multiple arguments.
+	\item We propose an algorithm that finds the best well-typed expression based on 
+	weights system introduced in \cite{GveroETAL13CompleteCompletionTypesWeights}.
+    We show that the algorithm is polynomial given a certain class of ill-typed expressions.
+    \item We present a sound and complete algorithm that takes the ill-typed expression and 
+    finds a set of best solutions. The algorithm is based on A* search.
+\end{itemize}
+
+

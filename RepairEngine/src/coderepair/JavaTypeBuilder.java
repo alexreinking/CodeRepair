@@ -13,7 +13,7 @@ import java.util.HashMap;
 class JavaTypeBuilder implements Serializable {
     private final HashMap<String, JavaTypeNode> classTypes = new HashMap<>();
 
-    JavaTypeNode getTypeFromName(String qualifiedName) {
+    JavaTypeNode getTypeByName(String qualifiedName) {
         if (classTypes.containsKey(qualifiedName))
             return classTypes.get(qualifiedName);
 
@@ -27,18 +27,20 @@ class JavaTypeBuilder implements Serializable {
     }
 
     JavaFunctionNode makeConstructor(JavaTypeNode type, Collection<JavaTypeNode> formals) {
-        return new JavaFunctionNode("new " + type.getName(), formals, type, new StaticFunctionSynthesizer());
+        return new JavaFunctionNode("new " + type.getClassName(), formals, type, new StaticFunctionSynthesizer());
     }
 
     JavaFunctionNode makeMethod(String name, JavaTypeNode owner, JavaTypeNode output, Collection<JavaTypeNode> formals) {
         ArrayList<JavaTypeNode> trueFormals = new ArrayList<>(1 + formals.size());
         trueFormals.add(owner);
         trueFormals.addAll(formals);
-        return new JavaFunctionNode(owner.getName() + "." + name, trueFormals, output, new MethodSynthesizer());
+        return new JavaFunctionNode(name, trueFormals, output, new MethodSynthesizer());
     }
 
     JavaFunctionNode makeStaticMethod(String name, JavaTypeNode owner, JavaTypeNode output, Collection<JavaTypeNode> formals) {
-        return new JavaFunctionNode(owner.getName() + "." + name, formals, output, new StaticFunctionSynthesizer());
+        JavaFunctionNode node = new JavaFunctionNode(owner.getClassName() + "." + name, formals, output, new StaticFunctionSynthesizer());
+        node.setStatic(true);
+        return node;
     }
 
     JavaFunctionNode makeValue(String value, String typeName) {

@@ -28,12 +28,6 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
         allowedPackages.add("java.lang");
     }
 
-    private double costForFunction(JavaFunctionNode method) {
-        if (method.getFunctionName().equals("<cast>"))
-            return method.getOutput().isConcrete() ? 0.0 : 0.0;
-        return 1 + method.getTotalFormals();
-    }
-
     @Override
     public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
         nodeManager = new JavaTypeBuilder();
@@ -41,8 +35,8 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
 
         List<String> primNames = Arrays.asList("byte", "short", "int", "long", "float", "double", "boolean", "char");
         for (String primType : primNames) {
-            addTypeToGraph(nodeManager.getTypeFromName(primType));
-            addTypeToGraph(nodeManager.getTypeFromName(primType + "[]"));
+            addTypeToGraph(nodeManager.getTypeByName(primType));
+            addTypeToGraph(nodeManager.getTypeByName(primType + "[]"));
         }
 
         ctx.classDeclaration().forEach(this::visitClassDeclaration);
@@ -58,9 +52,35 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
         return fnFlowGraph;
     }
 
+    private boolean addTypeToGraph(JavaTypeNode type) {
+        if (type.getName().contains("$"))
+            return false;
+        if (type.isPrimitive()) {
+            fnFlowGraph.addVertex(type);
+            return true;
+        }
+        String packageName = type.getPackageName();
+        if (packageName.startsWith("sun.") || packageName.startsWith("com.sun."))
+            return false;
+        for (String okPackage : allowedPackages)
+            if (packageName.startsWith(okPackage) || allowedPackages.size() == 1) {
+                fnFlowGraph.addVertex(type);
+                return true;
+            }
+        return false;
+    }
+
+    private double costForFunction(JavaFunctionNode method) {
+        if (method.getFunctionName().startsWith("new") || method.isStatic())
+            return 1 + method.getTotalFormals();
+        else if (method.getFunctionName().equals("<cast>"))
+            return 0.0;
+        return 1 + (double) method.getTotalFormals() / 2.0;
+    }
+
     @Override
     public SynthesisGraph visitClassDeclaration(@NotNull ClassDeclarationContext ctx) {
-        JavaTypeNode classNode = nodeManager.getTypeFromName(ctx.typeName().getText());
+        JavaTypeNode classNode = nodeManager.getTypeByName(ctx.typeName().getText());
         if (ctx.INTERFACE() != null || ctx.modifiers() != null && ctx.modifiers().ABSTRACT() != null)
             classNode.setConcrete(false);
 
@@ -72,7 +92,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                 superTypes.addAll(ctx.implementation().typeList().typeName());
 
             for (TypeNameContext parentType : superTypes) {
-                JavaTypeNode parentNode = nodeManager.getTypeFromName(parentType.getText());
+                JavaTypeNode parentNode = nodeManager.getTypeByName(parentType.getText());
                 if (addTypeToGraph(parentNode))
                     methods.add(nodeManager.makeCastNode(classNode, parentNode));
             }
@@ -84,7 +104,7 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                     List<JavaTypeNode> formals = new ArrayList<>();
                     if (method.typeList() != null) {
                         for (TypeNameContext formal : method.typeList().typeName()) {
-                            JavaTypeNode formalType = nodeManager.getTypeFromName(formal.getText());
+                            JavaTypeNode formalType = nodeManager.getTypeByName(formal.getText());
                             if (!addTypeToGraph(formalType)) {
                                 badFormal = true;
                                 break;
@@ -97,9 +117,10 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                     if (badFormal) continue;
 
                     if (method.typeName().size() == 1) {
-                        methods.add(nodeManager.makeConstructor(classNode, formals));
+                        if (classNode.isConcrete())
+                            methods.add(nodeManager.makeConstructor(classNode, formals));
                     } else {
-                        JavaTypeNode outType = nodeManager.getTypeFromName(method.typeName().get(0).getText());
+                        JavaTypeNode outType = nodeManager.getTypeByName(method.typeName().get(0).getText());
                         if (addTypeToGraph(outType)) {
                             String methodName = method.typeName().get(1).getText();
                             JavaFunctionNode newFunc;
@@ -113,14 +134,14 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                 } else if (memberDeclarationContext.fieldDeclaration() != null
                         && memberDeclarationContext.fieldDeclaration().modifiers().STATIC() != null) {
                     String typeName = memberDeclarationContext.fieldDeclaration().typeName().getText();
-                    String valueName = classNode.getName() + "." + memberDeclarationContext.fieldDeclaration().identifier().getText();
-                    JavaTypeNode valueType = nodeManager.getTypeFromName(typeName);
+                    String valueName = classNode.getClassName() + "." + memberDeclarationContext.fieldDeclaration().identifier().getText();
+                    JavaTypeNode valueType = nodeManager.getTypeByName(typeName);
                     if (valueType != null && addTypeToGraph(valueType) && !valueType.isPrimitive())
                         methods.add(nodeManager.makeValue(valueName, typeName));
                 } else if (memberDeclarationContext.fieldDeclaration() != null) {
                     String typeName = memberDeclarationContext.fieldDeclaration().typeName().getText();
                     String fieldName = memberDeclarationContext.fieldDeclaration().identifier().getText();
-                    JavaTypeNode valueType = nodeManager.getTypeFromName(typeName);
+                    JavaTypeNode valueType = nodeManager.getTypeByName(typeName);
                     if (valueType != null && addTypeToGraph(valueType) && !valueType.isPrimitive())
                         methods.add(nodeManager.makeField(fieldName, valueType, classNode));
                 } else {
@@ -129,21 +150,5 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
             }
         }
         return fnFlowGraph;
-    }
-
-    private boolean addTypeToGraph(JavaTypeNode type) {
-        if (type.getName().contains("$"))
-            return false;
-        if (type.isPrimitive()) {
-            fnFlowGraph.addVertex(type);
-            return true;
-        }
-        String packageName = type.getPackageName();
-        for (String okPackage : allowedPackages)
-            if (packageName.startsWith(okPackage) || allowedPackages.size() == 1) {
-                fnFlowGraph.addVertex(type);
-                return true;
-            }
-        return false;
     }
 }

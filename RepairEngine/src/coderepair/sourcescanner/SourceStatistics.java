@@ -1,12 +1,8 @@
 package coderepair.sourcescanner;
 
 import coderepair.SynthesisGraph;
-import coderepair.analysis.JavaFunctionNode;
-import coderepair.analysis.JavaGraphNode;
-import coderepair.analysis.JavaTypeNode;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
-import org.jgrapht.Graphs;
 
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
@@ -15,7 +11,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,7 +90,7 @@ public class SourceStatistics implements Plugin {
                         functionName = identifierTree.toString();
                 }
             }
-            matchFunction(functionName, outputType, argumentTypes);
+            graph.lookupFunction(functionName, outputType, argumentTypes);
             return super.visitMethodInvocation(methodInvocationTree, aVoid);
         }
 
@@ -110,59 +105,8 @@ public class SourceStatistics implements Plugin {
             if (className.startsWith("<anonymous "))
                 className = className.substring(11, className.length() - 1);
             List<String> argumentTypes = newClassTree.getArguments().stream().map(expressionTree -> trees.getTypeMirror(new TreePath(getCurrentPath(), expressionTree)).toString()).collect(Collectors.toList());
-            matchFunction("new " + className, className, argumentTypes);
+            graph.lookupFunction("new " + className, className, argumentTypes);
             return super.visitNewClass(newClassTree, aVoid);
-        }
-
-        private JavaFunctionNode matchFunction(String functionName, String outputType, List<String> argumentTypes) {
-            if (functionName.isEmpty()) return null;
-            String formalName = String.format("%s: (%s) -> %s",
-                    functionName, String.join(" x ", argumentTypes), outputType);
-
-            JavaFunctionNode functionNode = null;
-
-            try {
-                JavaGraphNode outputVertex = graph.getVertexByName(outputType);
-
-                for (JavaGraphNode generatorNode : Graphs.successorListOf(graph, outputVertex))
-                    if (generatorNode instanceof JavaFunctionNode) {
-                        JavaFunctionNode currentCandidate = (JavaFunctionNode) generatorNode;
-                        if (functionName.equals(currentCandidate.getFunctionName())) {
-                            List<String> actualTypes = currentCandidate.getSignature().stream().map(JavaTypeNode::getName).collect(Collectors.toList());
-
-                            if (formalName.equals(currentCandidate.getName())) {
-                                functionNode = currentCandidate;
-                                break;
-                            } else if (argumentsMatch(actualTypes, argumentTypes)) {
-                                functionNode = currentCandidate;
-                            }
-                        }
-                    }
-
-//                if (functionNode != null)
-//                    System.out.printf("       Found:\t%s\n", functionNode.getName());
-//                else
-//                    System.err.printf("     Missing:\t%s\n", formalName);
-            } catch (IllegalArgumentException e) {
-                System.err.printf("No output type %s found in graph.%n", outputType);
-            }
-            return functionNode;
-        }
-
-        private boolean argumentsMatch(List<String> actualTypes, List<String> givenTypes) {
-            if (actualTypes.size() != givenTypes.size())
-                return false;
-
-            try {
-                Iterator<String> actualIt = actualTypes.iterator();
-                Iterator<String> givenIt = givenTypes.iterator();
-                while (actualIt.hasNext() && givenIt.hasNext())
-                    if (!Class.forName(actualIt.next()).isAssignableFrom(Class.forName(givenIt.next())))
-                        return false;
-                return true;
-            } catch (Exception e) {
-                return false;
-            }
         }
     }
 

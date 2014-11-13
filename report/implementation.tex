@@ -1,0 +1,36 @@
+\section{Implementation}
+\label{sec:implementation}
+
+The primary goal of our implementation was to produce a library that can handle these queries, and a tool that provides an interface in an IDE setting. We provide a full implementation of the algorithm described, along with a plugin for IntelliJ IDEA that adds a repair intention, and enhances its autocomplete feature through the \ref{proc:synthesize} procedure.
+
+Although the definitions of type and map for our algorithm are language-agnostic, our implementation targets Java for its ease of analysis. In Java, we add type nodes to the graph for each class and for each primitive type. The map nodes are derived from methods, static functions, constructors, local methods, and values (which take void to their own data type), and are colored according to each category.
+
+\subsection{System of Costs}
+For our testing, we devised a simple system of costs for each type of node. (See Table \ref{impl:costs}) These costs are applied only to the output edges on the map nodes. The weights elsewhere are set to $0$. Despite its simplicity, we found that this cost assignment yielded good results in practice, as the desired expressions always appeared very early in our evaluations.
+
+\begin{table}[h]
+  \centering
+  \renewcommand{\arraystretch}{1.25}
+  \begin{tabularx}{0.75\linewidth}{| X | X |}
+    \hline
+    \textbf{Type} & \textbf{Cost} \\ \hline
+    Up-casts & $0$ \\ \hline
+    Fields  & $1$ \\ \hline
+    Methods & $1 + k / 2$ \\ \hline
+    Constructors & $1 + k$ \\ \hline
+  \end{tabularx}
+  \caption{Costs for output edges in Java. $k$ is the number of arguments the associated map takes}
+  \label{impl:costs}
+\end{table}
+
+The general intuition is that since promoting a type to its supertype has no syntax, and happens automatically in most languages, there should be no penalty for doing so. Fields (and other values) are given a neutral weight of one. General methods are considered the next most expensive since they are able to reuse cheap, existing objects in the environment. Finally, constructors (and static methods) are considered the most expensive since they require allocating and possibly acquiring additional resources.
+
+There is plenty of room for improvement in this cost assignment. For example, this scheme does not take in to account the actual use of each function in practice. In InSynth \citep{GveroETAL13CompleteCompletionTypesWeights}, the authors describe a system of weights that, like this system, were derived by trial and error. Naturally, we also adopt the convention that the cost of a compound expression is the sum of the costs of the subexpressions. In both cases, the relative ordering of each kind of generator matters more than the specific costs. It is important to note that in this system, many snippets will have the same cost. In order to break ties, it can be useful to add a small, random quantity to each snippet cost in order to achieve deterministic results, especially in light of the fact that many ordered set implementations break ties at random.
+
+\subsection{Practical Graph Construction}
+
+To construct the graph for the Java target, rather than writing a full parser for the Java language and analyzing the sources, or relying on the JVM's reflection capabilities to search for method signatures, we opted to write a simpler parser for the output of \texttt{javap}, the standard JDK class file disassembler. The \texttt{javap} tool can write to standard output just the public definitions for every class in a jar file, which affords us the ability to easily filter out certain packages or classes before creating the graph using existing tools. In particular, it was necessary to remove the \texttt{sun.*} set of packages, since they are incompatible with OpenJDK, and contain implementation details of the Oracle JVM.
+
+During the parse, nodes are added to a graph that has been initialized with all the primitive types as described in Section \ref{sec:algorithm:graph}. Each class forces a node to be added, and method and field nodes are added to the graph for each such entity in the class definition. When a method references a type that has not yet been seen, it is added to the graph on the spot, and held in an index so when it is encountered, the same node can be used by the construction procedure.
+
+In practice this graph is medium-sized and sparse. Importing the whole standard library beneath the \texttt{java.**} package results in a graph with 38930 nodes, and 88291 edges, or about twice as many edges as nodes. Even so, the cost limits reduce the search space to a far more manageable size. In the case of a BufferedReader, a ball of cost-radius $5.0$ consists of merely 4069 nodes and 5431 edges, and takes about 50 milliseconds to search. In practice, however, the whole graph need not be considered. If the graph is restricted to only those libraries that are already imported, and those that are heavily used -- say, \texttt{java.io}, \texttt{java.util}, and \texttt{java.nio} -- then the ball shrinks to 1023 nodes and 1395 edges, and takes only 9 milliseconds to search.

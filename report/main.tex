@@ -15,14 +15,39 @@
 \usepackage[scaled]{helvet}     % see www.ctan.org/get/macros/latex/required/psnfss/psnfss2e.pdf
 \usepackage{url}                % format URLs
 \usepackage{listings}           % format code
-\usepackage[]{algorithm2e}      % write up algorithms
+\usepackage{colonequals}        % yes, seriously
 \usepackage{enumitem}           % adjust spacing in enums
 \usepackage{xspace}             % Ensure correct spacing after text macros
 \usepackage[colorlinks=true,allcolors=blue,breaklinks,draft=false]{hyperref}
-\newcommand{\doi}[1]{doi:~\href{http://dx.doi.org/#1}{\Hurl{#1}}}   % print a hyperlinked DOI
-\newcommand{\ourTool}{Winston\xspace}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}      % write up algorithms
+\usepackage{lipsum}
+\usepackage[pdftex]{graphicx}
+\usepackage{amsmath}
+\usepackage{tabularx}
+%
+% Custom Packages
+%
+\usepackage{graphviz}
+\usepackage{defs}
+\lstset{
+language=Java,
+basicstyle=\small\sffamily,
+showspaces=false,
+showstringspaces=false,
+showtabs=false,
+frame=none,
+tabsize=2,
+captionpos=b,
+breaklines=true,
+breakatwhitespace=true,
+breakautoindent=true,
+escapeinside={\%*}{*)},
+linewidth=0.5\textwidth
+}
 
 \begin{document}
+\lstset{language=Java}
 
 \title{\ourTool: It Fixes Things}
 \authorinfo{Alex Reinking}{Yale University}{alexander.reinking@yale.edu}
@@ -34,9 +59,14 @@
 \end{abstract}
 
 \input{intro}
+\input{examples}
+\input{preliminaries}
 \input{algorithm}
+\input{implementation}
+\input{evaluation}
 \input{related}
-\input{theirStuff}
+%\input{oldStuff}
+
 
 \bibliographystyle{abbrvnat}
 \bibliography{main}

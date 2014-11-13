@@ -12,6 +12,7 @@ public class JavaFunctionNode extends JavaGraphNode implements Serializable {
     private final List<JavaTypeNode> signature;
     private final HashSet<JavaTypeNode> inputs = new HashSet<>();
     private final JavaTypeNode output;
+    private boolean isStatic = false;
 
     public JavaFunctionNode(String name, Collection<JavaTypeNode> formals,
                             JavaTypeNode output, JavaFunctionSynthesizer synthesizer) {
@@ -24,6 +25,14 @@ public class JavaFunctionNode extends JavaGraphNode implements Serializable {
         this.functionName = name;
         this.signature = new ArrayList<>(formals);
         this.name = String.format("%s: (%s) -> %s", this.functionName, args.toString(), output.getName());
+    }
+
+    public boolean isStatic() {
+        return isStatic;
+    }
+
+    public void setStatic(boolean isStatic) {
+        this.isStatic = isStatic;
     }
 
     public int getTotalFormals() {

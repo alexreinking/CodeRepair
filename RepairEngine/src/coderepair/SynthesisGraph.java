@@ -3,6 +3,9 @@ package coderepair;
 import coderepair.analysis.JavaFunctionNode;
 import coderepair.analysis.JavaGraphNode;
 import coderepair.analysis.JavaTypeNode;
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.Graph;
+import org.jgrapht.Graphs;
 import org.jgrapht.ext.ComponentAttributeProvider;
 import org.jgrapht.ext.DOTExporter;
 import org.jgrapht.ext.IntegerNameProvider;
@@ -12,13 +15,17 @@ import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 import java.io.Serializable;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, DefaultWeightedEdge>
-        implements Serializable {
+        implements Serializable, DirectedGraph<JavaGraphNode, DefaultWeightedEdge> {
     private static final IntegerNameProvider<JavaGraphNode> idProvider = new IntegerNameProvider<>();
-    private static final VertexNameProvider<JavaGraphNode> nameProvider = JavaGraphNode::getName;
+    private static final VertexNameProvider<JavaGraphNode> nameProvider = node -> {
+        if (node instanceof JavaFunctionNode)
+            return ((JavaFunctionNode) node).getFunctionName();
+        return node.getName();
+    };
     private static final ComponentAttributeProvider<JavaGraphNode> colorProvider = component -> {
         if (component instanceof JavaTypeNode) {
             HashMap<String, String> attrMap = new HashMap<>();
@@ -44,12 +51,80 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
     }
 
     public void exportToFile(Writer outputStream) {
-        new DOTExporter<JavaGraphNode, DefaultWeightedEdge>(idProvider, nameProvider, null, colorProvider, null)
-                .export(outputStream, this);
+        exportToFile(outputStream, this);
     }
 
-    public JavaGraphNode getVertexByName(String qualifiedName) {
-        return nodeManager.getTypeFromName(qualifiedName);
+    public static void exportToFile(Writer outputStream, Graph<JavaGraphNode, DefaultWeightedEdge> graph) {
+        new DOTExporter<JavaGraphNode, DefaultWeightedEdge>(idProvider, nameProvider, null, colorProvider, null)
+                .export(outputStream, graph);
+    }
+
+    public JavaTypeNode getTypeByName(String qualifiedName) {
+        return nodeManager.getTypeByName(qualifiedName);
+    }
+
+    public List<JavaTypeNode> getAssignableTypes(JavaTypeNode thisType) {
+        List<JavaTypeNode> superTypes = new LinkedList<>();
+        superTypes.add(thisType);
+        Graphs.predecessorListOf(this, thisType).stream()
+                .filter(javaGraphNode -> javaGraphNode instanceof JavaFunctionNode)
+                .filter(javaGraphNode -> ((JavaFunctionNode )javaGraphNode).getFunctionName().equals("<cast>"))
+                .forEach(javaGraphNode -> {
+                    JavaFunctionNode functionNode = (JavaFunctionNode) javaGraphNode;
+                    JavaTypeNode superType = functionNode.getOutput();
+                    superTypes.addAll(getAssignableTypes(superType));
+                });
+        return superTypes;
+    }
+
+    // TODO: make this not suck
+    public JavaFunctionNode lookupFunction(String functionName, String outputType, List<String> argumentTypes) {
+        if (functionName.isEmpty()) return null;
+        String formalName = String.format("%s: (%s) -> %s", functionName, String.join(" x ", argumentTypes), outputType);
+
+        JavaFunctionNode functionNode = null;
+
+        try {
+            JavaGraphNode outputVertex = getTypeByName(outputType);
+
+            for (JavaGraphNode generatorNode : Graphs.successorListOf(this, outputVertex))
+                if (generatorNode instanceof JavaFunctionNode) {
+                    JavaFunctionNode currentCandidate = (JavaFunctionNode) generatorNode;
+                    if (functionName.equals(currentCandidate.getFunctionName())) {
+                        List<String> actualTypes = currentCandidate.getSignature().stream()
+                                .map(JavaTypeNode::getName).collect(Collectors.toList());
+
+                        if (formalName.equals(currentCandidate.getName())) {
+                            functionNode = currentCandidate;
+                            break;
+                        } else if (argumentsMatch(actualTypes, argumentTypes))
+                            functionNode = currentCandidate;
+                    }
+                }
+
+        } catch (IllegalArgumentException e) {
+            System.err.printf("No output type %s found in graph.%n", outputType);
+        }
+
+        return functionNode;
+    }
+
+    // TODO: This is a Seppuku-worthy hack. It should not be.
+    private boolean argumentsMatch(List<String> actualTypes, List<String> givenTypes) {
+        if (actualTypes.size() != givenTypes.size())
+            return false;
+
+        try {
+            Iterator<String> actualIt = actualTypes.iterator();
+            Iterator<String> givenIt = givenTypes.iterator();
+            while (actualIt.hasNext() && givenIt.hasNext())
+                // The shame
+                if (!Class.forName(actualIt.next()).isAssignableFrom(Class.forName(givenIt.next())))
+                    return false;
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public double getWeight(JavaGraphNode startType, JavaGraphNode funcType) {
@@ -57,10 +132,14 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
     }
 
     public void addLocalVariable(String value, String qualifiedType) {
+        addLocalVariable(value, qualifiedType, 0.1);
+    }
+
+    public void addLocalVariable(String value, String qualifiedType, double desiredCost) {
         JavaFunctionNode newLocal = nodeManager.makeValue(value, qualifiedType);
         if (addVertex(newLocal)) {
             currentLocals.add(newLocal);
-            setEdgeWeight(addEdge(newLocal.getOutput(), newLocal), 0.0);
+            setEdgeWeight(addEdge(newLocal.getOutput(), newLocal), desiredCost);
         }
     }
 

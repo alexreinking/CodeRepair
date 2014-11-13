@@ -1,3 +1,0 @@
-From the examples directory:
-
-  $ find . -name \*.java | xargs javac -cp . -processorpath ../../out/artifacts/CodeRepair_jar/CodeRepair.jar -Xplugin:coderepair.sourcescanner.SourceStatistics
