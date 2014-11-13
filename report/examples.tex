@@ -15,12 +15,14 @@ she invokes \ourTool, which suggests a list of well-typed expressions that would
 result, which is then automatically inserted in the program. The number of the results returned by \ourTool can be easily adjusted in the settings of the tool. 
 
 Finding useful code snippets is an important aspect of every synthesis tool: it is not enough that 
-the synthesized code can compile -- in addition it should also be the code that the user had in mind. It is not always possible to guess correctly the user's intentions, but as we show in Section~\ref{sec:evaluation}, \ourTool 
+the synthesized code can compile -- in addition it should also be the code that the user had in mind. It is not always possible to guess correctly the user's intentions, but as we show in Section~\ref{sec:evaluation}, \ourTool is able to suggest a desired code fragment in \ruzica{??} of benchmarks.
 
+In Section~\ref{sec:algorithm} we explain in details how to generate ``most desired'' results. The \ourTool algorithm relies on a system of costs to accurately guess 
+programmers' intentions. The system of costs is similar to the system of weights used 
+in \cite{GveroETAL13CompleteCompletionTypesWeights}.
 
-In Section~\ref{sec:algorithm} we explain how to generate ``most desired'' results. We use
-the system of costs associated 
-
+This smart auto-completion functionality is present in many tools \cite{MandelinetALL2005Jungloid, GveroETAL13CompleteCompletionTypesWeights, PerelmanGBG12}. 
+The novelty present in \ourTool is auto-correction, and that we illustrate in following examples.
 
 
 %After the initial JVM warm-up?  
@@ -45,59 +47,66 @@ the system of costs associated
 %In order
 
 
-\subsection{Sequence of streams}
+\subsection{Code Correction: Sequence of Streams}
 
-We start by showing how our algorithm handles a given backbone 
-expression that does not compile. This example is similar to the 
-example presented in the InSynth paper
-\cite{GveroETAL13CompleteCompletionTypesWeights}, so this way we can compare and 
-demonstrate the differences between InSynth and our algorithm. Consider the following program fragment:
+We next show a difference between \ourTool and InSynth 
+\cite{GveroETAL13CompleteCompletionTypesWeights}. We take an example
+that is similar to the example presented in the InSynth paper to illustrate
+how \ourTool handles a backbone 
+expression that does not compile. 
+
+Consider the following program fragment:
 \begin{lstlisting}
 import java.io.*;
 
 public class Main {
-  public static void main(String args[]) throws IOException {
+  public static void main(String args[]) 
+  throws IOException {
     String body = "email.txt";
     String sig = "sign.txt";
     
-    SequenceInputStream seqStream = new SequenceInputStream(body, sig) // error
-    // ..., rest of the code is omitted
+    SequenceInputStream seqStream = 
+      new SequenceInputStream(body, sig) // error
   }
 } 
 \end{lstlisting}
 The developer declared the variable \lstinline{seqStream}; however, the specified 
 expression assigned to \lstinline{seqStream} does not compile. Still, from this backbone expression 
-we can recognize the structure of the intended expression: our algorithm should construct 
+we can recognize the structure of the intended expression: our tool should construct 
 an expression that preserves the relative position of the declarations from 
 \lstinline{SequenceInputStream(body, sig)}. In the resulting expression a \lstinline{SequenceInputStream} constructor
 should be used, with arguments that contain \lstinline{body} and \lstinline{sig} variables in their
-corresponding sub-expression trees. Our repair algorithm finds all such expressions, 
+corresponding sub-expression trees. \ourTool finds all such expressions, 
 constructed from the
 declarations visible in the scope of the backbone expression. The found expressions are well-typed 
 and ranked according to a metric that characterizes the
 resemblance to the starting backbone expression.
 The returned expression with the highest rank is
 \begin{lstlisting}
-SequenceInputStream seqStream = new SequenceInputStream(
+SequenceInputStream seqStream = 
+new SequenceInputStream(
   new FileInputStream(body), new FileInputStream(sig))
 \end{lstlisting}
-This expression represents exactly the desired expression.
-When we ran \cite{GveroETAL13CompleteCompletionTypesWeights} on the exactly same example, but without 
-the backbone expression, the desired expression was
-ranked as the second highest. Our new algorithm outperformed InSynth on this example, showing
-that the backbone expression can increase the quality of returned results by InSynth.
+This expression represents exactly the desired expression. This expression was found 
+in \ruzica{??} milliseconds.
+ 
+When we ran InSynth on the same example, but without the backbone expression, the desired expression was
+ranked as the second highest. Our tool outperformed InSynth on this example, showing that the backbone expression can increase quality of the returned results.
 
 An additional advantage that our repair algorithm has over InSynth is handling of constants. 
 As an illustration, given the backbone expression:
 \begin{lstlisting}
-SequenceInputStream seqStream = new SequenceInputStream("email.txt", "sign.txt") 
+SequenceInputStream seqStream = 
+   new SequenceInputStream("email.txt", "sign.txt") 
 \end{lstlisting}
-our algorithm returns, as expected:
+\ourTool returns, as expected:
 \begin{lstlisting}
-SequenceInputStream seqStream = new SequenceInputStream(
-  new FileInputStream("email.txt"), new FileInputStream("sign.txt"))
+SequenceInputStream seqStream = 
+  new SequenceInputStream(
+    new FileInputStream("email.txt"), 
+    new FileInputStream("sign.txt"))
 \end{lstlisting}
-In InSynth we were not able to synthesize code snippets with arbitrary literals. 
+Using InSynth we were not able to synthesize code snippets with arbitrary literals. 
 This way our code repair algorithm can be considered as an improved synthesis algorithm,
 because it also incorporates explicitly given literals in the final snippets.
 
@@ -110,18 +119,18 @@ because it also incorporates explicitly given literals in the final snippets.
 %resembles the desired one, our approach can be very effective in driving the
 %repair and finding the expression the developer had in mind.
 
-\subsection{Use of coercion functions}
+\subsection{Use of Coercion Functions}
 
-Many programming languages support coercion functions \cite{TannenCoercionS91}. 
+To address the problems that can arise with subtyping, we introduce 
+coercion functions \cite{TannenCoercionS91}. 
 They are used for type conversion and can be applied automatically if needed, 
-without the direct intervention from the developer. An automated insertion of
+without the direct intervention from the developer. For every subtyping relation $A<:B$, we introduce a coercion function $c$, s.t. $c: A \rightarrow B$. 
+An automated insertion of
 coercion functions is utilized for the purpose of fixing ill-typed
 expressions in many modern compilers, but usually in a limited manner 
 (at most one coercion function can be used to fix an ill-typed expression).
-Our repair algorithm goes beyond this standard and allows more expressive transformations of
-ill-typed expressions. The algorithm is based on advanced methods for searching and adapting 
-appropriate functions, combined with synthesizing any additional necessary
-arguments.
+Our repair algorithm goes beyond this standard and allows more expressive 
+transformations of ill-typed expressions. 
 
 Consider the following code, in which the developer declares a byte buffer and
 wants to construct an expression of the type \lstinline{InputStream} by merely hinting
@@ -130,7 +139,8 @@ the desired type and usage of the declared buffer \lstinline{b}:
 import java.io.*;
 
 public class Main {
-  public static void main(String args[]) throws IOException {
+  public static void main(String args[]) 
+  throws IOException {
     int off = 8, len = 512, size = 1024;
     byte b[] = args[0].getBytes();
     
@@ -138,21 +148,24 @@ public class Main {
   }
 }
 \end{lstlisting}
+
 To repair the expression that initialize the variable \lstinline{input}, 
-we insert a coercion function (here represented as a constructor application):
+\ourTool inserts a coercion function (here represented as a constructor application):
 \begin{lstlisting}    
 InputStream input = new ByteArrayInputStream(b);
 \end{lstlisting}
-Our algorithm returns this expression as the highest ranked expression: 
+\ourTool returns this expression as the highest ranked expression: 
 the expression is well-typed, follows the simple structure of the backbone
-expression \lstinline{b}, with the smallest size.
+expression \lstinline{b}, with the smallest size. The value was computed in \ruzica{??} 
+milliseconds. 
 The upcasting done in this case can be seen as an implicit insertion of 
 a coercion function, which casts \lstinline{ByteArrayInputStream} to
 its superclass, \lstinline{InputStream}.
 
-Our repair algorithm finds additional well-typed expressions, such as 
+\ourTool returns additional well-typed expressions, such as 
 \begin{lstlisting}    
-InputStream input = new ByteArrayInputStream(b, off, len);
+InputStream input = 
+   new ByteArrayInputStream(b, off, len);
 \end{lstlisting}
 This expression also correctly
 repairs the given backbone expression, but it no longer represents a simple coercion
@@ -161,6 +174,11 @@ constructor with three arguments. To create this expression, our algorithm
 considers a broader range of available functions and finds appropriate
 expressions that fill the places of the missing arguments. Those arguments
 are synthesized whenever a type-conversion function requires additional parameters.
+
+In general, the \ourTool algorithm is based on advanced methods for searching and adapting 
+appropriate functions, combined with synthesizing any additional necessary
+arguments.
+
 
 %The functions visible at the program point where the algorithm is invoked.
 % The algorithm can use all functions in the scope to repair the ill-typed expression.
@@ -177,7 +195,7 @@ are synthesized whenever a type-conversion function requires additional paramete
 %expression, the second argument to the \lstinline{SequenceInputStream} constructor may not
 %contain \lstinline{b} in its expression).
 
-\subsection{Mutations of ill-typed expressions}
+\subsection{Mutations of Ill-typed Expressions}
 
 %We next illustrate that our approach also considers modifications to the
 %given ill-typed expression itself, i.e. mutations of it, during the search for
@@ -185,53 +203,67 @@ are synthesized whenever a type-conversion function requires additional paramete
 
 %The next example extensively uses calls to the
 %standard Java API library for manipulation of streams.
-Sometimes the developer writes an ill-typed expression that less reflects
-the structure of the desired expression, usually by giving a wrong order
-or number of arguments. Consider the following code that extensively uses
+Sometimes the developer writes an ill-typed code that less reflects
+the structure of the desired expression. This is usually caused by giving a wrong order
+or a number of arguments. 
+
+Consider the following code that extensively uses
 calls to the standard Java API library to manipulate streams.
-The given backbone expression expresses a users wish to read a file 
+The given backbone expression hints the user's intention to read a file 
 compressed with the ZLIB library through a buffered stream.
-To read the file a user would need an \lstinline{InputStream} object.
+To read the file, a user needs an \lstinline{InputStream} object.
 \begin{lstlisting}
 import java.io.*;
 import java.util.zip.*;
 
 public class Main {
-  public static void main(String args[]) throws IOException {
+  public static void main(String args[]) 
+  throws IOException {
     int buffSize = 1024, compLevel = Deflater.BEST_SPEED;
     String fileName = "compressed.txt";
     
-    InputStream input = new BufferedInputStream(buffSize,
-      new DeflaterInputStream(new FileInputStream, compLevel, true)); // error
+    InputStream input = 
+      new BufferedInputStream(buffSize,
+        new DeflaterInputStream(
+           new FileInputStream, compLevel, true)); 
+      // error
   }
 }
 \end{lstlisting}
 
-However, a user writes arguments of the \lstinline{BufferedInputStream} constructor in a wrong order.
-In such a scenario our algorithm enumerates all the mutations of the abstract syntax
-tree given by the backbone expression. The algorithm then searches exhaustively
-all possible valid expressions considering a large number of different syntax trees.
-Those abstract syntax trees effectively correspond to useful modifications
-at the source code level, such as reordering, deletion or insertion of function arguments.
+In this example the user wrote arguments of 
+the \lstinline{BufferedInputStream} constructor in a wrong order.
 
-To create a desired expression our algorithm has to change the order of
+To correct this error and create a desired expression, 
+\ourTool algorithm has to change the order of
 the \lstinline{BufferedInputStream} arguments in the initial backbone expression.
 After applying a set of further modifications to the arguments we arrive to 
-the new backbone expression. In the last phase we fix the backbone expression
-inserting \lstinline{Deflater} constructor. The correct expression looks like:
+the new backbone expression, and we recursively continue until we reach leaves in the
+\ourTool graph (cf. Sec.~\ref{sec:algorithm}). Finally, we correct the backbone expression
+by inserting \lstinline{Deflater} constructor. \ourTool suggest the following correction for the above expression:
 \begin{lstlisting}    
 InputStream input = new BufferedInputStream(new DeflaterInputStream(
   new FileInputStream(fileName), new Deflater(compLevel, true)), buffSize);
 \end{lstlisting}
-Each mutation of an initial backbone expression introduces additional penalty 
-in terms of the resulting rank.
+\ourTool derive this code snippet in \ruzica{??} milliseconds. 
+
+These examples have shown that our approach can perform a search through a large number of
+possible repair expressions and guides the procedure according to the appropriate metric
+that characterizes the distance from the given broken expression.
+
+We hope that \ourTool can indeed perform useful
+and effective repairs that are well aligned with the developer's intent, even when
+ the given ill-typed expression requires several steps of the repair.  
+
+
+
+
+%Each mutation of an initial backbone expression introduces additional penalty 
+%in terms of the resulting rank.
 % mozda treba pomenuti da algoritam moze naci i gluplji expression sa mozda
 % vecim rankom -> ne treba, prevelika je vec sekcija, i ovo cu baciti
 % jer nemamo experimental evaluation.
-%
-%We have shown that our approach can perform a search through a large number of
-%possible repair expressions and guides it according to the appropriate metric
-%that characterizes the distance from the given broken expression.
-%From this demonstration we postulate that the approach can indeed perform useful
-%and effective repairs that are well aligned with the developer's intent, even in
-%cases where the given broken expression is very distant from it.  
+%The algorithm is based on advanced methods for searching and adapting 
+%appropriate functions, combined with synthesizing any additional necessary
+%arguments.
+
