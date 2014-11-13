@@ -1,8 +1,6 @@
 package coderepair.synthesis;
 
 import coderepair.SynthesisGraph;
-import coderepair.synthesis.CodeSnippet;
-import coderepair.synthesis.CodeSynthesis;
 import coderepair.util.GraphLoader;
 import com.intellij.util.Producer;
 import org.junit.Before;
@@ -17,7 +15,7 @@ public class CodeRepairTest {
     final private static String inFile = "./resources/rt.javap";
     final private static String graphFile = "./resources/graph.ser";
     private SynthesisGraph synthesisGraph;
-    private static final Producer<Double> costProducer = () -> 0.01 * Math.random();
+    private static final Producer<Double> costProducer = () -> 0.001 * Math.random();
     private CodeSnippet bestSnippet;
 
     @Before
@@ -78,11 +76,30 @@ public class CodeRepairTest {
         bestSnippet = synthesis.synthesize("java.io.BufferedReader", 6.0, 10).first();
 
         System.out.printf("%6f  %s%n", bestSnippet.cost, bestSnippet.code);
-        synthesis.strongEnforce("java.io.BufferedInputStream", new CodeSnippet(bestSnippet.code, costProducer.produce()));
+        synthesis.strongEnforce("java.io.BufferedReader", new CodeSnippet(bestSnippet.code, costProducer.produce()));
 
         /* Confirm Result */
         assertEquals("Repair failed",
                 "new BufferedReader(new StringReader(fileName))",
+                bestSnippet.code
+        );
+    }
+
+    @Test
+    public void repairSequenceInputStream() {
+        CodeSynthesis synthesis = new CodeSynthesis(synthesisGraph);
+
+        /* Stage 1 */
+        synthesis.strongEnforce("java.lang.String", new CodeSnippet("body", costProducer.produce()));
+        synthesis.strongEnforce("java.lang.String", new CodeSnippet("sig", costProducer.produce()));
+
+        bestSnippet = synthesis.synthesize("java.io.SequenceInputStream", 6.0, 10).first();
+
+        synthesis.strongEnforce("java.io.SequenceInputStream", new CodeSnippet(bestSnippet.code, costProducer.produce()));
+
+        /* Confirm Result */
+        assertEquals("Repair failed",
+                "new SequenceInputStream(new FileInputStream(body), new FileInputStream(sig))",
                 bestSnippet.code
         );
     }
