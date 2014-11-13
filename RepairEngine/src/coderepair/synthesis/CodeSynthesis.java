@@ -76,7 +76,7 @@ public class CodeSynthesis {
         SortedSet<CodeSnippet> snippets = Collections.synchronizedSortedSet(new BoundedSortedSet<>(nRequested));
         snippets.addAll(enforcedSnippets.getOrDefault(requestedType, Collections.emptySortedSet()));
         synthTable.get(requestedType)
-                .stream()
+                .parallelStream()
                 .filter(generator -> generator.cost <= remaining)
                 .forEach(generator -> {
                     if (generator.type instanceof JavaFunctionNode) {
@@ -86,7 +86,7 @@ public class CodeSynthesis {
 
                         List<SortedSet<CodeSnippet>> choices =
                                 funcGen.getSignature()
-                                        .parallelStream()
+                                        .stream()
                                         .map(input -> getExpression(input, nextCost, nRequested))
                                         .filter(resultSet -> !resultSet.isEmpty())
                                         .collect(Collectors.toList());

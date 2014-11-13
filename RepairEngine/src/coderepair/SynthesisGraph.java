@@ -13,8 +13,7 @@ import org.jgrapht.ext.VertexNameProvider;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
-import java.io.Serializable;
-import java.io.Writer;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,6 +51,12 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
 
     public void exportToFile(Writer outputStream) {
         exportToFile(outputStream, this);
+    }
+
+    public void serialize(OutputStream outputStream) throws IOException {
+        ObjectOutputStream out = new ObjectOutputStream(outputStream);
+        out.writeObject(this);
+        out.close();
     }
 
     public static void exportToFile(Writer outputStream, Graph<JavaGraphNode, DefaultWeightedEdge> graph) {

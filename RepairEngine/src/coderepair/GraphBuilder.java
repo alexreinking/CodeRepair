@@ -28,6 +28,10 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
         allowedPackages.add("java.lang");
     }
 
+    public GraphBuilder(String[] allowedPackages) {
+        this(Arrays.asList(allowedPackages));
+    }
+
     @Override
     public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
         nodeManager = new JavaTypeBuilder();
