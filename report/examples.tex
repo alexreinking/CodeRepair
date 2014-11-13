@@ -148,8 +148,7 @@ In general, the \ourTool algorithm is based on advanced methods for searching an
 %standard Java API library for manipulation of streams.
 Sometimes, a developer writes an ill-typed code that poorly reflects the structure of the desired expression. This is usually caused by passing arguments in the wrong order, or passing too many or too few parameters to a function.
 
-Consider the following code that uses an extensive number of calls to the standard Java API library to manipulate streams. The given backbone expression hints the user's intention to read a file compressed with the ZLIB library through a buffered stream.
-To read the file, a user needs an \lstinline{InputStream} object.
+Consider the following code that uses an extensive number of calls to the standard Java API library to manipulate streams. The given backbone expression hints the user's intention to read a file compressed with the ZLIB library through a buffered stream. To read the file, a user needs to instantiate an \lstinline{InputStream} object.
 \begin{lstlisting}
 import java.io.*;
 import java.util.zip.*;
@@ -169,29 +168,18 @@ public class Main {
 }
 \end{lstlisting}
 
-In this example the user wrote arguments of 
-the \lstinline{BufferedInputStream} constructor in a wrong order.
+In this example the user wrote arguments of the \lstinline{BufferedInputStream} constructor in the wrong order.
 
-To correct this error and create a desired expression, 
-\ourTool algorithm has to change the order of
-the \lstinline{BufferedInputStream} arguments in the initial backbone expression.
-After applying a set of further modifications to the arguments, we derive 
-a new backbone expression: 
-\lstinline{DeflaterInputStream(new FileInputStream, compLevel, true)}.
-We recursively continue this procedure until we reach leaves in the
-\ourTool graph (cf. Sec.~\ref{sec:algorithm}). Finally, the algorithm corrects the backbone expression
-by inserting \lstinline{Deflater} constructor. At the end, \ourTool suggest the following correction for the above expression:
+To correct this error and create a desired expression, \ourTool algorithm has to change the order of the \lstinline{BufferedInputStream} arguments in the initial backbone expression. After applying a set of further modifications to the arguments, we derive a new backbone expression: \lstinline{new DeflaterInputStream(new FileInputStream, compLevel, true)}. We recursively continue this procedure until we reach leaves in the \ourTool graph (cf. Sec.~\ref{sec:algorithm}). Finally, the algorithm corrects the backbone expression by inserting the \lstinline{Deflater} constructor. At the end, \ourTool suggests the following correction for the given expression:
 \begin{lstlisting}    
 InputStream input = new BufferedInputStream(new DeflaterInputStream(
   new FileInputStream(fileName), new Deflater(compLevel, true)), buffSize);
 \end{lstlisting}
 \ourTool derives this code snippet in approximately 380 milliseconds.
 
-These examples have shown that our algorithm can perform a search through a large number of
-possible repair expressions, and guides the procedure according to an appropriate metric
-that characterizes the distance from the given broken expression.
+These examples show that our algorithm can perform a search through a large number of possible repair expressions, and can guide that procedure according to an appropriate metric that characterizes the distance from the given expression to the corrected expression.
 
-We hope that \ourTool can indeed perform useful and effective repairs that are well aligned with the developer's intent, even when the given ill-typed expression requires several steps of the repair.  
+We hope that \ourTool can indeed perform useful and effective repairs that are well-aligned with the developer's intentions, even when the given ill-typed expression requires several steps to repair.  
 
 %Each mutation of an initial backbone expression introduces additional penalty 
 %in terms of the resulting rank.
