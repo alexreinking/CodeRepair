@@ -68,6 +68,7 @@ public class Main {
 
         TimedTask synthesize = new TimedTask("Synthesis", () -> {
             SynthesisGraph synthesisGraph = graph[0];
+            synthesisGraph.resetLocals();
             for (String type : Arrays.asList("java.io.SequenceInputStream", "java.io.BufferedReader",
                     "java.io.FileInputStream", "java.io.InputStreamReader", "java.util.regex.Matcher",
                     "java.applet.AudioClip")) {
@@ -140,9 +141,9 @@ public class Main {
         });
 
         loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph))
-                .andThen(synthesize)
+//                .andThen(synthesize)
                 .andThen(simulatedRepair)
-                .andThen(ballGrowth)
+//                .andThen(ballGrowth)
                 .run();
     }
 }
