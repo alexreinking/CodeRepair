@@ -17,7 +17,6 @@ public class CodeSynthesis {
     private final Map<JavaTypeNode, SortedSet<CodeSnippet>> snippetTable = new HashMap<>();
     private final Map<JavaTypeNode, SortedSet<CodeSnippet>> enforcedSnippets = new HashMap<>();
     private final Set<CodeSnippet> allEnforced = new HashSet<>();
-    private HashSet<JavaTypeNode> visitedTypes = new HashSet<>();
 
     public CodeSynthesis(SynthesisGraph synthesisGraph) {
         this.synthesisGraph = synthesisGraph;
@@ -71,16 +70,13 @@ public class CodeSynthesis {
     }
 
     SortedSet<CodeSnippet> getExpression(JavaTypeNode requestedType, double remaining, int nRequested) {
-        if (visitedTypes.contains(requestedType)) return Collections.emptySortedSet();
         if (synthTable.get(requestedType) == null) return Collections.emptySortedSet();
         if (snippetTable.containsKey(requestedType)) return snippetTable.get(requestedType);
-
-//        visitedTypes.add(requestedType);
 
         SortedSet<CodeSnippet> snippets = Collections.synchronizedSortedSet(new BoundedSortedSet<>(nRequested));
         snippets.addAll(enforcedSnippets.getOrDefault(requestedType, Collections.emptySortedSet()));
         synthTable.get(requestedType)
-                .parallelStream()
+                .stream()
                 .filter(generator -> generator.cost <= remaining)
                 .forEach(generator -> {
                     if (generator.type instanceof JavaFunctionNode) {
@@ -90,7 +86,7 @@ public class CodeSynthesis {
 
                         List<SortedSet<CodeSnippet>> choices =
                                 funcGen.getSignature()
-                                        .stream()
+                                        .parallelStream()
                                         .map(input -> getExpression(input, nextCost, nRequested))
                                         .filter(resultSet -> !resultSet.isEmpty())
                                         .collect(Collectors.toList());
@@ -101,7 +97,6 @@ public class CodeSynthesis {
                     }
                 });
 
-//        visitedTypes.remove(requestedType);
         return snippets;
     }
 
