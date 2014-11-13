@@ -2,26 +2,31 @@
 \label{sec:related}
 
 We next provide an overview of related work on program repair and other algorithms
-that share similar insights, ideas and techniques with our approach to program repair.
+that share similar insights, ideas and techniques to our approach.
 
 \paragraph{{\bf Code Repair.}} 
 Debugging and locating errors in the code \cite{Pavlinovic:2014, Chandra:2011:AD} play 
 an important role in the process of increasing software reliability. Once located, 
 some errors can be easily fixed. Recently we have witnessed to a number of tools that 
-aim to repair parts of code. 
+aim to repair parts of code. MintHint \citep{MintHint} is such a tool that takes a more complete-program approach to code repair. Where we are using user input to guide synthesis of a correctly-typed expression from an incorrectly-typed one, MintHint targets a particular passage that is suspected to carry a bug. MintHint synthesizes some hints in areas that the algorithm considers erroneous, by both symbolically and actually executing the code and comparing its output to test cases.
 
-MintHint \citep{MintHint} takes a more complete-program approach to code repair. Where we are using user input to guide synthesis of a correctly-typed expression from an incorrectly-typed one, their tool targets a particular passage that is suspected to carry a bug. MintHint synthesizes some hints in areas the algorithm considers erroneous, by both symbolically and actually executing the code and comparing its output to test cases.
+\paragraph{{\bf Automated inference of program fixes and contracts.}}
+The goal of the AutoFix project \cite{WeiETAL11InferringBetterContracts,PeiETAL11CodebasedAutomatedProgramFixing} is to fix
+ object-oriented programs according to their
+contracts. One commonality with \ourTool is the common goal of inferring code. 
+In \cite{WeiETAL11InferringBetterContracts,PeiETAL11CodebasedAutomatedProgramFixing} program fixes and contracts are generated based on predefined code templates. Rather than filling 
+the predefined code templates,
+our approach employs smart searches through the space of all expressions that
+satisfy the constraint for a successful repair.
+\ourTool derives code and repairs based only on type information, without characterization of program run-time
+behavior.
 
-CodeHint \cite{CodeHint2014ICSE} is a new dynamic approach to software synthesis 
-that combines debugging and dynamic execution. CodeHint can also be used in 
-interactive settings, but the main focus of CodeHint is code generation and not code repair.
-
-\paragraph{{\bf Syntactic error diagnosis and repair}}
+\paragraph{{\bf Syntactic Error Diagnosis and Repair}}
 A related line of work considers a syntactic error diagnosis, as well as a recovery and a repair after such errors are found \cite{Hammond198451,Degano:1998:LTH:2245729.2245835}.
 The main target of these schemes is the parsing phase within the compilation process. 
 Although our algorithm focuses on the repair of expressions that are correctly parsed
 according to the appropriate language grammar rules, some similarities may be noted.
-With respect to these techniques and introduced taxonomy, our algorithm may be viewed
+With respect to these techniques and introduced taxonomy, the \ourTool algorithm may be viewed
 as a type-checking repair scheme that is global, since it considers all the declarations
 in the scope for the repair, and interactive, since the developer can choose between multiple
 offered repair expressions and impact the repair process of subsequent errors. 
@@ -35,17 +40,6 @@ on a predefined length of the input after an error is detected, our approach
 considers the abstract syntax tree of the given expression and tries to encode all valid combinations of insertions in order to produce one
 or multiple expressions that would successfully type-check.
 
-\paragraph{{\bf Automated inference of program fixes and contracts.}}
-The goal of this line of work
-\cite{WeiETAL11InferringBetterContracts,PeiETAL11CodebasedAutomatedProgramFixing} is fixing
-object-oriented programs according to their
-contracts. One commonality with \ourTool is the common goal of inferring code. 
-In \cite{WeiETAL11InferringBetterContracts,PeiETAL11CodebasedAutomatedProgramFixing} program fixes and contracts are generated based on predefined code templates. Rather than filling 
-the predefined code schemas,
-our approach exhaustively searches through the space of all expressions that
-satisfy the constraint for a successful repair.
-\ourTool derives code and repairs based only on type information, without characterization of program run-time
-behavior.
 
 \paragraph{{\bf Searching for Better Type-error Messages}}
 An interesting work, related to code repairing, has been done on improving type
@@ -68,20 +62,59 @@ to the whole backbone expression and the weight heuristic.
 %  and reconstructs certain number of candidate
 % solutions according to the weight metric.
 
+\paragraph{{\bf Frameworks for Deductive Synthesis and Execution of
+Specifications.}} Frameworks that encompass verification, deductive
+synthesis and run-time constraint solving were presented in
+\cite{KuncakETAL13ExecutingSpecificationsSynthesisConstraintSolvingInvitedTalk,
+KneussETAL13SynthesisModuloRecursiveFunctions}. These frameworks leverage modern SMT solvers
+and use various techniques for
+synthesis and verification which are integrated into an interactive tool with
+ the aim to introduce specifications into the development process of reliable
+ software.
+% They enable the developers to compile, synthesize, execute, optimize,
+% and verify mixed code fragments containing both implementation and
+% specifications that are written in the common functional programming language.
+% To achieve this they decompose the code into simpler fragments using predefined
+% rules in a cost-driven framework, while fragments may be synthesized and
+% verified at compile-time or executed at run-time by invoking a constraint
+% solver.
+Although these frameworks address more general goal of integrating software construction
+and verification while automating multiple aspects of the development process,
+in contrast to our approach that generates code fragments that do not need
+to satisfy formal specification, an interesting parallel can be drawn between
+such frameworks and our approach for code repair.
+When given a program that contains pieces of incomplete implementation, the
+aforementioned frameworks may employ techniques that synthesize missing
+fragments or allow solving them at run-time.
+Therefore, these frameworks can be viewed as repairing partial implementations
+that may happen at compile-time or may be deferred to run-time.
+The domain of both  frameworks includes only purely function programs, it is additionally
+constrained by the expressiveness of the underlying SMT solver theories, verification
+techniques, and deductive synthesis rules. \ourTool does not need to address those constraints, however, having only a type constraints results in a simpler code fragments that can be synthesized and repaired.
 
+\paragraph{{\bf Sketching.}}
+Program sketching tries to infer code fragments from the specification
+given as separate incomplete programs
+\cite{Solar-Lezama:2007:SS:1250734.1250754,Solar-Lezama:2006:CSF:1168919.1168907}.
+Practicality is achieved by focusing on particular domains that allow algorithms
+that employ a guided search over the syntax trees of the synthesized program with an a priori
+determined bound on the syntax tree size.
+While sketching requires code contracts and a program skeleton, our repair tool
+ needs merely a hint of the resulting
+expression and uses graph-based techniques to explore the unbounded space of expressions
+that are type-correct and conform to the structure of the backbone expression.
+Additionally, our approach is driven by externally defined
+heuristic measures to guide the search towards better solution candidates.
 
+\paragraph{{\bf Program Synthesis.}}
+\ourTool is a repair tool that can is also used for software synthesis, since its repair algorithm is 
+built on the top of a synthesis algorithm. In addition to standard synthesis tools that we use through the paper as a comparison to \ourTool, there is a number of synthesis tool with a similar functionality. CodeHint \cite{CodeHint2014ICSE} is a new dynamic approach to software synthesis 
+that combines debugging and dynamic execution. CodeHint can also be used in 
+interactive settings, but the main focus of CodeHint is code generation and not code repair.
+XSnippet \cite{Tansalarak06xsnippet:XSnippet} and SNIFF \cite{Chatterjee:2009:Sniff} are  tools that maintain a repository of code snippets and help programmers to find suitable code. Contrary to this approach, our synthesis algorithm is dynamic as the suggested code snippets are dynamically changing with the program that the user has written up to the point when she invokes our tool.
 
-
-
-\cite{Tansalarak06xsnippet:XSnippet}
-
-
-\cite{Chatterjee:2009:Sniff}
-
-
-
-\paragraph{{\bf Type inference with automatic insertion of coercions.}}
-Several approaches on using coercions within type checking and type inference
+\paragraph{{\bf Type Inference with Automatic Insertion of Coercions.}}
+Finally, since coercion functions are the basis of our approach to subtyping, let us compare to the related work in that field. Several approaches on using coercions within type checking and type inference
 were presented in \cite{Mitchell:1984:CTI:800017.800529,Luo:2008:CPT:1394781.1394785}.
 This line of work focuses on type inference with automatic insertion of coercions in the
 context of functional programming languages.
@@ -95,9 +128,9 @@ Our approach conceptually differs from the aforementioned in multiple dimensions
 repair.
 The main difference is that our approach searches for any possible expression that is
 consistent with the types and structure as defined by the backbone expression.
-Additionally, our approach is limited to lambda calculus terms in the
-applicative long normal form and considers only base types without type
-constructors.
+%Additionally, our approach is limited to lambda calculus terms in the
+%applicative long normal form and considers only base types without type
+%constructors.
 % , while the aforementioned approach
 % is based on simply-typed lambda calculus with Hindley-Milner polymorphism and
 % adds coercive structural subtyping.
@@ -110,48 +143,4 @@ appropriate types, together with any ``boarding'' arguments and mutations that m
 
 
 
-\vspace{-0.5em}
-\paragraph{{\bf Frameworks for deductive synthesis and execution of
-specifications.}} Frameworks that encompass verification, deductive
-synthesis and run-time constraint solving were presented in
-\cite{KuncakETAL13ExecutingSpecificationsSynthesisConstraintSolvingInvitedTalk,KneussETAL13SynthesisModuloRecursiveFunctions}.
-% These frameworks leverage modern SMT solvers
-% and use various techniques for
-% synthesis and verification which are integrated into an interactive tool with
-% the aim to introduce specifications into the development process of reliable
-% software.
-% They enable the developers to compile, synthesize, execute, optimize,
-% and verify mixed code fragments containing both implementation and
-% specifications that are written in the common functional programming language.
-% To achieve this they decompose the code into simpler fragments using predefined
-% rules in a cost-driven framework, while fragments may be synthesized and
-% verified at compile-time or executed at run-time by invoking a constraint
-% solver.
-Although these frameworks address more general goal of integrating software construction
-and verification while automating multiple aspects of the development process,
-in contrast to our approach that produces code fragments that do not need
-to satisfy formal specification, an interesting parallel can be drawn between
-such frameworks and our approach for code repair.
-When given a program that contains pieces of incomplete implementation, the
-aforementioned frameworks may employ techniques that synthesize missing
-fragments or allow solving them at run-time.
-Therefore, such approach may be viewed as repairing partial implementations
-that may happen at compile-time or may be deferred to run-time.
-While the domain of both includes only purely function programs, it is additionally
-constrained by the expressiveness of the underlying SMT solver theories, verification
-techniques, and deductive synthesis rules in the case of the frameworks, while restricted
-to (weak) applicative long-normal form in the case of our approach.
 
-\vspace{-0.5em}
-\paragraph{{\bf Sketching}}
-Program sketching tries to infer code fragments from the specification
-given as separate unoptimized programs
-\cite{Solar-Lezama:2007:SS:1250734.1250754,Solar-Lezama:2006:CSF:1168919.1168907}.
-Practicality is achieved by focusing on particular domains that allow algorithms
-that employ a guided search over the syntax trees of the synthesized program with an a priori
-determined bound on the syntax tree size.
-In contrast, our repair approach requires merely a hint of the resulting
-expression and uses techniques to explore the unbounded space of expressions
-that are type-correct and conform to the structure of the backbone expression.
-Additionally, our approach is driven by externally defined
-heuristic measures to guide the search towards better solution candidates.
