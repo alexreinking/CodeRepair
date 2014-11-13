@@ -16,8 +16,8 @@ public class CodeSynthesis {
     private final Map<JavaTypeNode, SortedSet<Generator>> synthTable = new HashMap<>();
     private final Map<JavaTypeNode, SortedSet<CodeSnippet>> snippetTable = new HashMap<>();
     private final Map<JavaTypeNode, SortedSet<CodeSnippet>> enforcedSnippets = new HashMap<>();
-    private final Set<CodeSnippet> allSnippets = new HashSet<>();
-    private double costLimit = 0.0;
+    private final Set<CodeSnippet> allEnforced = new HashSet<>();
+    private HashSet<JavaTypeNode> visitedTypes = new HashSet<>();
 
     public CodeSynthesis(SynthesisGraph synthesisGraph) {
         this.synthesisGraph = synthesisGraph;
@@ -30,7 +30,6 @@ public class CodeSynthesis {
     public SortedSet<CodeSnippet> synthesize(String qualifiedName, double costLimit, int nRequested) {
         synthTable.clear();
         snippetTable.clear();
-        this.costLimit = costLimit;
 
         JavaGraphNode requestedType = synthesisGraph.getTypeByName(qualifiedName);
         Stack<JavaTypeNode> typesByDistance = new Stack<>();
@@ -63,17 +62,20 @@ public class CodeSynthesis {
 
     public void enforce(String type, CodeSnippet snippet) {
         enforcedSnippets.computeIfAbsent(synthesisGraph.getTypeByName(type), v -> new TreeSet<>()).add(snippet);
-        allSnippets.add(snippet);
+        allEnforced.add(snippet);
     }
 
     public void relax() {
         enforcedSnippets.clear();
-        allSnippets.clear();
+        allEnforced.clear();
     }
 
     SortedSet<CodeSnippet> getExpression(JavaTypeNode requestedType, double remaining, int nRequested) {
+        if (visitedTypes.contains(requestedType)) return Collections.emptySortedSet();
         if (synthTable.get(requestedType) == null) return Collections.emptySortedSet();
         if (snippetTable.containsKey(requestedType)) return snippetTable.get(requestedType);
+
+//        visitedTypes.add(requestedType);
 
         SortedSet<CodeSnippet> snippets = Collections.synchronizedSortedSet(new BoundedSortedSet<>(nRequested));
         snippets.addAll(enforcedSnippets.getOrDefault(requestedType, Collections.emptySortedSet()));
@@ -84,18 +86,22 @@ public class CodeSynthesis {
                     if (generator.type instanceof JavaFunctionNode) {
                         JavaFunctionNode funcGen = (JavaFunctionNode) generator.type;
 
+                        double nextCost = remaining - generator.cost;
+
                         List<SortedSet<CodeSnippet>> choices =
                                 funcGen.getSignature()
                                         .stream()
-                                        .map(input -> getExpression(input, remaining - generator.cost, nRequested))
+                                        .map(input -> getExpression(input, nextCost, nRequested))
+                                        .filter(resultSet -> !resultSet.isEmpty())
                                         .collect(Collectors.toList());
 
-                        addFunctionPossibilities(
-                                snippets, funcGen, generator.cost, choices, 0,
-                                new CodeSnippet[choices.size()]);
+                        if (choices.size() == funcGen.getSignature().size())
+                            addFunctionPossibilities(snippets, funcGen, generator.cost,
+                                    choices, 0, new CodeSnippet[choices.size()]);
                     }
                 });
 
+//        visitedTypes.remove(requestedType);
         return snippets;
     }
 
@@ -105,13 +111,12 @@ public class CodeSynthesis {
             int pos, CodeSnippet paramArray[]) {
         if (pos == paramArray.length) {
             String code = functionType.synthesize(paramArray);
-            double div = Math.pow(2.0, allSnippets.stream().filter(s -> code.contains(s.code)).count());
-            snippets.add(new CodeSnippet(code, currentCost / div));
+            double div = Math.pow(2.0, allEnforced.stream().filter(s -> code.contains(s.code)).count());
+            snippets.add(new CodeSnippet(code, currentCost, div));
         } else {
             for (CodeSnippet snip : synths.get(pos)) {
                 paramArray[pos] = snip;
                 double nextCost = currentCost + snip.cost;
-                if (nextCost > costLimit) break; // thanks, sorted order!
                 addFunctionPossibilities(snippets, functionType, nextCost,
                         synths, pos + 1, paramArray);
             }

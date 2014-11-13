@@ -132,7 +132,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
     }
 
     public void addLocalVariable(String value, String qualifiedType) {
-        addLocalVariable(value, qualifiedType, 0.0);
+        addLocalVariable(value, qualifiedType, 0.1);
     }
 
     public void addLocalVariable(String value, String qualifiedType, double desiredCost) {
