@@ -6,6 +6,7 @@ import coderepair.antlr.JavaPParser;
 import coderepair.synthesis.CodeSnippet;
 import coderepair.synthesis.CodeSynthesis;
 import coderepair.util.TimedTask;
+import com.intellij.util.Producer;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -17,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 public class Main {
@@ -85,30 +85,33 @@ public class Main {
 
         TimedTask simulatedRepair = new TimedTask("Repair-ish", () -> {
             SynthesisGraph synthesisGraph = graph[0];
+            synthesisGraph.resetLocals();
             synthesisGraph.addLocalVariable("fileName", "java.lang.String");
 
             CodeSynthesis synthesis = new CodeSynthesis(synthesisGraph);
-
             CodeSnippet bestSnippet;
 
+            Producer<Double> p = () -> 0.01 * Math.random();
+
             /* Stage 1 */
-            bestSnippet = synthesis.synthesize("java.io.FileInputStream", 7.0, 10).first();
+            bestSnippet = synthesis.synthesize("java.io.FileInputStream", 6.0, 10).first();
             System.out.printf("* %6f  %s%n", bestSnippet.cost, bestSnippet.code);
-            synthesis.strongEnforce("java.io.FileInputStream", new CodeSnippet(bestSnippet.code, 0.1));
+            synthesis.strongEnforce("java.io.FileInputStream", new CodeSnippet(bestSnippet.code, p.produce()));
 
             /* Stage 2 */
-            synthesis.strongEnforce("boolean", new CodeSnippet("true", 0.1));
-            synthesis.strongEnforce("int", new CodeSnippet("compLevel", 0.1));
+            synthesis.strongEnforce("boolean", new CodeSnippet("true", p.produce()));
+            synthesis.strongEnforce("int", new CodeSnippet("compLevel", p.produce()));
 
-            bestSnippet = synthesis.synthesize("java.util.zip.DeflaterInputStream", 7.0, 10).first();
+            bestSnippet = synthesis.synthesize("java.util.zip.DeflaterInputStream", 6.0, 10).first();
             System.out.printf("* %6f  %s%n", bestSnippet.cost, bestSnippet.code);
-            synthesis.strongEnforce("java.util.zip.DeflaterInputStream", new CodeSnippet(bestSnippet.code, 0.1));
+            synthesis.strongEnforce("java.util.zip.DeflaterInputStream", new CodeSnippet(bestSnippet.code, p.produce()));
 
             /* Stage 3 */
-            synthesis.strongEnforce("int", new CodeSnippet("buffSize", 0.1));
-            bestSnippet = synthesis.synthesize("java.io.BufferedInputStream", 7.0, 10).first();
+            synthesis.strongEnforce("int", new CodeSnippet("buffSize", 0.1 * Math.random()));
+
+            bestSnippet = synthesis.synthesize("java.io.BufferedInputStream", 6.0, 10).first();
             System.out.printf("* %6f  %s%n", bestSnippet.cost, bestSnippet.code);
-            synthesis.strongEnforce("java.io.BufferedInputStream", new CodeSnippet(bestSnippet.code, 0.1));
+            synthesis.strongEnforce("java.io.BufferedInputStream", new CodeSnippet(bestSnippet.code, p.produce()));
         });
 
         TimedTask ballGrowth = new TimedTask("Export", () -> {
@@ -133,7 +136,7 @@ public class Main {
 
         loadGraph.orElse(parseInput.andThen(buildGraph).andThen(serializeGraph))
 //                .andThen(synthesize)
-                .andThen(simulatedRepair.times(100))
+                .andThen(simulatedRepair.times(20))
                 .run();
     }
 }
