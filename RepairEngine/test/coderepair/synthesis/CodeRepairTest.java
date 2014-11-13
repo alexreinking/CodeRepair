@@ -1,3 +1,5 @@
+package coderepair.synthesis;
+
 import coderepair.SynthesisGraph;
 import coderepair.synthesis.CodeSnippet;
 import coderepair.synthesis.CodeSynthesis;

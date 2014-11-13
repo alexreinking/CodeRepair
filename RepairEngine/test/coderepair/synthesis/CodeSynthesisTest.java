@@ -1,21 +1,28 @@
 package coderepair.synthesis;
 
 import coderepair.SynthesisGraph;
+import coderepair.analysis.JavaGraphNode;
 import coderepair.util.GraphLoader;
-import com.carrotsearch.junitbenchmarks.AbstractBenchmark;
 import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
+import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.graph.DirectedSubgraph;
+import org.jgrapht.traverse.ClosestFirstIterator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class CodeSynthesisTest extends AbstractBenchmark {
+import java.util.HashSet;
+import java.util.Set;
+
+public class CodeSynthesisTest {
     private CodeSynthesis synthesis = null;
     final private static String inFile = "./resources/rt.javap";
     final private static String graphFile = "./resources/graph.ser";
+    private SynthesisGraph testGraph;
 
     @Before
     public void setUp() throws Exception {
-        SynthesisGraph testGraph = GraphLoader.getGraph(graphFile, inFile);
+        testGraph = GraphLoader.getGraph(graphFile, inFile);
         if (testGraph == null) throw new RuntimeException("Could not load graph");
 
         synthesis = new CodeSynthesis(testGraph);
@@ -26,7 +33,22 @@ public class CodeSynthesisTest extends AbstractBenchmark {
         testGraph.addLocalVariable("outStream", "java.io.OutputStream");
     }
 
-    private void testSynthesis(String type, String desiredCode, double costLimit, int nRequested) {
+    private void measureBallSize(String type, double costLimit) {
+        ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> iterator
+                = new ClosestFirstIterator<>(testGraph, testGraph.getTypeByName(type), costLimit);
+
+        Set<JavaGraphNode> vertices = new HashSet<>();
+        while (iterator.hasNext())
+            vertices.add(iterator.next());
+
+        DirectedSubgraph<JavaGraphNode, DefaultWeightedEdge> subgraph
+                = new DirectedSubgraph<>(testGraph, vertices, testGraph.edgeSet());
+
+        System.out.printf("(Ball) |V| = %d |E| = %d%n", subgraph.vertexSet().size(), subgraph.edgeSet().size());
+        System.out.printf("(Graph) |V| = %d |E| = %d%n", testGraph.vertexSet().size(), testGraph.edgeSet().size());
+    }
+
+    private void testSynthesis(String type, String desiredCode, double costLimit, int nRequested) throws InterruptedException {
         System.out.println("\n============= " + type + " =============\n");
 
         boolean passed = false;
@@ -38,7 +60,9 @@ public class CodeSynthesisTest extends AbstractBenchmark {
             System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
         }
 
-        System.out.flush();
+        System.out.println("\nSizes:");
+        measureBallSize(type, costLimit);
+        Thread.sleep(10);
         Assert.assertTrue("Synthesis did not return the desired segment", passed);
     }
 
