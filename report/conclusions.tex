@@ -1,8 +1,5 @@
 \section{Conclusions}
 \label{sec:conclusions}
-We have described an algorithm and a tool that performs a type-based synthesis and repair.
-The user can give a hint of an intended code, or just provide a type of a desired code snippet, and our tool returns a list of 
+We have described an algorithm and a tool that performs a type-directed synthesis and repair. The user can give a hint of intended code, or just provide a type of a desired code snippet, and our tool returns a list of valid expressions which correspond to those requirements. In addition, the expressions are ranked by a given system of costs, which capture the user's intent of finding the most desirable snippet.
 
-
-
-We have presented a new tool that helps programmers to write complex expressions. 
+We believe that this algorithm has two compelling uses. First, it can assist programmers in writing complex expressions. Second, it could be integrated into a compiler to provide helpful error messages that can adapt the costs to reflect semantic information derived from context (something that is not always possible in an IDE setting). We compared our tool against available, state-of-the-art synthesizers and found that our tool provides a similarly high quality set of results in a far shorter amount of time. Additionally, we tested our repair algorithm on severely-broken programs and found that \ourTool can correct a wide range of errors, even when multiple such errors occur in the same expression.

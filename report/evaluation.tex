@@ -8,19 +8,19 @@ In this section we present the results of our tool on some typical-use benchmark
   \renewcommand{\arraystretch}{1.25}
   \begin{tabularx}{\textwidth}{| X | l | l | l | l | l |}
     \hline
-    \textbf{Benchmark} & \textbf{Type} & \textbf{Running Time (ms)} & \textbf{Size of Ball (Vertices)} & \textbf{Size of Ball (Edges)} & \textbf{Snippet Rank} \\ \hline
+    \textbf{Benchmark} & \textbf{Type} & \textbf{Time (ms)} & \textbf{Vertices} & \textbf{Edges} & \textbf{Rank} \\ \hline
 	\texttt{SequenceInputStream} & Synthesis & $<$ 1 & 141   & 149   & 1 \\ \hline
     \texttt{FileInputStream}     & Synthesis & 38  & 7832  & 10516 & 1 \\ \hline
     \texttt{InputStreamReader}   & Synthesis & 29  & 7064  & 9673  & 1 \\ \hline
     \texttt{Matcher} (regex)     & Synthesis & 93  & 14505 & 24740 & 1 \\ \hline
     \texttt{InputStream} (from byte array) & Synthesis & 116 & 13163  & 20581  & 2 \\ \hline
-    \texttt{SequenceInputStream} & Repair    & 4   & --    & --    & 1 \\ \hline
     \texttt{BufferedReader}      & Repair    & 18  & --    & --    & 1 \\ \hline
-    \texttt{BufferedInputStream} and \texttt{DeflaterInputStream}  & Repair & 380 & -- & -- & 1 \\ \hline
+    \texttt{SequenceInputStream} & Repair    & 4   & --    & --    & 1 \\ \hline
+    \texttt{DeflaterInputStream} & Repair & 380 & -- & -- & 1 \\ \hline
     \texttt{BufferedReader}      & Synthesis & 16  & 3119  & 4225  & 2 \\ \hline
     \texttt{AudioClip} (applet)  & Synthesis & 27  & 6808  & 9291  & 2 \\ \hline
   \end{tabularx}
-  \caption{Typical-use runtimes for \ourTool in various examples. The entire Java standard library from \textbf{rt.jar} (except the \texttt{sun.} and \texttt{com.sun.} packages) was used to build the graph before running the benchmarks; it consistently took around 5 seconds to load the data set from its serialized form. They were each initialized with a small environment consisting of two strings, two InputStreams, and an OutputStream}
+  \caption{Typical-use runtimes for \ourTool in various examples. ``Vertices'' and ``Edges'' refer to the number of objects included inside a ball of cost-radius 4.5 around the origin type. The entire Java standard library from \textbf{rt.jar} (excluding the \texttt{sun.} and \texttt{com.sun.} packages) was used to build the graph before running the benchmarks; it consistently took around 5 seconds to load the data set from its serialized form. Each test case was initialized with a small environment consisting of two strings, two InputStreams, and an OutputStream}
   \label{eval:runtime}
 \end{table*}
 
