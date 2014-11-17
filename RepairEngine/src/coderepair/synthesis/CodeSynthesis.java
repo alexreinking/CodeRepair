@@ -4,7 +4,9 @@ import coderepair.SynthesisGraph;
 import coderepair.analysis.JavaFunctionNode;
 import coderepair.analysis.JavaGraphNode;
 import coderepair.analysis.JavaTypeNode;
+import org.antlr.misc.Graph;
 import org.jetbrains.annotations.NotNull;
+import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.traverse.ClosestFirstIterator;
 
@@ -31,6 +33,7 @@ public class CodeSynthesis {
         snippetTable.clear();
 
         JavaGraphNode requestedType = synthesisGraph.getTypeByName(qualifiedName);
+        if (requestedType == null) return Collections.emptySortedSet();
         Stack<JavaTypeNode> typesByDistance = new Stack<>();
 
         ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> costLimitBall
