@@ -23,7 +23,6 @@ public class CodeRepairTest {
     public void setUp() throws Exception {
         if (synthesisGraph == null) {
             synthesisGraph = GraphLoader.getGraph(graphFile, inFile);
-
             if (synthesisGraph == null) throw new RuntimeException("Could not load graph");
 
             synthesisGraph.addLocalVariable("fileName", "java.lang.String", 10 * costs.produce());

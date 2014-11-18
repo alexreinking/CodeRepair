@@ -25,10 +25,19 @@ public class CodeSynthesisTest {
 
     @Before
     public void setUp() throws Exception {
-        testGraph = GraphLoader.getGraph(graphFile, inFile);
-        if (testGraph == null) throw new RuntimeException("Could not load graph");
+        if (testGraph == null) {
+            testGraph = GraphLoader.getGraph(graphFile, inFile);
+            if (testGraph == null) throw new RuntimeException("Could not load graph");
 
-        synthesis = new CodeSynthesis(testGraph);
+            synthesis = new CodeSynthesis(testGraph);
+
+            testGraph.resetLocals();
+            testGraph.addLocalVariable("fileName", "java.lang.String");
+            testGraph.addLocalVariable("inputText", "java.lang.String");
+            testGraph.addLocalVariable("inStream1", "java.io.InputStream");
+            testGraph.addLocalVariable("inStream2", "java.io.InputStream");
+            testGraph.addLocalVariable("outStream", "java.io.OutputStream");
+        }
     }
 
     private void measureBallSize(String type, double costLimit) {
@@ -68,67 +77,31 @@ public class CodeSynthesisTest {
 
     @Test
     public void testBufferedReader() throws Exception {
-        testGraph.resetLocals();
-        testGraph.addLocalVariable("fileName", "java.lang.String");
-        testGraph.addLocalVariable("inputText", "java.lang.String");
-        testGraph.addLocalVariable("inStream1", "java.io.InputStream");
-        testGraph.addLocalVariable("inStream2", "java.io.InputStream");
-        testGraph.addLocalVariable("outStream", "java.io.OutputStream");
         testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))");
     }
 
     @Test
     public void testSequenceInputStream() throws Exception {
-        testGraph.resetLocals();
-        testGraph.addLocalVariable("fileName", "java.lang.String");
-        testGraph.addLocalVariable("inputText", "java.lang.String");
-        testGraph.addLocalVariable("inStream1", "java.io.InputStream");
-        testGraph.addLocalVariable("inStream2", "java.io.InputStream");
-        testGraph.addLocalVariable("outStream", "java.io.OutputStream");
         testSynthesis("java.io.SequenceInputStream", "new SequenceInputStream(inStream1, inStream2)");
     }
 
     @Test
     public void testFileInputStream() throws Exception {
-        testGraph.resetLocals();
-        testGraph.addLocalVariable("fileName", "java.lang.String");
-        testGraph.addLocalVariable("inputText", "java.lang.String");
-        testGraph.addLocalVariable("inStream1", "java.io.InputStream");
-        testGraph.addLocalVariable("inStream2", "java.io.InputStream");
-        testGraph.addLocalVariable("outStream", "java.io.OutputStream");
         testSynthesis("java.io.FileInputStream", "new FileInputStream(fileName)");
     }
 
     @Test
     public void testInputStreamReader() throws Exception {
-        testGraph.resetLocals();
-        testGraph.addLocalVariable("fileName", "java.lang.String");
-        testGraph.addLocalVariable("inputText", "java.lang.String");
-        testGraph.addLocalVariable("inStream1", "java.io.InputStream");
-        testGraph.addLocalVariable("inStream2", "java.io.InputStream");
-        testGraph.addLocalVariable("outStream", "java.io.OutputStream");
         testSynthesis("java.io.InputStreamReader", "new InputStreamReader(inStream1)");
     }
 
     @Test
     public void testMatcher() throws Exception {
-        testGraph.resetLocals();
-        testGraph.addLocalVariable("fileName", "java.lang.String");
-        testGraph.addLocalVariable("inputText", "java.lang.String");
-        testGraph.addLocalVariable("inStream1", "java.io.InputStream");
-        testGraph.addLocalVariable("inStream2", "java.io.InputStream");
-        testGraph.addLocalVariable("outStream", "java.io.OutputStream");
         testSynthesis("java.util.regex.Matcher", "(Pattern.compile(fileName)).matcher(inputText)");
     }
 
     @Test
     public void testAudioClip() throws Exception {
-        testGraph.resetLocals();
-        testGraph.addLocalVariable("fileName", "java.lang.String");
-        testGraph.addLocalVariable("inputText", "java.lang.String");
-        testGraph.addLocalVariable("inStream1", "java.io.InputStream");
-        testGraph.addLocalVariable("inStream2", "java.io.InputStream");
-        testGraph.addLocalVariable("outStream", "java.io.OutputStream");
         testSynthesis("java.applet.AudioClip", "Applet.newAudioClip(new URL(fileName))");
     }
 

@@ -44,11 +44,7 @@ public class GraphLoader {
     }
 
     public static SynthesisGraph getGraph(String serializedFileName, String declarationsFileName, String... allowedPackages) {
-        return loadGraph(serializedFileName).orElseGet(() -> loadFile(declarationsFileName)
-                .flatMap(GraphLoader::parse)
-                .map(j -> GraphLoader.construct(j, allowedPackages))
-                .get()
-        );
+        return loadGraph(serializedFileName).orElseGet(() -> buildGraph(declarationsFileName, allowedPackages));
     }
 
     public static SynthesisGraph buildGraph(String declarationsFileName, String... allowedPackages) {
