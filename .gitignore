@@ -21,8 +21,6 @@
 ## File-based project format
 *.ipr
 *.iws
-*.iml
-
 ## Additional for IntelliJ
 out/
 

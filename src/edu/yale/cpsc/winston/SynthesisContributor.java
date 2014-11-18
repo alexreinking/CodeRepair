@@ -161,9 +161,9 @@ public class SynthesisContributor extends CompletionContributor {
     }
 
     private static class SynthesisCompletionContext {
-        public String typeName;
-        public String variableName;
-        public PsiElement element;
+        public final String typeName;
+        public final String variableName;
+        public final PsiElement element;
 
         public SynthesisCompletionContext(String typeName, String variableName, PsiElement element) {
             this.typeName = typeName;

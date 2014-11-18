@@ -1,6 +1,7 @@
 package coderepair.sourcescanner;
 
 import coderepair.SynthesisGraph;
+import coderepair.analysis.JavaFunctionNode;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
@@ -90,7 +91,8 @@ public class SourceStatistics implements Plugin {
                         functionName = identifierTree.toString();
                 }
             }
-            graph.lookupFunction(functionName, outputType, argumentTypes);
+            JavaFunctionNode function = graph.lookupFunction(functionName, outputType, argumentTypes);
+            System.out.println("Found: " + function.getName());
             return super.visitMethodInvocation(methodInvocationTree, aVoid);
         }
 

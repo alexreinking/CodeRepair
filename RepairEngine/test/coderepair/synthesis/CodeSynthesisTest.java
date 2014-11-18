@@ -15,9 +15,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class CodeSynthesisTest {
-    public static final double COST_LIMIT = 4.5;
-    public static final int REQUESTED = 10;
-    public static final int N_TRIALS = 55;
+    private static final double COST_LIMIT = 4.5;
+    private static final int REQUESTED = 10;
+    private static final int N_TRIALS = 55;
     private CodeSynthesis synthesis = null;
     final private static String inFile = "./resources/rt.javap";
     final private static String graphFile = "./resources/graph.ser";
@@ -46,12 +46,12 @@ public class CodeSynthesisTest {
         System.out.printf("(Graph) |V| = %d |E| = %d%n", testGraph.vertexSet().size(), testGraph.edgeSet().size());
     }
 
-    private void testSynthesis(String type, String desiredCode, double costLimit, int nRequested) throws InterruptedException {
+    private void testSynthesis(String type, String desiredCode) throws InterruptedException {
         final boolean[] passed = {false};
 
         new TimedTask("Synthesis", () -> {
             System.out.println("\n============= " + type + " =============\n");
-            for (CodeSnippet snippet : synthesis.synthesize(type, costLimit, nRequested)) {
+            for (CodeSnippet snippet : synthesis.synthesize(type, CodeSynthesisTest.COST_LIMIT, CodeSynthesisTest.REQUESTED)) {
                 if (snippet.code.equals(desiredCode)) {
                     System.out.print("* ");
                     passed[0] = true;
@@ -61,7 +61,7 @@ public class CodeSynthesisTest {
         }).times(N_TRIALS).run();
 
         System.out.println("\nSizes:");
-        measureBallSize(type, costLimit);
+        measureBallSize(type, CodeSynthesisTest.COST_LIMIT);
         Thread.sleep(10);
         Assert.assertTrue("Synthesis did not return the desired segment", passed[0]);
     }
@@ -74,7 +74,7 @@ public class CodeSynthesisTest {
         testGraph.addLocalVariable("inStream1", "java.io.InputStream");
         testGraph.addLocalVariable("inStream2", "java.io.InputStream");
         testGraph.addLocalVariable("outStream", "java.io.OutputStream");
-        testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))", COST_LIMIT, REQUESTED);
+        testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))");
     }
 
     @Test
@@ -85,7 +85,7 @@ public class CodeSynthesisTest {
         testGraph.addLocalVariable("inStream1", "java.io.InputStream");
         testGraph.addLocalVariable("inStream2", "java.io.InputStream");
         testGraph.addLocalVariable("outStream", "java.io.OutputStream");
-        testSynthesis("java.io.SequenceInputStream", "new SequenceInputStream(inStream1, inStream2)", COST_LIMIT, REQUESTED);
+        testSynthesis("java.io.SequenceInputStream", "new SequenceInputStream(inStream1, inStream2)");
     }
 
     @Test
@@ -96,7 +96,7 @@ public class CodeSynthesisTest {
         testGraph.addLocalVariable("inStream1", "java.io.InputStream");
         testGraph.addLocalVariable("inStream2", "java.io.InputStream");
         testGraph.addLocalVariable("outStream", "java.io.OutputStream");
-        testSynthesis("java.io.FileInputStream", "new FileInputStream(fileName)", COST_LIMIT, REQUESTED);
+        testSynthesis("java.io.FileInputStream", "new FileInputStream(fileName)");
     }
 
     @Test
@@ -107,7 +107,7 @@ public class CodeSynthesisTest {
         testGraph.addLocalVariable("inStream1", "java.io.InputStream");
         testGraph.addLocalVariable("inStream2", "java.io.InputStream");
         testGraph.addLocalVariable("outStream", "java.io.OutputStream");
-        testSynthesis("java.io.InputStreamReader", "new InputStreamReader(inStream1)", COST_LIMIT, REQUESTED);
+        testSynthesis("java.io.InputStreamReader", "new InputStreamReader(inStream1)");
     }
 
     @Test
@@ -118,7 +118,7 @@ public class CodeSynthesisTest {
         testGraph.addLocalVariable("inStream1", "java.io.InputStream");
         testGraph.addLocalVariable("inStream2", "java.io.InputStream");
         testGraph.addLocalVariable("outStream", "java.io.OutputStream");
-        testSynthesis("java.util.regex.Matcher", "(Pattern.compile(fileName)).matcher(inputText)", COST_LIMIT, REQUESTED);
+        testSynthesis("java.util.regex.Matcher", "(Pattern.compile(fileName)).matcher(inputText)");
     }
 
     @Test
@@ -129,13 +129,13 @@ public class CodeSynthesisTest {
         testGraph.addLocalVariable("inStream1", "java.io.InputStream");
         testGraph.addLocalVariable("inStream2", "java.io.InputStream");
         testGraph.addLocalVariable("outStream", "java.io.OutputStream");
-        testSynthesis("java.applet.AudioClip", "Applet.newAudioClip(new URL(fileName))", COST_LIMIT, REQUESTED);
+        testSynthesis("java.applet.AudioClip", "Applet.newAudioClip(new URL(fileName))");
     }
 
     @Test
     public void testInputStreamFromByte() throws Exception {
         testGraph.resetLocals();
         testGraph.addLocalVariable("b", "byte[]");
-        testSynthesis("java.io.InputStream", "new ByteArrayInputStream(b)", COST_LIMIT, REQUESTED);
+        testSynthesis("java.io.InputStream", "new ByteArrayInputStream(b)");
     }
 }
