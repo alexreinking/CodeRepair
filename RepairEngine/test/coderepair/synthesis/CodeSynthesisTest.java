@@ -60,7 +60,8 @@ public class CodeSynthesisTest {
 
         new TimedTask("Synthesis", () -> {
             System.out.println("\n============= " + type + " =============\n");
-            for (CodeSnippet snippet : synthesis.synthesize(type, CodeSynthesisTest.COST_LIMIT, CodeSynthesisTest.REQUESTED)) {
+            for (CodeSnippet snippet : synthesis.synthesize(type,
+                    CodeSynthesisTest.COST_LIMIT, CodeSynthesisTest.REQUESTED)) {
                 if (snippet.code.equals(desiredCode)) {
                     System.out.print("* ");
                     passed[0] = true;

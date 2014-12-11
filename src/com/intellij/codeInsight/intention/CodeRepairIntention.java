@@ -20,12 +20,9 @@ public class CodeRepairIntention extends PsiElementBaseIntentionAction implement
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement)
             throws IncorrectOperationException {
         PsiStatement highestLevel = getContainingStatement(psiElement);
-        if(highestLevel != null) {
-            System.err.println("------ " + highestLevel.getClass().getName() + " ------");
-            System.err.println(highestLevel.getText());
-            System.err.println("--------------" + highestLevel.getClass().getName().replaceAll(".", "-"));
-            System.err.println("");
-        }
+        // Desired type: ((PsiLocalVariable) ((PsiDeclarationStatement) highestLevel)
+        //                 .getDeclaredElements()[0]).getTypeElement().getType().getCanonicalText()
+        System.out.println(highestLevel);
     }
 
     @Override public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement psiElement) {

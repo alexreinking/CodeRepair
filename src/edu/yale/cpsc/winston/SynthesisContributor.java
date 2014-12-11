@@ -4,13 +4,17 @@ import coderepair.SynthesisGraph;
 import coderepair.synthesis.CodeSnippet;
 import coderepair.synthesis.CodeSynthesis;
 import com.intellij.codeInsight.completion.*;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.codeInsight.lookup.LookupElementWeigher;
+import com.intellij.openapi.util.Key;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,7 +23,6 @@ import java.util.Arrays;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 import static com.intellij.patterns.StandardPatterns.or;
-
 
 public class SynthesisContributor extends CompletionContributor {
     private static final String graphFileName = "/Users/alexreinking/Development/CodeRepair/resources/graph.ser";
@@ -39,7 +42,6 @@ public class SynthesisContributor extends CompletionContributor {
         graph = theGraph;
     }
 
-
     private static final ElementPattern<PsiElement> ASSIGNMENT_PARENT = or(
             psiElement().withText(CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED)
                     .afterSiblingSkipping(psiElement(PsiWhiteSpace.class),
@@ -55,12 +57,14 @@ public class SynthesisContributor extends CompletionContributor {
     private static final ElementPattern<? extends PsiElement> METHOD_PARAM_PATTERN =
             psiElement().withSuperParent(3, PsiMethodCallExpressionImpl.class);
 
+    private static final Key<Double> COST_ATTR = Key.create("cost");
+
     public SynthesisContributor() {
         extend(CompletionType.SMART, ASSIGNMENT_PATTERN, new CompletionProvider<CompletionParameters>() {
             @Override
             protected void addCompletions(@NotNull CompletionParameters parameters,
                                           ProcessingContext processingContext,
-                                          @NotNull CompletionResultSet completionResultSet) {
+                                          @NotNull CompletionResultSet resultSet) {
                 if (graph == null) return;
                 graph.resetLocals();
                 CodeSynthesis synthesis = new CodeSynthesis(graph);
@@ -68,15 +72,29 @@ public class SynthesisContributor extends CompletionContributor {
                 SynthesisCompletionContext ctx = getTypeName(parameters);
                 if (ctx != null) {
                     addLocalsToGraph(synthesis, ctx, parameters);
-                    for (CodeSnippet codeSnippet : synthesis.synthesize(ctx.typeName, 6.0, 10))
-                        completionResultSet.addElement(LookupElementBuilder.create(codeSnippet.code));
+                    for (CodeSnippet codeSnippet : synthesis.synthesize(ctx.typeName, 4.5, 10)) {
+                        LookupElementBuilder lookupElement = LookupElementBuilder.create(codeSnippet.code);
+                        lookupElement.putUserData(COST_ATTR, codeSnippet.cost / codeSnippet.bias);
+                        resultSet.addElement(lookupElement);
+                    }
+
+                    CompletionSorter ordering = CompletionSorter.defaultSorter(parameters, resultSet.getPrefixMatcher());
+                    ordering.weigh(new LookupElementWeigher("WinstonScore") {
+                        @Nullable
+                        @Override
+                        public Comparable weigh(@NotNull LookupElement element) {
+                            return element.getUserData(COST_ATTR);
+                        }
+                    });
+
+                    resultSet.withRelevanceSorter(ordering);
                 }
             }
         });
     }
 
-    private SynthesisCompletionContext getTypeName(CompletionParameters parameters) {
-        final PsiElement parent = PsiTreeUtil.getParentOfType(parameters.getPosition(),
+    private SynthesisCompletionContext getTypeName(CompletionParameters params) {
+        final PsiElement parent = PsiTreeUtil.getParentOfType(params.getPosition(),
                 PsiAssignmentExpression.class, PsiLocalVariable.class, PsiMethodCallExpression.class);
         if (parent == null) return null;
 
@@ -92,19 +110,19 @@ public class SynthesisContributor extends CompletionContributor {
             PsiType type = assignment.getLExpression().getType();
             if (type == null) return null;
             typeName = type.getCanonicalText();
-            final PsiIdentifier identifier = PsiTreeUtil.getChildOfType(assignment.getLExpression(), PsiIdentifier.class);
-            if (identifier == null) return null;
-            variableName = identifier.getText();
+            final PsiIdentifier ident = PsiTreeUtil.getChildOfType(assignment.getLExpression(), PsiIdentifier.class);
+            if (ident == null) return null;
+            variableName = ident.getText();
             element = assignment;
         } else if (parent instanceof PsiMethodCallExpression) {
             final PsiMethod method = ((PsiMethodCallExpression) parent).resolveMethod();
             if (method == null) return null;
 
-            final PsiExpression expression = PsiTreeUtil.getParentOfType(parameters.getPosition(), PsiExpression.class);
-            final PsiExpressionList expressionList = PsiTreeUtil.getParentOfType(parameters.getPosition(), PsiExpressionList.class);
-            if (expressionList == null) return null;
+            final PsiExpression expression = PsiTreeUtil.getParentOfType(params.getPosition(), PsiExpression.class);
+            final PsiExpressionList expList = PsiTreeUtil.getParentOfType(params.getPosition(), PsiExpressionList.class);
+            if (expList == null) return null;
 
-            final int pos = Arrays.asList(expressionList.getExpressions()).indexOf(expression);
+            final int pos = Arrays.asList(expList.getExpressions()).indexOf(expression);
             final PsiParameter[] formals = method.getParameterList().getParameters();
 
             if (pos >= formals.length) return null;
@@ -117,7 +135,7 @@ public class SynthesisContributor extends CompletionContributor {
     }
 
     private void addLocalsToGraph(CodeSynthesis synthesis,
-                                  SynthesisCompletionContext context,
+                                  SynthesisCompletionContext ctx,
                                   CompletionParameters parameters) {
         final PsiElement position = parameters.getPosition();
         final PsiMethod containingMethod = PsiTreeUtil.getParentOfType(position, PsiMethod.class);
@@ -135,29 +153,26 @@ public class SynthesisContributor extends CompletionContributor {
                 boolean isPackageLocal = field.hasModifierProperty(PsiModifier.PACKAGE_LOCAL);
                 String fieldName = field.getName();
                 if ((isPublic || isProtected || (isPrivate || isPackageLocal) && aClass.isEquivalentTo(containingClass))
-                        && !context.variableName.equals(fieldName)) {
-                    synthesis.enforce(field.getType().getCanonicalText(), new CodeSnippet(fieldName, 0.5));
+                        && !ctx.variableName.equals(fieldName)) {
+                    graph.addLocalVariable(fieldName, field.getType().getCanonicalText(), 0.5);
                 }
             }
         }
 
-        final PsiCodeBlock body = containingMethod.getBody();
-        if (body == null) return;
-        for (PsiElement psiElement : body.getChildren()) {
-            if (psiElement.isEquivalentTo(context.element))
-                break;
-            if (psiElement instanceof PsiDeclarationStatement) {
-                for (PsiElement element : ((PsiDeclarationStatement) psiElement).getDeclaredElements()) {
-                    if (element instanceof PsiLocalVariable) {
-                        PsiLocalVariable localVariable = (PsiLocalVariable) element;
-                        if (!context.variableName.equals(localVariable.getName())) {
-                            synthesis.enforce(localVariable.getType().getCanonicalText(),
-                                    new CodeSnippet(localVariable.getName(), 0.5));
+        // Go backwards and up to catch all the local variables in scope
+        if (containingMethod.getBody() == null) return;
+        double cost = 0.001;
+        for (PsiElement cur = ctx.element;
+             !cur.isEquivalentTo(containingMethod.getBody());
+             cur = cur.getParent(), cost += 0.001)
+            for (PsiElement sib = cur.getPrevSibling(); sib != null; sib = sib.getPrevSibling())
+                if (sib instanceof PsiDeclarationStatement)
+                    for (PsiElement element : ((PsiDeclarationStatement) sib).getDeclaredElements())
+                        if (element instanceof PsiLocalVariable) {
+                            PsiLocalVariable local = (PsiLocalVariable) element;
+                            if (!ctx.variableName.equals(local.getName()))
+                                graph.addLocalVariable(local.getName(), local.getType().getCanonicalText(), cost);
                         }
-                    }
-                }
-            }
-        }
     }
 
     private static class SynthesisCompletionContext {

@@ -9,9 +9,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by ajr64 on 11/13/14.
- */
 public class CodeRepairTest {
     final private static String inFile = "./resources/rt.javap";
     final private static String graphFile = "./resources/graph.ser";
