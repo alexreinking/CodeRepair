@@ -57,7 +57,7 @@ public class SynthesisContributor extends CompletionContributor {
     private static final ElementPattern<? extends PsiElement> METHOD_PARAM_PATTERN =
             psiElement().withSuperParent(3, PsiMethodCallExpressionImpl.class);
 
-    private static final Key<Double> COST_ATTR = Key.create("cost");
+    private static final Key<CodeSnippet> SNIPPET_ATTR = Key.create("snippet");
 
     public SynthesisContributor() {
         extend(CompletionType.SMART, ASSIGNMENT_PATTERN, new CompletionProvider<CompletionParameters>() {
@@ -72,9 +72,10 @@ public class SynthesisContributor extends CompletionContributor {
                 SynthesisCompletionContext ctx = getTypeName(parameters);
                 if (ctx != null) {
                     addLocalsToGraph(synthesis, ctx, parameters);
+
                     for (CodeSnippet codeSnippet : synthesis.synthesize(ctx.typeName, 4.5, 10)) {
                         LookupElementBuilder lookupElement = LookupElementBuilder.create(codeSnippet.code);
-                        lookupElement.putUserData(COST_ATTR, codeSnippet.cost / codeSnippet.bias);
+                        lookupElement.putUserData(SNIPPET_ATTR, codeSnippet);
                         resultSet.addElement(lookupElement);
                     }
 
@@ -83,7 +84,7 @@ public class SynthesisContributor extends CompletionContributor {
                         @Nullable
                         @Override
                         public Comparable weigh(@NotNull LookupElement element) {
-                            return element.getUserData(COST_ATTR);
+                            return element.getUserData(SNIPPET_ATTR);
                         }
                     });
 
@@ -134,7 +135,7 @@ public class SynthesisContributor extends CompletionContributor {
         return new SynthesisCompletionContext(typeName, variableName, element);
     }
 
-    private void addLocalsToGraph(CodeSynthesis synthesis,
+    private void addLocalsToGraph(CodeSynthesis synthesis, // I'm conflicted about using this
                                   SynthesisCompletionContext ctx,
                                   CompletionParameters parameters) {
         final PsiElement position = parameters.getPosition();

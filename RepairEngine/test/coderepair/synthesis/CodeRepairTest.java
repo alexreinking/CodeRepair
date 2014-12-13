@@ -110,8 +110,9 @@ public class CodeRepairTest {
 
         /* Stage 1 */
         // TODO: Bug in repair: need to look at TOKENS, rather than substrings
-        synthesis.strongEnforce("java.lang.String", new CodeSnippet("(body)", costs.produce()));
-        synthesis.strongEnforce("java.lang.String", new CodeSnippet("(sig)", costs.produce()));
+        double cost = costs.produce();
+        synthesis.strongEnforce("java.lang.String", new CodeSnippet("(body)", cost / 2));
+        synthesis.strongEnforce("java.lang.String", new CodeSnippet("(sig)", cost));
 
         bestSnippet = synthesis.synthesize("java.io.SequenceInputStream", 6.5, 10).first();
 

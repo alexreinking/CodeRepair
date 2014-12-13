@@ -17,7 +17,7 @@ import java.util.Set;
 public class CodeSynthesisTest {
     private static final double COST_LIMIT = 4.5;
     private static final int REQUESTED = 10;
-    private static final int N_TRIALS = 55;
+    private static final int N_TRIALS = 1;
     private CodeSynthesis synthesis = null;
     final private static String inFile = "./resources/rt.javap";
     final private static String graphFile = "./resources/graph.ser";
