@@ -1,0 +1,71 @@
+\documentclass[runningheads]{llncs}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathabx}
+\usepackage{latexsym}
+\usepackage{stmaryrd}
+\usepackage{cite}
+\usepackage{xspace}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes,trees,arrows,positioning,calc} 
+\usepackage[scaled=.92]{helvet}
+\usepackage{times}
+\usepackage{listings}
+\usepackage{enumerate}
+\usepackage{wrapfig}
+%\usepackage{subfigure}
+\usepackage[caption=false]{subfig}
+%\usepackage{mathpartir}
+\usepackage{multirow}
+
+\usepackage{url}
+
+\usepackage{algorithmic}
+\usepackage{algorithm}
+%\numberwithin{algorithm}{section}
+\renewcommand{\algorithmicrequire} {\textbf{\textsc{Input:}}}
+\renewcommand{\algorithmicensure}  {\textbf{\textsc{Output:}}}
+
+% \setlength{\abovecaptionskip}{3pt}
+% \setlength{\belowcaptionskip}{0pt}
+% \setlength{\intextsep}{3pt}
+% \setlength{\floatsep}{5pt}
+% \setlength{\abovedisplayskip}{2pt}
+% \setlength{\belowdisplayskip}{2pt}
+% \setlength{\topskip}{0pt}
+% \setlength{\parskip}{0pt}
+% \setlength{\parsep}{0pt}
+
+\input{defs}
+
+\newcommand{\todo}[1]{ 
+$\clubsuit$ {\bf TODO:} {\it #1} $\clubsuit$
+}
+\newcommand{\Todo}[1]{
+\begin{center}
+\todo{#1}
+\end{center}
+}
+
+\begin{document}
+
+\title{A Type-Directed Approach to Program Repair}
+
+\author{Alex Reinking \and Ruzica Piskac}
+
+\institute{Yale University}
+
+\maketitle
+
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+
+\bibliographystyle{abbrv}
+\bibliography{main}
+
+
+\end{document}
