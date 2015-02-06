@@ -1,4 +1,4 @@
-\section{Algorithm}
+\section{The Algorithm}
 \label{sec:algorithm}
 
 Our algorithm operates by searching through a specially-crafted data structure called the synthesis graph. Each node of the synthesis graph corresponds to either a value-producing language entity, such as a function, variable, constant, or literal, or to a type in the language. Since variables, constants, and literals can be considered functions taking the empty set to their value, we call all nodes of the former type ``function nodes''. From each function node, we draw an out-edge to the type it produces, and for each distinct type the function takes as an argument, we draw an incoming edge into the function node to the type node. Importantly, this means that a function on three input parameters of the same type will have in-degree exactly one.
