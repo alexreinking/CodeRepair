@@ -14,17 +14,17 @@ We will now describe the synthesis portion of our algorithm, which is presented 
 \SetKwData{Exprs}{exprs}\SetKwData{Snips}{snips}
 \SetKwFunction{Dist}{Dist}
 \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
-\Input{$G=(V_t\cup V_f,E)$, the synthesis graph; $\tau \in V$, the type to synthesize; $\delta$, the maximum allowable cost; $L$, the number of snippets to synthesize}
+\Input{$G=(V_t\cup V_f,E)$, the synthesis graph; $\tau \in V_t$, the type to synthesize; $C_{max}$, the maximum allowable cost; $L$, the number of snippets to synthesize}
 \Output{\Exprs, the list of expressions}
 \BlankLine
-$G'=(V_t'\cup V_f', E') \longleftarrow$ subgraph of $G$ reachable within $\delta$ from $\tau$ \;
+$G'=(V_t'\cup V_f', E') \longleftarrow$ subgraph of $G$ reachable within $C_{max}$ from $\tau$ \;
 Sort $V_t'$ in descending distance away from $\tau$ \;
 \Snips[$\sigma$] $\longleftarrow$ Hash table mapping types to snippets \;
 \ForEach{$\sigma\in V_t'$}{
-  \Snips[$\sigma$] $\longleftarrow$ \ref{proc:getExpressions}($G'$, \Snips, $\sigma$, $\delta - $ \Dist{$\sigma$}, $L$) \;
+  \Snips[$\sigma$] $\longleftarrow$ \ref{proc:getExpressions}($G'$, \Snips, $\sigma$, $C_{max} - $ \Dist{$\sigma$}, $L$) \;
 }
 \Exprs $\longleftarrow$ \Snips[$\tau$] \;
 \caption{Synthesis Algorithm}\label{proc:synthesize}
 \end{algorithm}
 
-The synthesis logic itself is clear, the subgraph is derived by using Dijkstra's algorithm, which can also accomplish the vertex sort by distance. We go in reverse order so as to cache at the latest possible opportunity. At any stage of the loop, we know that $\sigma$ is as close as possible to $\tau$ and so if we create an expression for $\tau$ that involves $\sigma$ along the way, we know that the rest of the expression may cost at most $\delta - $ \Dist{$\sigma$}. The procedure \ref{proc:getExpressions} 
+The subgraph is derived by using Dijkstra's algorithm, which can also accomplish the vertex sort by distance. We go in reverse order so as to cache at the latest possible opportunity. At any stage of the loop, we know that $\sigma$ is as close as possible to $\tau$ and so if we create an expression for $\tau$ that involves $\sigma$ along the way, we know that the rest of the expression may cost at most $C_{max} - $ \Dist{$\sigma$}. The procedure \ref{proc:getExpressions} 
