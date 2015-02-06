@@ -53,7 +53,7 @@ In this example, the single expression contains three errors. First, the \lstinl
 
 To repair this expression, our algorithm proceeds from the bottom of the expression, viewed as a parse tree, up to the top-level expression. The repair algorithm begins with the sub-expression \lstinline{new FileInputStream()}, and returns \lstinline{new FileInputStream(fileName)} as the top expression. After applying this sub-repair, the algorithm proceeds to correct the subexpression
 \begin{lstlisting}
-new DeflaterInputStream
+new DeflaterInputStream(
   new FileInputStream(fileName), compLevel, true)
 \end{lstlisting}
 Since all of its arguments are well-typed, it adds each one to the environment with a highly-favorable weight. The top repair is
