@@ -33,6 +33,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="com.carrotsearch:junit-benchmarks:0.7.2" level="project" />
+    <orderEntry type="library" name="com.github.javaparser:javaparser-core:2.0.0" level="project" />
   </component>
 </module>
-

@@ -46,6 +46,7 @@ public class SourceStatistics implements Plugin {
 
     private class MethodCounter extends TreePathScanner<Object, Void> {
 
+        public static final String ANONYMOUS = "<anonymous";
         private final Types types;
         private final Trees trees;
 
@@ -59,8 +60,8 @@ public class SourceStatistics implements Plugin {
             ExpressionTree methodSelect = methodInvocationTree.getMethodSelect();
             TypeMirror outputTypeMirror = trees.getTypeMirror(new TreePath(getCurrentPath(), methodInvocationTree));
             String outputType = (outputTypeMirror == null) ? "" : outputTypeMirror.toString();
-            if (outputType.startsWith("<anonymous "))
-                outputType = outputType.substring(11, outputType.length() - 1);
+            if (outputType.startsWith(ANONYMOUS))
+                outputType = outputType.substring(ANONYMOUS.length(), outputType.length() - 1);
             String functionName = "";
             List<String> argumentTypes = new ArrayList<>();
             for (ExpressionTree expressionTree : methodInvocationTree.getArguments()) {
@@ -104,8 +105,8 @@ public class SourceStatistics implements Plugin {
                 return super.visitNewClass(newClassTree, aVoid);
             }
             String className = typeMirror.toString();
-            if (className.startsWith("<anonymous "))
-                className = className.substring(11, className.length() - 1);
+            if (className.startsWith(ANONYMOUS))
+                className = className.substring(ANONYMOUS.length(), className.length() - 1);
             List<String> argumentTypes = newClassTree.getArguments().stream().map(expressionTree -> trees.getTypeMirror(new TreePath(getCurrentPath(), expressionTree)).toString()).collect(Collectors.toList());
             graph.lookupFunction("new " + className, className, argumentTypes);
             return super.visitNewClass(newClassTree, aVoid);
@@ -114,10 +115,10 @@ public class SourceStatistics implements Plugin {
 
     private class StatisticsListener implements TaskListener {
 
-        private final MethodCounter visitor;
+        private final MethodCounter methodCounter;
 
         public StatisticsListener(JavacTask task) {
-            visitor = new MethodCounter(task);
+            methodCounter = new MethodCounter(task);
         }
 
         @Override
@@ -126,10 +127,8 @@ public class SourceStatistics implements Plugin {
 
         @Override
         public void finished(TaskEvent taskEvent) {
-            if (taskEvent.getKind() == TaskEvent.Kind.ANALYZE) {
-                CompilationUnitTree compilationUnit = taskEvent.getCompilationUnit();
-                visitor.scan(compilationUnit, null);
-            }
+            if (taskEvent.getKind() == TaskEvent.Kind.ANALYZE)
+                methodCounter.scan(taskEvent.getCompilationUnit(), null);
         }
     }
 }
