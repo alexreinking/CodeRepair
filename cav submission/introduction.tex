@@ -1,2 +1,56 @@
 \section{Introduction}
 \label{sec:intro}
+
+
+Software development provides a high degree of freedom and many
+different approaches can be adopted for writing code. Still, when
+writing a program, the developer needs to follow the strict rules
+determined by the programming language. While coding, the developer
+often knows the approximate structure of the desired expressions but
+still may write code that does not compile because some fragments are
+not well-typed. Such mistakes occur mainly because the developer does
+not know by heart how to choose and properly combine all the
+necessary declarations visible from the scope. By the term
+``declarations'', we refer to all the elements visible in the scope,
+such as variables, functions, and class hierarchy
+declarations. Moreover, modern libraries often evolve into complex
+application programming interfaces (APIs) that provide a large number
+of declarations. For this reason it is difficult, if not impossible,
+to learn the specifics of every declaration and its utilization. In a
+typical scenario when code does not compile, the compiler outputs an
+error message with the expression that is at the source of the error.
+Still, on many occasions the written expression reflects the intended
+structure of the code.
+
+In this paper we propose an approach that takes such an ill-typed
+expression and automatically suggest a list of possible well-typed
+code repairs. The suggested code snippets follow the structure
+outlined in the given ill-typed expression as closely as possible, and
+they are ranked based on their similarity to ill-typed
+code. Furthermore, this approach can also be seen as a code
+synthesis. Our proposed method extends the functionality described in
+\cite{MandelinetALL2005Jungloid,
+  GveroETAL13CompleteCompletionTypesWeights, PerelmanGBG12}. In the
+light of the program repair, the synthesis aspect can be considered as
+a repair of the empty expression.
+
+The repair algorithm is based on encoding of type constraints derived
+from signatures into so-called {\emph {synthesis graph}}. Finding a
+well-typed code repair corresponds to applying a search algorithm on the synthesis graph. In order to scale and to suggest a 
+
+gnatures are represented as explained earlier, in a directed
+graph where the nodes are types and edges are expressions de-
+rived from signatures. E
+
+
+a graph algorithm for synthesizing expressions of a certain type. 
+
+
+There is an early prototype implementation of our algorithm.
+
+We tested our approach on a few benchmark 
+
+
+
+
+
