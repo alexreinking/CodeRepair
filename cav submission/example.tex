@@ -3,6 +3,7 @@
 We first illustrate how our algorithm works and the nature of repair with the usage of familiar API calls from the Java standard library, reflecting along the way on the differences between our and other tools for code completion and repair. To emphasize the significance in practical software development, our examples are chosen from a set of the real code examples (most of them featured at \url{http://www.java2s.com/}{}).
 
 \subsection{Code Correction: Single Error}
+\label{sec:examples:single}
 The following simple example, adapted from \cite{GveroETAL13CompleteCompletionTypesWeights}, illustrates how our algorithm handles an expression that does not compile. Consider the following program fragment:
 \begin{lstlisting}
 import java.io.*;
@@ -22,6 +23,7 @@ Here, the developer has given the \lstinline{SequenceInputStream} constructor tw
 In this case, the returned expression with the lowest cost is \lstinline{new SequenceInputStream(new FileInputStream(body), new FileInputStream(sig))}, which precisely reflects the programmer's intent.
 
 \subsection{Code Correction: Many Errors}
+\label{sec:examples:many}
 Sometimes, an ill-typed expression poorly reflects the structure of the desired expression, while still retaining other useful information. Often, this is a result of passing too many or too few arguments arguments to a function, or passing them in the wrong order.
 
 Consider the following code that uses an extensive number of calls to the standard Java API library to manipulate a compressed stream. The given expression indicates the programmer's intention to read a compressed file though a buffered stream. To read the file, the developer attempts to instantiate an \lstinline{InputStream} object:

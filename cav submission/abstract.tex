@@ -1,18 +1,1 @@
-Developing enterprise software often requires composing several
-libraries together with a large body of in-house code. Large APIs
-introduce a steep learning curve for new developers as a result of
-their complex object-oriented underpinnings. While the written code in
-general reflects a programmer's intent, due to evolutions in an API,
-code can often become ill-typed, yet still syntactically-correct. Such
-code fragments will no longer compile, and will need to be updated.
-
-
-While compiler error messages provide helpful information to the
-programmer regarding the location of such errors, they provide little
-in the way of suggesting corrections to those errors. We describe an
-algorithm suitable for integration into a compiler that automatically
-repairs code expressions based on the provided almost correct
-code. These suggestions would then be presented to the
-programmer. Using a novel graph-theoretic approach, we efficiently
-solve instances of this repair problem to synthesize a correct
-expression from the salvageable parts of a broken one.
+Developing enterprise software often requires composing several libraries together with a large body of in-house code. Large APIs introduce a steep learning curve for new developers as a result of their complex object-oriented underpinnings. While the written code in general reflects a programmer's intent, due to evolutions in an API, code can often become ill-typed, yet still syntactically-correct. Such code fragments will no longer compile, and will need to be updated. We describe an algorithm that automatically repairs such errors, and discuss its application to common problems in software engineering.
