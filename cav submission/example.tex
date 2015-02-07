@@ -6,15 +6,10 @@ We first illustrate how our algorithm works and the nature of repair with the us
 \label{sec:examples:single}
 The following simple example, adapted from \cite{GveroETAL13CompleteCompletionTypesWeights}, illustrates how our algorithm handles an expression that does not compile. Consider the following program fragment:
 \begin{lstlisting}
-import java.io.*;
-
 public class Main {
   public static void main(String args[]) throws IOException {
-    String body = "email.txt";
-    String sig = "sign.txt";
-    
-    // error
-    SequenceInputStream seqStream = new SequenceInputStream(body, sig);
+    String body = "email.txt"; String sig = "sign.txt";
+    SequenceInputStream seqStream = new SequenceInputStream(body, sig); // error
   }
 } 
 \end{lstlisting}
