@@ -1,14 +1,14 @@
 \section{Preliminary Evaluation}
 \label{sec:evaluation}
 
-We empirically evaluated our approach on some typical-use benchmarks. Table~\ref{eval:runtime} shows the summary of the results. The runtimes were measured on a typical university-supplied computer. For each benchmark, the best of 50 consecutive trials was recorded to account for variance in process scheduling, cache behavior, and, most importantly, JVM warmup. It was not uncommon to see four-to-five-fold speed increases between the best and the worst runtimes of the algorithm. This is due to the delay in program optimization afforded by Oracle's JIT compiler.
+We empirically evaluated our approach on some typical-use benchmarks. Table~\ref{eval:runtime} shows the summary of the results. The runtimes were measured on a standard university-supplied computer. For each benchmark, the best of 50 consecutive trials was recorded to account for variance in process scheduling, cache behavior, and, most importantly, JVM warmup. It was not uncommon to see four-to-five-fold speed increases between the best and the worst runtimes of the algorithm. This is due to the delay in program optimization afforded by Oracle's JIT compiler.
 
 \begin{table*}[t]
   \centering
   \renewcommand{\arraystretch}{1.25}
   \begin{tabularx}{\textwidth}{| X | l | l | l | l | l |}
     \hline
-    \textbf{Benchmark} & \textbf{Type} & \textbf{Time (ms)} & \textbf{Vertices} & \textbf{Edges} & \textbf{Rank} \\ \hline
+    \textbf{Benchmark} & \textbf{Type} & \textbf{Time (ms)} & \textbf{Nodes} & \textbf{Edges} & \textbf{Rank} \\ \hline
 	\texttt{SequenceInputStream} & Synthesis & $<$ 1 & 141   & 149   & 1 \\ \hline
 	\texttt{SequenceInputStream} & Repair    & 4   & --    & --    & 1 \\ \hline
     \texttt{BufferedReader}      & Synthesis & 16  & 3119  & 4225  & 2 \\ \hline
@@ -20,8 +20,8 @@ We empirically evaluated our approach on some typical-use benchmarks. Table~\ref
     \texttt{InputStream} (from byte array) & Synthesis & 116 & 13163  & 20581  & 2 \\ \hline
     \texttt{DeflaterInputStream} & Repair    & 380 & -- & -- & 1 \\ \hline
   \end{tabularx}
-  \caption{Typical-use runtimes in various benchmarks. ``Vertices'' and ``Edges'' refer to the size of the searched subgraph, and ``Rank'' indicates the correct expression's position among the results. The entire Java standard library was used to build the graph before running the benchmarks. Each test case was initialized with a small environment consisting of five variables.}
+  \caption{Typical-use runtimes in various benchmarks. ``Nodes'' and ``Edges'' refer to the size of the searched subgraph, and ``Rank'' indicates the correct expression's position among the results. The entire Java standard library was used to build the graph before running the benchmarks. Each test case was initialized with a small environment consisting of five variables.}
   \label{eval:runtime}
 \end{table*}
 
-These benchmarks show that repair is fast and accurate even in the face of multiple, difficult errors. The compressed stream example in section \ref{sec:examples} had several distinct errors: a missing parameter, two parameters transposed, and additional parameters passed to a function that did not accept them. Still, in three calls to the synthesize routine, our algorithm corrected \textit{all three} errors in around a quarter second. Since the full set of Java libraries are rarely imported, the algorithm should run even faster in practice as it will have smaller graphs to search. Although it is impossible to test the full range of possible type errors everywhere they might appear in the Java standard library, if these speeds are indeed representative of the whole space of possible errors, then our repair algorithm is sufficiently fast to operate in an interactive setting.
+These benchmarks show that repair is fast and accurate even in the face of multiple, difficult errors. The compressed stream example in section \ref{sec:examples} had several distinct errors: a missing parameter, two parameters transposed, and additional parameters passed to a function that did not accept them. Still, in three calls to the synthesize routine, our algorithm automatically corrected \textit{all three} errors in around a quarter second. Since the full set of Java libraries are rarely imported, the algorithm should run even faster in practice as it will have smaller graphs to search. Although it is impossible to test the full range of possible type errors everywhere they might appear in the Java standard library, if these speeds are indeed representative of the whole space of possible errors, then our repair algorithm is sufficiently fast to operate in an interactive setting.

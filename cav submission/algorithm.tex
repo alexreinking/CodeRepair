@@ -9,21 +9,28 @@ corresponds to either a value-producing language entity, such as a
 function, variable, constant, or literal, or to a type in the
 language. We therefore devide nodes into two sets $V_t$ (type nodes) and $V_f$ (function nodes). 
 Since variables, constants, and literals can be considered
-functions taking the empty set to their value, we call all nodes of
-the former type ``function nodes''. From each function node, there is 
-an out-edge to the type it produces, and for each distinct type the
-function takes as an argument, we draw an incoming edge into the
+functions taking the empty set to their value, they belong to $V_f$. From each function node, there is 
+an out-edge to the type it produces, and for each distinct type that the
+function takes as an argument, there is an incoming edge into the
 function node to the type node. Importantly, this means that a
 function on three input parameters of the same type will have
 in-degree exactly one.
 
-Each vertex is labeled by the full function signature so that
+In addition, the edges are in the graph are
+weighted by their cost of inclusion -- a subjective measure -- that
+guides the search towards desirable traits, such as smaller
+expressions or lower memory usage.
+ 
+
+
+\iffalse
+Each node is labeled by the full function signature so that
 well-typed expressions can be synthesized. The edges in the graph are
 weighted by their cost of inclusion -- a subjective measure -- that
 guides the search towards desirable traits, such as smaller
 expressions or lower memory usage.
 
-\iffalse
+
 The algorithm uses two procedures, along with some supporting
 subroutines, to accomplish expression repairs by referring to this
 graph. The repair algorithm itself degenerates into simple expression
@@ -38,10 +45,7 @@ types are added to the graph.
 
 \subsection{Synthesis Procedure}
 \label{sec:algorithm:synthesis}
-We will now describe the synthesis portion of our algorithm, which is
-presented as pseudocode in algorithm \ref{proc:synthesize}. Note that
-to distinguish type nodes $V_t$ from function nodes $V_f$, we will
-write the synthesis graph $G=(V_t \cup V_f, E)$.
+We now describe the synthesis portion of our algorithm, Algorithm~\ref{proc:synthesize}. The algorithm takes as input the synthesis graph $G=(V_t \cup V_f, E)$, and a type $\tau$
 
 \SetKwData{Snips}{snips}
 \begin{algorithm}
