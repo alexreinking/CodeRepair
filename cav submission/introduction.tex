@@ -1,55 +1,11 @@
 \section{Introduction}
 \label{sec:intro}
+Software developers enjoy a high degree of freedom in their approach to writing code. Still, when writing a program, the developer needs to follow the strict rules determined by the programming language. While coding, a developer often knows the approximate structure of the expression she is working on, but may yet write code that does not compile because some fragments are not well-typed. Such mistakes occur mainly because the developer does not know by heart how to choose and properly combine all the declarations necessary to achieve her ends. By the term ``declarations'', we refer to all the elements visible in the scope, such as variables, functions, and class declarations.
 
+Moreover, since modern libraries often evolve into complex application programming interfaces (APIs) that provide a large number of declarations, it is difficult, if not impossible, to learn the specifics of every declaration and its utilization. In a typical scenario when code does not compile, the compiler outputs an error message indicating the source of the error. Still, on many occasions the written expression reflects the intended structure of the code.
 
-Software development provides a high degree of freedom and many
-different approaches can be adopted for writing code. Still, when
-writing a program, the developer needs to follow the strict rules
-determined by the programming language. While coding, the developer
-often knows the approximate structure of the desired expressions but
-still may write code that does not compile because some fragments are
-not well-typed. Such mistakes occur mainly because the developer does
-not know by heart how to choose and properly combine all the
-necessary declarations visible from the scope. By the term
-``declarations'', we refer to all the elements visible in the scope,
-such as variables, functions, and class hierarchy
-declarations. Moreover, modern libraries often evolve into complex
-application programming interfaces (APIs) that provide a large number
-of declarations. For this reason it is difficult, if not impossible,
-to learn the specifics of every declaration and its utilization. In a
-typical scenario when code does not compile, the compiler outputs an
-error message with the expression that is at the source of the error.
-Still, on many occasions the written expression reflects the intended
-structure of the code.
+In this paper we propose an approach that takes such an ill-typed expression and automatically suggests a list of possible well-typed corrections. The suggested code snippets follow the structure outlined in the given ill-typed expression as closely as possible, and they are ranked based on their similarity to the original code. Furthermore, this approach can also be seen as code synthesis. In fact, our proposed method extends the synthesis functionality described in \cite{MandelinetALL2005Jungloid, GveroETAL13CompleteCompletionTypesWeights, PerelmanGBG12}. In light of program repair, plain expression synthesis can be seen as a repair of the empty expression.
 
-In this paper we propose an approach that takes such an ill-typed
-expression and automatically suggest a list of possible well-typed
-code repairs. The suggested code snippets follow the structure
-outlined in the given ill-typed expression as closely as possible, and
-they are ranked based on their similarity to ill-typed
-code. Furthermore, this approach can also be seen as a code
-synthesis. Our proposed method extends the functionality described in
-\cite{MandelinetALL2005Jungloid,
-  GveroETAL13CompleteCompletionTypesWeights, PerelmanGBG12}. In the
-light of the program repair, the synthesis aspect can be considered as
-a repair of the empty expression.
+% The repair algorithm is based on encoding of type constraints derived from signatures into a so-called {\emph {synthesis graph}}. In summary, finding a well-typed code repair corresponds to incrementally applying a search algorithm on the synthesis graph, while preserving the cost constraints.
 
-The repair algorithm is based on encoding of type constraints derived
-from signatures into so-called {\emph {synthesis graph}}. In summary,
-finding a well-typed code repair corresponds to incrementally applying
-a search algorithm on the synthesis graph, while preserving the cost
-constraints.
-
-We have implemented an early prototype of our algorithm, and
-empirically tested it on synthesis and repair benchmarks. The initial
-evaluation strongly supports the idea of a graph-based type-directed
-approach to code repair and snippet synthesis. We compared our
-approach to InSynth \cite{GveroETAL13CompleteCompletionTypesWeights},
-and our implementation outperforms InSynth on similar benchmarks,
-sometimes by several orders of magnitude, while still producing
-high-quality results.
-
-
-
-
-
+We have implemented an early prototype of our algorithm, and empirically tested it on synthesis and repair benchmarks. The initial evaluation strongly supports the idea of a graph-based type-directed approach to code repair and snippet synthesis. Compared to InSynth \cite{GveroETAL13CompleteCompletionTypesWeights}, our approach outperforms on similar benchmarks, sometimes by several orders of magnitude, while still producing high-quality results.
