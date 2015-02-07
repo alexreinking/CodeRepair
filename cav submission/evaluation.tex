@@ -1,7 +1,7 @@
-\section{Evaluation}
+\section{Preliminary Evaluation}
 \label{sec:evaluation}
 
-We empirically evaluated our approach on some typical-use benchmarks. Table~\ref{eval:runtime} shows the summary of the results. The runtimes were measured on a university-supplied computer equipped with 32GB of RAM, a 4-core Intel Xeon E5-1620 CPU clocked at 3.60 GHz, running Red Hat Enterprise Linux Server 7.0 on the Oracle JVM version 8u25. The best times of 50 consecutive trials were recorded to account for variance in process scheduling, cache behavior, and, most importantly, JVM warmup. It was not uncommon to see four or five time speed increases between the best and the worst measurements of the algorithm. This is due to the delay in program optimization afforded by the Just-in-Time (JIT) compiler built in to the JVM.
+We empirically evaluated our approach on some typical-use benchmarks. Table~\ref{eval:runtime} shows the summary of the results. The runtimes were measured on a typical university-supplied computer. For each benchmark, the best of 50 consecutive trials was recorded to account for variance in process scheduling, cache behavior, and, most importantly, JVM warmup. It was not uncommon to see four-to-five-fold speed increases between the best and the worst runtimes of the algorithm. This is due to the delay in program optimization afforded by Oracle's JIT compiler.
 
 \begin{table*}[t]
   \centering
@@ -10,39 +10,18 @@ We empirically evaluated our approach on some typical-use benchmarks. Table~\ref
     \hline
     \textbf{Benchmark} & \textbf{Type} & \textbf{Time (ms)} & \textbf{Vertices} & \textbf{Edges} & \textbf{Rank} \\ \hline
 	\texttt{SequenceInputStream} & Synthesis & $<$ 1 & 141   & 149   & 1 \\ \hline
-    \texttt{FileInputStream}     & Synthesis & 38  & 7832  & 10516 & 1 \\ \hline
+	\texttt{SequenceInputStream} & Repair    & 4   & --    & --    & 1 \\ \hline
+    \texttt{BufferedReader}      & Synthesis & 16  & 3119  & 4225  & 2 \\ \hline
+    \texttt{BufferedReader}      & Repair    & 18  & --    & --    & 1 \\ \hline
+    \texttt{AudioClip} (applet)  & Synthesis & 27  & 6808  & 9291  & 2 \\ \hline
     \texttt{InputStreamReader}   & Synthesis & 29  & 7064  & 9673  & 1 \\ \hline
+    \texttt{FileInputStream}     & Synthesis & 38  & 7832  & 10516 & 1 \\ \hline
     \texttt{Matcher} (regex)     & Synthesis & 93  & 14505 & 24740 & 1 \\ \hline
     \texttt{InputStream} (from byte array) & Synthesis & 116 & 13163  & 20581  & 2 \\ \hline
-    \texttt{BufferedReader}      & Repair    & 18  & --    & --    & 1 \\ \hline
-    \texttt{SequenceInputStream} & Repair    & 4   & --    & --    & 1 \\ \hline
     \texttt{DeflaterInputStream} & Repair    & 380 & -- & -- & 1 \\ \hline
-    \texttt{BufferedReader}      & Synthesis & 16  & 3119  & 4225  & 2 \\ \hline
-    \texttt{AudioClip} (applet)  & Synthesis & 27  & 6808  & 9291  & 2 \\ \hline
   \end{tabularx}
-  \caption{Typical-use runtimes in various benchmark. ``Vertices'' and ``Edges'' refer to the number of objects included inside a neighborhood of cost-radius 4.5 around the desired type. The entire Java standard library was used to build the graph before running the benchmarks; it consistently took around 5 seconds to load the data set from its serialized form. Each test case was initialized with a small environment consisting of two strings, two InputStreams, and an OutputStream}
+  \caption{Typical-use runtimes in various benchmarks. ``Vertices'' and ``Edges'' refer to the size of the searched subgraph, and ``Rank'' indicates the correct expression's position among the results. The entire Java standard library was used to build the graph before running the benchmarks. Each test case was initialized with a small environment consisting of five variables.}
   \label{eval:runtime}
 \end{table*}
 
-The benchmarks show both that the tool is accurate and fast enough to
-operate in an interactive setting. Since the full set of Java
-libraries need not be imported, the algorithm should run \textit{far}
-faster in practice, since not too many packages will be
-imported. Another approach would be to adjust the weights on the graph
-to bias against crossing package boundaries as was done in
-\cite{MandelinetALL2005Jungloid}. In our implementation, the IDE
-plugin loads the same graph as used in the benchmarks, and operates
-comfortably on-demand as a code completion contributor.
-
-Additionally, these benchmarks show that repair is accurate even in
-the face of multiple, difficult errors. The example involving the
-BufferedInputStream and the DeflaterInputStream had several distinct
-errors: a missing parameter, two parameters transposed, and additional
-parameters passed to a function that did not accept them that needed
-to be wrapped in a helper class. In three calls to
-\ref{proc:synthesize}, \ref{proc:repair} corrected \textbf{all three}
-errors in around a quarter second. Although it is impossible to test
-the full range of possible type errors, everywhere they might appear
-in the Java standard library, if these speeds are indeed
-representative of the whole space of possible errors, then our repair
-algorithm is sufficiently fast to operate in an interactive setting.
+These benchmarks show that repair is fast and accurate even in the face of multiple, difficult errors. The compressed stream example in section \ref{sec:examples} had several distinct errors: a missing parameter, two parameters transposed, and additional parameters passed to a function that did not accept them. Still, in three calls to the synthesize routine, our algorithm corrected \textit{all three} errors in around a quarter second. Since the full set of Java libraries are rarely imported, the algorithm should run even faster in practice as it will have smaller graphs to search. Although it is impossible to test the full range of possible type errors everywhere they might appear in the Java standard library, if these speeds are indeed representative of the whole space of possible errors, then our repair algorithm is sufficiently fast to operate in an interactive setting.
