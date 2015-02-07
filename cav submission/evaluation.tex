@@ -1,23 +1,7 @@
 \section{Evaluation}
 \label{sec:evaluation}
 
-
-We emirically evaluated our approach on some typical-use
-benchmarks. Table~\ref{eval:runtime} shows the summary of the results. 
-
-
-
-In this section we present the results of our tool on some typical-use
-benchmarks. The runtimes were measured on a university-supplied
-computer equipped with 32GB of RAM, a 4-core Intel Xeon E5-1620 CPU
-clocked at 3.60 GHz, running Red Hat Enterprise Linux Server 7.0 on
-the Oracle JVM version 8u25. The best times of 50 consecutive trials
-were recorded to account for variance in process scheduling, cache
-behavior, and, most importantly, JVM warmup. It was not uncommon to
-see four or five time speed increases between the best and the worst
-measurements of the algorithm. This is due to the delay in program
-optimization afforded by the Just-in-Time (JIT) compiler built in to
-the JVM.
+We empirically evaluated our approach on some typical-use benchmarks. Table~\ref{eval:runtime} shows the summary of the results. The runtimes were measured on a university-supplied computer equipped with 32GB of RAM, a 4-core Intel Xeon E5-1620 CPU clocked at 3.60 GHz, running Red Hat Enterprise Linux Server 7.0 on the Oracle JVM version 8u25. The best times of 50 consecutive trials were recorded to account for variance in process scheduling, cache behavior, and, most importantly, JVM warmup. It was not uncommon to see four or five time speed increases between the best and the worst measurements of the algorithm. This is due to the delay in program optimization afforded by the Just-in-Time (JIT) compiler built in to the JVM.
 
 \begin{table*}[t]
   \centering
@@ -32,20 +16,11 @@ the JVM.
     \texttt{InputStream} (from byte array) & Synthesis & 116 & 13163  & 20581  & 2 \\ \hline
     \texttt{BufferedReader}      & Repair    & 18  & --    & --    & 1 \\ \hline
     \texttt{SequenceInputStream} & Repair    & 4   & --    & --    & 1 \\ \hline
-    \texttt{DeflaterInputStream} & Repair & 380 & -- & -- & 1 \\ \hline
+    \texttt{DeflaterInputStream} & Repair    & 380 & -- & -- & 1 \\ \hline
     \texttt{BufferedReader}      & Synthesis & 16  & 3119  & 4225  & 2 \\ \hline
     \texttt{AudioClip} (applet)  & Synthesis & 27  & 6808  & 9291  & 2 \\ \hline
   \end{tabularx}
-  \caption{Typical-use runtimes for \ourTool in various
-    examples. ``Vertices'' and ``Edges'' refer to the number of
-    objects included inside a ball of cost-radius 4.5 around the
-    origin type. The entire Java standard library from \textbf{rt.jar}
-    (excluding the \texttt{sun.} and \texttt{com.sun.} packages) was
-    used to build the graph before running the benchmarks; it
-    consistently took around 5 seconds to load the data set from its
-    serialized form. Each test case was initialized with a small
-    environment consisting of two strings, two InputStreams, and an
-    OutputStream}
+  \caption{Typical-use runtimes in various benchmark. ``Vertices'' and ``Edges'' refer to the number of objects included inside a neighborhood of cost-radius 4.5 around the desired type. The entire Java standard library was used to build the graph before running the benchmarks; it consistently took around 5 seconds to load the data set from its serialized form. Each test case was initialized with a small environment consisting of two strings, two InputStreams, and an OutputStream}
   \label{eval:runtime}
 \end{table*}
 

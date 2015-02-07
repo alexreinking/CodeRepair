@@ -82,6 +82,10 @@ Notice that this means the repaired subexpressions will also be reinforced. This
 
 Although this algorithm, as described, returns up to $N$ possible repairs, in our preliminary implementation, we found that the first result was always the most correct, so even setting $N=1$ might be acceptable in a practical setting.
 
+\iffalse
+
 \subsection{Completeness Guarantees}
 
 Because the algorithm is limited only by user defined parameters, the search can be tuned to consider every node in the graph. Since the breadth and depth restrictions can be elided by increasing the cost and quantity limits, the full space of possible expressions is reachable. Note, however, that without a cost limit, the algorithm will not terminate, since many copy-constructors or other identity maps often times exist in the environment (e.g. one could synthesize $f(f(f(f(\ldots f(a)\ldots ))))$ ad infinitum). Even with a cost limit, it was shown in \cite{GveroETAL13CompleteCompletionTypesWeights} that the expression synthesis problem corresponds to the type-inhabitation problem, which is known to be PSPACE-complete \cite{Urzyczyn97}. Fortunately, finding a neighborhood for a type runs in polynomial time (same as Dijkstra's algorithm), and although we have no proven time bounds on the search, it has been extremely fast in practice. Thus, we know that since this problem is PSPACE-complete, there always exists a cost limit larger than the entire graph, but finite such that if an expression exists, it can be found by the algorithm in finite time.
+
+\fi
