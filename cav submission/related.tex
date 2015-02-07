@@ -2,8 +2,9 @@
 \label{sec:related}
 
 Our work is largly inspired by two synthesis tools: Prospector \cite{MandelinetALL2005Jungloid} and InSynth \cite{GveroETAL13CompleteCompletionTypesWeights, DBLP:conf/cav/GveroKP11}.
-Prospector a a tool for synthesizing code snippets containing only API methods. The basic synthesis algorithm used in \cite{MandelinetALL2005Jungloid} encodes method signatures using a graph. We do that as well, but as explained in Sec.~\ref{sec:algorithm:graph}
-our synthesis graph is more general. In nodes we do not store only types, but also descriptions how a value of that type can be constructed. In a way, those nodes correspond to succint types introduced in  \cite{GveroETAL13CompleteCompletionTypesWeights}. Similarly, as in \cite{GveroETAL13CompleteCompletionTypesWeights}, we also consider user defined values. One can see our  
+Prospector is a tool for synthesizing code snippets containing only unary API methods. The basic synthesis algorithm used in \cite{MandelinetALL2005Jungloid} encodes method signatures using a graph. We do that as well, but as explained in Sec.~\ref{sec:algorithm:graph}
+our synthesis graph is more general. In nodes we do not store only types, but also descriptions how a value of that type can be constructed. In a way, those nodes correspond to succinct types introduced in  \cite{GveroETAL13CompleteCompletionTypesWeights}. Similarly, as in \cite{GveroETAL13CompleteCompletionTypesWeights}, we also consider user defined values. One can see our approach as a generalization of both those tools. Note however, that we also extend their functionality: none of the aforementioned tools supports code repair.
+
 
 
 
