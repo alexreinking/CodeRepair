@@ -17,15 +17,12 @@ Here, the developer has given the \lstinline{SequenceInputStream} constructor tw
 
 In this case, the returned expression with the lowest cost is \lstinline{new SequenceInputStream(new FileInputStream(body), new FileInputStream(sig))}, which precisely reflects the programmer's intent.
 
-\subsection{Code Correction: Many Errors}
-\label{sec:examples:many}
-Sometimes, an ill-typed expression poorly reflects the structure of the desired expression, while still retaining other useful information. Often, this is a result of passing too many or too few arguments arguments to a function, or passing them in the wrong order.
+\subsection{Code Correction: Multiple Errors}
+\label{sec:examples:multiple}
+Sometimes, an ill-typed expression poorly reflects the structure of the desired expression, while still retaining other useful information. Often, the structure is obscured by passing too many or too few arguments arguments to a function, or by passing them in the wrong order.
 
-The following code uses an extensive number of calls to the standard Java API library with the intention to read a compressed file though a buffered stream. To read the file, the developer attempts to instantiate an \lstinline{InputStream} object:
+The following code fragment uses an extensive number of calls to the standard Java API library with the intention to read a compressed file though a buffered stream. The developer attempts to instantiate an \lstinline{InputStream} object:
 \begin{lstlisting}
-import java.io.*;
-import java.util.zip.*;
-
 public class Main {
   public static void main(String args[]) throws IOException {
     int buffSize = 1024, compLevel = Deflater.BEST_SPEED;
@@ -37,18 +34,17 @@ public class Main {
   }
 }
 \end{lstlisting}
-In this example, the single expression contains three errors. First, the \lstinline{FileInputStream} constructor requires at least one parameter; second, the \lstinline{DeflaterInputStream} constructor has been passed too many arguments; and finally, the \lstinline{BufferedInputStream} has been passed valid arguments in the wrong order.
+In this example, the single expression contains three errors. First, the \lstinline{FileInputStream} constructor requires at least one argument; second, the \lstinline{DeflaterInputStream} constructor has been passed too many arguments; and finally, the \lstinline{BufferedInputStream} has been passed valid arguments in the wrong order.
 
-To repair this expression, our algorithm proceeds from the bottom of the expression, viewed as a parse tree, up to the top-level expression. The repair algorithm begins with the sub-expression \lstinline{new FileInputStream()}, and returns \lstinline{new FileInputStream(fileName)} as the top expression. After applying this sub-repair, the algorithm proceeds to correct the \lstinline{DeflaterInputStream}. Since all of its arguments are now well-typed, it adds each one to a list to indicate they should be reused. The evaluation of the cost of an expression cross-references this list to scale down the cost of the snippets containing those expressions. The top repair is found by wrapping the extra arguments in the \lstinline{Deflater} constructor. At this stage, we have already built the following correct subexpression:
-\begin{lstlisting}
-new DeflaterInputStream(new FileInputStream(fileName), new Deflater(compLevel, true))
-\end{lstlisting}
-Finally, the algorithm proceeds to rebuild the overall expression by interchanging the arguments in the top-level, almost-repaired expression to arrive at our final, correct result:
+To repair this expression, our algorithm proceeds from the bottom, viewed as a parse tree, up to the top-level. Thus, it begins correcting the sub-expression \lstinline{new FileInputStream()}. The algorithm draws on the environment to produce \lstinline{new FileInputStream(fileName)} as the closest match.
+
+After applying this repair, it proceeds to correct the \lstinline{DeflaterInputStream}. Since all of its arguments are now well-typed, the repair will attempt to re-use them while synthesizing a replacement. The algorithm wraps the extra arguments in a call to the \lstinline{Deflater} constructor from the Java API.
+
+Finally, it rebuilds the overall expression by interchanging the arguments in the top-level expression to arrive at the final, correct result:
 \begin{lstlisting}   
 new BufferedInputStream(new DeflaterInputStream(
   new FileInputStream(fileName), new Deflater(compLevel, true)),
     buffSize);
 \end{lstlisting}
-These examples show that our algorithm can efficiently search through a large number of possible repair expressions, and can guide that procedure according to an appropriate metric that values shorter distances between the given expression and the corrected expression.
 
-We believe that our algorithm will perform useful and effective repairs that are well-aligned with the developer's intentions, even when the given ill-typed expression requires several steps to repair.
+These examples show how our algorithm efficiently searches through a large number of possible repair expressions, and guides that procedure according to an appropriate metric that values shorter distances between the given expression and the corrected expression. We believe that our algorithm will perform useful and effective repairs that are well-aligned with the developer's intentions, even when the given ill-typed expression requires several steps to repair.

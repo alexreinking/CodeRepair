@@ -3,7 +3,7 @@
 
 We empirically evaluated our approach on some typical-use benchmarks. Table~\ref{eval:runtime} shows the summary of the results. The runtimes were measured on a standard university-supplied computer. For each benchmark, the best of 50 consecutive trials was recorded to account for variance in process scheduling, cache behavior, and, most importantly, JVM warmup. It was not uncommon to see four-to-five-fold speed increases between the best and the worst runtimes of the algorithm. This is due to the delay in program optimization afforded by Oracle's JIT compiler.
 
-\begin{table*}[t]
+\begin{table*}[hbt]
   \centering
   %\renewcommand{\arraystretch}{1.00}
   \begin{tabularx}{\linewidth}{| X | l | l | l | l | l |}
@@ -24,4 +24,4 @@ We empirically evaluated our approach on some typical-use benchmarks. Table~\ref
   \label{eval:runtime}
 \end{table*}
 
-These benchmarks show that repair is fast and accurate even in the face of multiple, difficult errors. The compressed stream example in section \ref{sec:examples:many} had several distinct errors: a missing parameter, two parameters transposed, and additional parameters passed to a function that did not accept them. Still, in three calls to the synthesis routine, our algorithm automatically corrected \textit{all three} errors in around a third of a second. Since the full set of Java libraries are rarely imported, the algorithm should run even faster in practice as it will have smaller graphs to search. Although it is impossible to test the full range of possible type errors everywhere they might appear in the Java standard library, if these speeds are indeed representative of the whole space of possible errors, then our repair algorithm is sufficiently fast to operate in an interactive setting.
+These benchmarks show that repair is fast and accurate even in the face of multiple, difficult errors. The compressed stream example in section \ref{sec:examples:multiple} had several distinct errors: a missing parameter, two parameters transposed, and additional parameters passed to a function that did not accept them. Still, in three calls to the synthesis routine, our algorithm automatically corrected \textit{all three} errors in around a third of a second. Since the full set of Java libraries are rarely imported, the algorithm should run even faster in practice as it will have smaller graphs to search. Although it is impossible to test the full range of possible type errors everywhere they might appear in the Java standard library, if these speeds are indeed representative of the whole space of possible errors, then our repair algorithm is sufficiently fast to operate in an interactive setting.
