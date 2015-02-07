@@ -35,20 +35,19 @@ light of the program repair, the synthesis aspect can be considered as
 a repair of the empty expression.
 
 The repair algorithm is based on encoding of type constraints derived
-from signatures into so-called {\emph {synthesis graph}}. Finding a
-well-typed code repair corresponds to applying a search algorithm on the synthesis graph. In order to scale and to suggest a 
+from signatures into so-called {\emph {synthesis graph}}. In summary,
+finding a well-typed code repair corresponds to incrementally applying
+a search algorithm on the synthesis graph, while preserving the cost
+constraints.
 
-gnatures are represented as explained earlier, in a directed
-graph where the nodes are types and edges are expressions de-
-rived from signatures. E
-
-
-a graph algorithm for synthesizing expressions of a certain type. 
-
-
-There is an early prototype implementation of our algorithm.
-
-We tested our approach on a few benchmark 
+We have implemented an early prototype of our algorithm, and
+empirically tested it on synthesis and repair benchmarks. The initial
+evaluation strongly supports the idea of a graph-based type-directed
+approach to code repair and snippet synthesis. We compared our
+approach to InSynth \cite{GveroETAL13CompleteCompletionTypesWeights},
+and our implementation outperforms InSynth on similar benchmarks,
+sometimes by several orders of magnitude, while still producing
+high-quality results.
 
 
 
