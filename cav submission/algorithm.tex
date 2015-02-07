@@ -58,9 +58,30 @@ The procedure operates recursively, and it checks to see whether the computation
 
 \subsection{Repair Algorithm}
 \label{sec:algorithm:repair}
-We are now ready to describe the repair algorithm. The key step in our approach is biasing the previously-described synthesis procedures towards those subexpressions of the broken expression that are correctly-typed. The intuition for this is that if a user tries to create an object from some specific components, the search should be optimized to favor those components. To do this, we adjust the \Cost function used by \ref{proc:getExpression}. \Cost will now scale down by a factor of $2^n$, where $n$ is the number of expressions ``reinforced'' by the repair procedure that appear in the snippet.
+We are now ready to describe the repair algorithm. The key step in our approach is biasing the previously-described synthesis procedures towards those subexpressions of the broken expression that are correctly-typed. The intuition for this is that if a user tries to create an object from some specific components, the search should be optimized to favor those components. To do this, we adjust the \Cost function used by \ref{proc:getExpression}. \Cost will now scale down its results by a factor of $2^n$, where $n$ is the number of expressions ``reinforced'' by the repair procedure that appear in the snippet. As a practical matter, we say we have ``reinforced'' an expression when we add it to a list of reinforced expressions.
 
 This scheme has a few distinct advantages: first, it will very strongly prefer those expressions that occurred as part of the given incorrect expression; second, in cases where more than one of the same type is required, it will favor using multiple, distinct subexpressions among those reinforced (ie. it will prefer to use both $a$ and $b$ over just one if both were specified); and finally, if no expressions are specified, then \Cost actually remains unchanged.
 
-With this modification in place, the repair algorithm (pseudocode below), proceeds from the bottom up. For each broken sub-expression in the input, 
+With this modification in place, the repair algorithm proceeds from the bottom up. For each broken sub-expression in the input, we first reinforce each of its well-typed subexpressions and then initiate a synthesis for the desired type of the current subexpression. If any of its children are ill-typed, we recurse and repair them first.
+\begin{algorithm}
+\SetKwData{Repairs}{repairs}\SetKwData{Expr}{expr}
+\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+\Input{$G=(V_t\cup V_f,E)$, the synthesis graph; \Expr, the broken expression; $C_{max}$, the maximum allowable cost; $N$, the number of repairs to synthesize}
+\Output{\Repairs}
+\BlankLine
+\lIf{\Expr is well-typed}{\Return{expr}}
+Since \Expr results in a value, we write it as \Expr$(x_1, \ldots, x_k)$ where the $x_i$ are the subexpressions of type $\tau_i$ making up \Expr.
+\ForEach{$x\in\{x_1,\ldots,x_k\}$}{
+  $x' \longleftarrow$ Repair ($G, x, C_{max}, N$) \;
+  Reinforce $x'$ for this subtree and above \;
+}
+\Repairs $\longleftarrow$ Synthesize ($G, \tau, C_{max}, N$)
+\caption{Repair Algorithm}\label{proc:repair}
+\end{algorithm}
+Notice that this means the repaired subexpressions will also be reinforced. This behavior is desirable because it favors reusing the subexpressions generated once the repair synthesizes a higher level. Additionally, the recursion guarantees that reinforcing a subexpression will not interfere with a synthesis that occurs at the same level as that subexpression.
 
+Although this algorithm, as described, returns up to $N$ possible repairs, in our preliminary implementation, we found that the first result was always the most correct, so even setting $N=1$ might be acceptable in a practical setting.
+
+\subsection{Completeness Guarantees}
+
+Because the algorithm is limited only by user defined parameters, the search can be tuned to consider every node in the graph. Since the breadth and depth restrictions can be elided by increasing the cost and quantity limits, the full space of possible expressions is reachable. Note, however, that without a cost limit, the algorithm will not terminate, since many copy-constructors or other identity maps often times exist in the environment (e.g. one could synthesize $f(f(f(f(\ldots f(a)\ldots ))))$ ad infinitum). Even with a cost limit, it was shown in \cite{GveroETAL13CompleteCompletionTypesWeights} that the expression synthesis problem corresponds to the type-inhabitation problem, which is known to be PSPACE-complete \cite{Urzyczyn97}. Fortunately, finding a neighborhood for a type runs in polynomial time (same as Dijkstra's algorithm), and although we have no proven time bounds on the search, it has been extremely fast in practice. Thus, we know that since this problem is PSPACE-complete, there always exists a cost limit larger than the entire graph, but finite such that if an expression exists, it can be found by the algorithm in finite time.

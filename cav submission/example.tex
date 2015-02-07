@@ -1,12 +1,8 @@
 \section{Motivating Examples}
 \label{sec:examples}
-
 We first illustrate how our algorithm works and the nature of repair with the usage of familiar API calls from the Java standard library, reflecting along the way on the differences between our and other tools for code completion and repair. To emphasize the significance in practical software development, our examples are chosen from a set of the real code examples (most of them featured at \url{http://www.java2s.com/}{}).
 
-In Section~\ref{sec:algorithm} we explain in details how to generate ``most desired'' results. The algorithm relies on a system of costs to accurately guess programmers' intentions. The system of costs is similar to the system of weights used in \cite{GveroETAL13CompleteCompletionTypesWeights}.
-
 \subsection{Code Correction: Single Error}
-
 The following simple example, adapted from \cite{GveroETAL13CompleteCompletionTypesWeights}, illustrates how our algorithm handles an expression that does not compile. Consider the following program fragment:
 \begin{lstlisting}
 import java.io.*;
@@ -21,19 +17,14 @@ public class Main {
   }
 } 
 \end{lstlisting}
-Here, the developer has given the \lstinline{SequenceInputStream} constructor two strings, even though none of its overloads accept those arguments. Thus, the expression assigned to \lstinline{seqStream} does not compile. Still, from this backbone expression we can recognize the structure of the intended expression. To produce results that correctly capture the programmers intent, our algorithm should construct an expression that preserves the relative position of the declarations from \lstinline{SequenceInputStream(body, sig)}. The corrected expression should favor reusing the sound parts of the original expression, such as the \lstinline{SequenceInputStream} constructor and the \lstinline{body} and \lstinline{sig} variables in their corresponding sub-expression trees. Our algorithm finds all such expressions, constructed from the declarations visible in the scope of the backbone expression. The found expressions are well-typed and ranked according to a metric that characterizes the resemblance to the starting backbone expression.
+Here, the developer has given the \lstinline{SequenceInputStream} constructor two strings, even though none of its overloads accept those arguments. Still, we can recognize the intent of the intended expression. To preserve this intent, our algorithm should construct an expression that maintains the relative position of the original arguments. The corrected expression should favor reusing the well-typed subexpressions, such as the \lstinline{body} and \lstinline{sig} variables in their corresponding sub-expression trees. Our algorithm finds all such expressions, constructed from the visible declarations in the current scope. The results are well-typed and ranked according to a metric that favors resemblance to the starting expression.
 
-In this case, the returned expression with the highest rank is
-\begin{lstlisting}
-SequenceInputStream seqStream = new SequenceInputStream(
-  new FileInputStream(body), new FileInputStream(sig))
-\end{lstlisting}
-This expression perfectly reflects the programmer's intent, and our algorithm produces it in 4 milliseconds.
+In this case, the returned expression with the lowest cost is \lstinline{new SequenceInputStream(new FileInputStream(body), new FileInputStream(sig))}, which precisely reflects the programmer's intent.
 
 \subsection{Code Correction: Many Errors}
-Sometimes, an ill-typed expression poorly reflects the structure of the desired expression, while still retaining semantic intent. Often, this is a result of passing too many or too few arguments arguments to a function, or passing them in the wrong order.
+Sometimes, an ill-typed expression poorly reflects the structure of the desired expression, while still retaining other useful information. Often, this is a result of passing too many or too few arguments arguments to a function, or passing them in the wrong order.
 
-Consider the following code that uses an extensive number of calls to the standard Java API library to manipulate a compressed stream. The given backbone expression hints the user's intention to read a file compressed with the ZLIB library through a buffered stream. To read the file, a developer needs to instantiate an \lstinline{InputStream} object.
+Consider the following code that uses an extensive number of calls to the standard Java API library to manipulate a compressed stream. The given expression indicates the programmer's intention to read a compressed file though a buffered stream. To read the file, the developer attempts to instantiate an \lstinline{InputStream} object:
 \begin{lstlisting}
 import java.io.*;
 import java.util.zip.*;
@@ -51,32 +42,16 @@ public class Main {
 \end{lstlisting}
 In this example, the single expression contains three errors. First, the \lstinline{FileInputStream} constructor requires at least one parameter; second, the \lstinline{DeflaterInputStream} constructor has been passed too many arguments; and finally, the \lstinline{BufferedInputStream} has been passed valid arguments in the wrong order.
 
-To repair this expression, our algorithm proceeds from the bottom of the expression, viewed as a parse tree, up to the top-level expression. The repair algorithm begins with the sub-expression \lstinline{new FileInputStream()}, and returns \lstinline{new FileInputStream(fileName)} as the top expression. After applying this sub-repair, the algorithm proceeds to correct the subexpression
+To repair this expression, our algorithm proceeds from the bottom of the expression, viewed as a parse tree, up to the top-level expression. The repair algorithm begins with the sub-expression \lstinline{new FileInputStream()}, and returns \lstinline{new FileInputStream(fileName)} as the top expression. After applying this sub-repair, the algorithm proceeds to correct the \lstinline{DeflaterInputStream}. Since all of its arguments are now well-typed, it adds each one to a list to indicate they should be reused. The evaluation of the cost of an expression cross-references this list to scale down the cost of the snippets containing those expressions. The top repair is found by wrapping the extra arguments in the \lstinline{Deflater} constructor. At this stage, we have already built the following correct subexpression:
 \begin{lstlisting}
-new DeflaterInputStream(
-  new FileInputStream(fileName), compLevel, true)
+new DeflaterInputStream(new FileInputStream(fileName), new Deflater(compLevel, true))
 \end{lstlisting}
-Since all of its arguments are well-typed, it adds each one to the environment with a highly-favorable weight. The top repair is
-\begin{lstlisting}
-new DeflaterInputStream(
-  new FileInputStream(fileName), new Deflater(compLevel, true))
-\end{lstlisting}
-The key modification here is the insertion of the \lstinline{Deflater} constructor.
-
-Finally, the algorithm proceeds to rebuild the overall expression by interchanging the arguments in the top-level, almost-repaired expression
-\begin{lstlisting}
-new BufferedInputStream(buffSize,
-    new DeflaterInputStream(
-       new FileInputStream(fileName), new Deflater(compLevel, true)))
-\end{lstlisting}
-As before, this repair is accomplished by reinforcing the two correct subexpressions prior to a call to the synthesis procedure. All told, the algorithm accomplishes the following correction in 380 milliseconds:
-
+Finally, the algorithm proceeds to rebuild the overall expression by interchanging the arguments in the top-level, almost-repaired expression to arrive at our final, correct result:
 \begin{lstlisting}   
 new BufferedInputStream(new DeflaterInputStream(
   new FileInputStream(fileName), new Deflater(compLevel, true)),
     buffSize);
 \end{lstlisting}
-
-These examples show that our algorithm can efficiently search through a large number of possible repair expressions, and can guide that procedure according to an appropriate metric that characterizes the distance from the given expression to the corrected expression.
+These examples show that our algorithm can efficiently search through a large number of possible repair expressions, and can guide that procedure according to an appropriate metric that values shorter distances between the given expression and the corrected expression.
 
 We hope that our algorithm can indeed perform useful and effective repairs that are well-aligned with the developer's intentions, even when the given ill-typed expression requires several steps to repair.
