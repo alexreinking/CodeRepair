@@ -7,7 +7,7 @@ Our algorithm operates by searching through a specially-crafted data
 structure called the {\emph{synthesis graph}}. Each node of the synthesis graph
 corresponds to either a value-producing language entity, such as a
 function, variable, constant, or literal, or to a type in the
-language. We therefore devide nodes into two sets $V_t$ (type nodes) and $V_f$ (function nodes). 
+language. We therefore divide nodes into two sets $V_t$ (type nodes) and $V_f$ (function nodes). 
 Since variables, constants, and literals can be considered
 functions taking the empty set to their value, they belong to $V_f$. From each function node, there is 
 an out-edge to the type it produces, and for each distinct type that the
@@ -45,7 +45,8 @@ types are added to the graph.
 
 \subsection{Synthesis Procedure}
 \label{sec:algorithm:synthesis}
-We now describe the synthesis portion of our algorithm, Algorithm~\ref{proc:synthesize}. The algorithm takes as input the synthesis graph $G=(V_t \cup V_f, E)$, and a type $\tau$
+We now describe the synthesis portion of our algorithm, Algorithm~\ref{proc:synthesize}. The algorithm takes as input the synthesis graph $G=(V_t \cup V_f, E)$, and a type $\tau$, and some additional 
+arguments. It returns a list of expressions of type $\tau$.
 
 \SetKwData{Snips}{snips}
 \begin{algorithm}
@@ -59,30 +60,28 @@ $G'=(V_t'\cup V_f', E') \longleftarrow$ subgraph of $G$ reachable within $C_{max
 Sort $V_t'$ in descending distance away from $\tau$ \;
 \Snips $\longleftarrow$ Hash table mapping types to snippets \;
 \ForEach{$\sigma\in V_t'$}{
-  \Snips[$\sigma$] $\longleftarrow$ \ref{proc:getExpression}($G'$, \Snips, $\sigma$, $C_{max} - $ \Dist{$\tau$, $\sigma$}, $N$) \;
+  \Snips[$\sigma$] $\longleftarrow$ \ref{proc:getExpression}($G'$, \Snips, $\sigma$, $C_{max} - $ \Dist{$\sigma$}, $N$) \;
 }
 \Exprs $\longleftarrow$ \Snips[$\tau$] \;
 \caption{Synthesis Algorithm}\label{proc:synthesize}
 \end{algorithm}
 
-The subgraph is derived by using Dijkstra's algorithm, which can also
-accomplish the vertex sort by distance. We go in reverse order so as
-to cache at the latest possible opportunity. At any stage of the loop,
-we know that $\sigma$ is as close as possible to $\tau$ and so if we
-create an expression for $\tau$ that involves $\sigma$ along the way,
-we know that the rest of the expression may cost at most $C_{max} - $
+The first two steps can be done using Dijkstra's algorithm. Nodes $V_t'$ are sorted in reverse order so as
+to cache at the latest possible opportunity. This also means that in every run of the loop 
+$\sigma$ is as close as possible to $\tau$. If we
+create an expression of type  $\tau$ that involves $\sigma$, then the rest of the expression may cost at most $C_{max} - $
 \Dist{$\sigma$}. The procedure \ref{proc:getExpression} uses \Snips to
 avoid performing expensive recomputations.
 
-Now, we describe the \ref{proc:getExpression} procedure, whose task is
-to find the $N$ best snippets for type $\sigma$ in $G'$ within a
+Next we describe the \ref{proc:getExpression} procedure, whose task is
+to find the $N$ best snippets of type $\tau$ in $G'$ within a
 prescribed cost bound $C_{now}$.
 \begin{procedure}
 \SetKwFunction{Cost}{Cost}\SetKwFunction{Keys}{Keys}
 \SetKwData{Results}{results}
-\lIf{$\sigma$ $\in$ \Keys{\Snips}}{\Return{\Snips$[\sigma]$}}
+\lIf{$\tau$ $\in$ \Keys{\Snips}}{\Return{\Snips$[\tau]$}}
 \Results $\leftarrow$ $\emptyset$ \;
-\ForEach{$g \in V_f'$ of the form $g : (\tau_1 \times \cdots \times \tau_k) \to \sigma$}{
+\ForEach{$g \in V_f'$ of the form $g : (\tau_1 \times \cdots \times \tau_k) \to \tau$}{
 	\lIf{\Cost{$g$} $> C_{now}$}{\KwContinue}
 	For all $i$, let $s_i \leftarrow$ \ref{proc:getExpression}($G'$, \Snips, $\tau_i, C_{now} - $ \Cost{$g$}, $N$) \;
 	\ForEach{args $\in$ $s_1 \times \cdots \times s_k$}{
@@ -95,11 +94,11 @@ prescribed cost bound $C_{now}$.
 	}
 }
 \Return{\Results}
-\caption{GetExpressions({$G'=(V_t' \cup V_f', E')$}, snips, $\sigma, C_{now}, N$)}\label{proc:getExpression}
+\caption{GetExpressions({$G'=(V_t' \cup V_f', E')$}, snips, $\tau, C_{now}, N$)}\label{proc:getExpression}
 \end{procedure}
 The procedure operates recursively, and it checks to see whether the
 computation has been completed before by referring to the \Snips
-table. To carry out the computation for $\sigma$ it looks at its
+table. To carry out the computation for $\tau$ it looks at its
 neighbors in the graph that correspond to its out-edges, those
 indicating a ``constructed-from'' relationship. As long as that
 function would not immediately break the cost constraint, it attempts
@@ -111,7 +110,7 @@ $N$.
 
 \subsection{Repair Algorithm}
 \label{sec:algorithm:repair}
-We are now ready to describe the repair algorithm. The key step in our
+Finally, we describe the repair algorithm. The key step in our
 approach is biasing the previously-described synthesis procedures
 towards those subexpressions of the broken expression that are
 correctly-typed. The intuition for this is that if a user tries to
@@ -160,7 +159,7 @@ same level as that subexpression.
 
 Although this algorithm, as described, returns up to $N$ possible
 repairs, in our preliminary implementation, we found that the first
-result was always the most correct, so even setting $N=1$ might be
+result was always the most correct, so we speculate that setting $N=1$ might be
 acceptable in a practical setting.
 
 \iffalse
