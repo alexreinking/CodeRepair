@@ -1,8 +1,10 @@
 \section{Related Work}
 \label{sec:related}
 
-Our work is largly inspired by two synthesis tools: Prospector \cite{MandelinetALL2005Jungloid} and InSynth \cite{GveroETAL13CompleteCompletionTypesWeights}.
-Prospector a a tool for synthesizing code snippets consisting of only API methods. The basic synthesis algorithm is based an a graph encoding and data mining. We 
+Our work is largly inspired by two synthesis tools: Prospector \cite{MandelinetALL2005Jungloid} and InSynth \cite{GveroETAL13CompleteCompletionTypesWeights, DBLP:conf/cav/GveroKP11}.
+Prospector a a tool for synthesizing code snippets containing only API methods. The basic synthesis algorithm used in \cite{MandelinetALL2005Jungloid} encodes method signatures using a graph. We do that as well, but as explained in Sec.~\ref{sec:algorithm:graph}
+our synthesis graph is more general. In nodes we do not store only types, but also descriptions how a value of that type can be constructed. In a way, those nodes correspond to succint types introduced in  \cite{GveroETAL13CompleteCompletionTypesWeights}. Similarly, as in \cite{GveroETAL13CompleteCompletionTypesWeights}, we also consider user defined values. One can see our  
+
 
 
 
@@ -19,12 +21,4 @@ areas that the algorithm considers erroneous, by both symbolically and
 actually executing the code and comparing its output to test cases.
 
 
-
-
-gnatures are represented as explained earlier, in a directed
-graph where the nodes are types and edges are expressions de-
-rived from signatures. E
-
-
-a graph algorithm for synthesizing expressions of a certain type. 
 
