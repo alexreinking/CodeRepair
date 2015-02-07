@@ -26,7 +26,7 @@ In this case, the returned expression with the lowest cost is \lstinline{new Seq
 \label{sec:examples:many}
 Sometimes, an ill-typed expression poorly reflects the structure of the desired expression, while still retaining other useful information. Often, this is a result of passing too many or too few arguments arguments to a function, or passing them in the wrong order.
 
-Consider the following code that uses an extensive number of calls to the standard Java API library to manipulate a compressed stream. The given expression indicates the programmer's intention to read a compressed file though a buffered stream. To read the file, the developer attempts to instantiate an \lstinline{InputStream} object:
+The following code uses an extensive number of calls to the standard Java API library with the intention to read a compressed file though a buffered stream. To read the file, the developer attempts to instantiate an \lstinline{InputStream} object:
 \begin{lstlisting}
 import java.io.*;
 import java.util.zip.*;
@@ -56,4 +56,4 @@ new BufferedInputStream(new DeflaterInputStream(
 \end{lstlisting}
 These examples show that our algorithm can efficiently search through a large number of possible repair expressions, and can guide that procedure according to an appropriate metric that values shorter distances between the given expression and the corrected expression.
 
-We hope that our algorithm can indeed perform useful and effective repairs that are well-aligned with the developer's intentions, even when the given ill-typed expression requires several steps to repair.
+We believe that our algorithm will perform useful and effective repairs that are well-aligned with the developer's intentions, even when the given ill-typed expression requires several steps to repair.

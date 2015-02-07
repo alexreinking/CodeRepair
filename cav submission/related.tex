@@ -1,25 +1,6 @@
 \section{Related Work}
 \label{sec:related}
 
-Our work is largly inspired by two synthesis tools: Prospector \cite{MandelinetALL2005Jungloid} and InSynth \cite{GveroETAL13CompleteCompletionTypesWeights, DBLP:conf/cav/GveroKP11}.
-Prospector is a tool for synthesizing code snippets containing only unary API methods. The basic synthesis algorithm used in \cite{MandelinetALL2005Jungloid} encodes method signatures using a graph. We do that as well, but as explained in Sec.~\ref{sec:algorithm:graph}
-our synthesis graph is more general. In nodes we do not store only types, but also descriptions how a value of that type can be constructed. In a way, those nodes correspond to succinct types introduced in  \cite{GveroETAL13CompleteCompletionTypesWeights}. Similarly, as in \cite{GveroETAL13CompleteCompletionTypesWeights}, we also consider user defined values. One can see our approach as a generalization of both those tools. Note however, that we also extend their functionality: none of the aforementioned tools supports code repair.
+Our work is largely inspired by two synthesis tools: Prospector \cite{MandelinetALL2005Jungloid} and InSynth \cite{GveroETAL13CompleteCompletionTypesWeights, DBLP:conf/cav/GveroKP11}. Prospector is a tool for synthesizing code snippets containing only unary API methods. The basic synthesis algorithm used in \cite{MandelinetALL2005Jungloid} encodes method signatures using a graph. We also encode function information in a graph structure, but as explained in Sec.~\ref{sec:algorithm:graph} our synthesis graph is more general. Unlike Prospector, we distinguish nodes into types and functions, as opposed to just types. In a way, the function nodes carry their succinct types, as described in \cite{GveroETAL13CompleteCompletionTypesWeights}, but also handle user defined values. While our approach acts as a generalization of both those tools, we also extend their capability to code repair.
 
-
-
-
-
-Debugging and locating errors in the code \cite{Pavlinovic:2014,
-  Chandra:2011:AD} play an important role in the process of increasing
-software reliability. Once located, some errors can be easily
-fixed. Recently we have witnessed to a number of tools that aim to
-repair parts of code. MintHint \cite{MintHint} is such a tool that
-takes a more complete-program approach to code repair. Where we are
-using user input to guide synthesis of a correctly-typed expression
-from an incorrectly-typed one, MintHint targets a particular passage
-that is suspected to carry a bug. MintHint synthesizes some hints in
-areas that the algorithm considers erroneous, by both symbolically and
-actually executing the code and comparing its output to test cases.
-
-
-
+Debugging and locating errors in the code \cite{Pavlinovic:2014, Chandra:2011:AD} play an important role in the process of increasing software reliability. Once located, some errors can be easily fixed. Recently we have witnessed to a number of tools that aim to repair parts of code. MintHint \cite{MintHint} is such a tool that takes a more complete-program approach to code repair. Where we are using user input to guide synthesis of a correctly-typed expression from an incorrectly-typed one, MintHint targets a particular passage that is suspected to carry a bug. MintHint synthesizes some hints in areas that the algorithm considers erroneous, by both symbolically and actually executing the code and comparing its output to test cases.
