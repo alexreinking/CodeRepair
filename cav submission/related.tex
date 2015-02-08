@@ -1,23 +1,7 @@
 \section{Related Work}
 \label{sec:related}
 
-Our work is largely inspired by two synthesis tools: Prospector
-\cite{MandelinetALL2005Jungloid} and InSynth
-\cite{GveroETAL13CompleteCompletionTypesWeights,
-  DBLP:conf/cav/GveroKP11}. Prospector is a tool for synthesizing code
-snippets containing only unary API methods. The basic synthesis
-algorithm used in \cite{MandelinetALL2005Jungloid} encodes method
-signatures using a graph. We also encode function information in a
-graph structure, but as explained in Sec.~\ref{sec:algorithm:graph}
-our synthesis graph is more general. Unlike Prospector, we distinguish
-nodes into types and functions, as opposed to just types. In a way,
-the function nodes carry their succinct types, as described in
-\cite{GveroETAL13CompleteCompletionTypesWeights}, but also handle user
-defined values. While our approach acts as a generalization of both
-those tools, we also extend their capability to code repair.
+Our work is largely inspired by two synthesis tools: Prospector \cite{MandelinetALL2005Jungloid} and InSynth \cite{GveroETAL13CompleteCompletionTypesWeights, DBLP:conf/cav/GveroKP11}. Prospector is a tool for synthesizing code snippets containing only unary API methods. The basic synthesis algorithm used in \cite{MandelinetALL2005Jungloid} encodes method signatures using a graph. Although we also encode function information in a graph structure, our synthesis graph is more general. As explained in Sec.~\ref{sec:algorithm:graph}, we distinguish nodes into types and functions, as opposed to just types. In a way, the connections to each function node models its succinct type as described in \cite{GveroETAL13CompleteCompletionTypesWeights}. While our approach acts as a generalization of both those tools, we also extend their capability to code repair.
 
-Debugging and locating errors in the code \cite{Pavlinovic:2014,
-  Chandra:2011:AD} play an important role in the process of increasing
-software reliability. While our approach suggests code repairs based only on a given ill-typed expression, other tools that tackle the problem of code repair, such
-as MintHint \cite{MintHint}, require test cases and symbolical execution.
+Debugging and locating errors in code \cite{Pavlinovic:2014, Chandra:2011:AD} play an important role in the process of increasing software reliability. While our approach suggests repairs based only on a given ill-typed expression and its environment, other tools that tackle this problem, such as MintHint \cite{MintHint}, require test cases and symbolic execution.
 

@@ -9,7 +9,7 @@ In addition, the edges are weighted by their cost of inclusion, a subjective mea
 
 \subsection{Synthesis Procedure}
 \label{sec:algorithm:synthesis}
-We now describe the synthesis portion of our algorithm, Algorithm~\ref{proc:synthesize}. The algorithm takes as input the synthesis graph $G=(V_t \cup V_f, E)$, and a type $\tau$, and some additional arguments. It returns a list of expressions of type $\tau$.
+We now describe the synthesis portion of our algorithm, Algorithm~\ref{proc:synthesize}. The algorithm takes as input the synthesis graph $G=(V_t \cup V_f, E)$, a type $\tau$, and some additional arguments. It returns a list of expressions of type $\tau$.
 \SetKwData{Snips}{snips}
 \begin{algorithm}[hbt]
 \SetKwData{Exprs}{exprs}
@@ -71,7 +71,7 @@ $N$.
 
 \subsection{Repair Algorithm}
 \label{sec:algorithm:repair}
-Finally, we describe the repair algorithm. The key step in our
+Finally, we describe the repair algorithm, Algorithm \ref{proc:repair}. The key step in our
 approach is biasing the previously-described synthesis procedures
 towards those subexpressions of the broken expression that are
 correctly-typed. The intuition for this is that the search should be
@@ -87,7 +87,7 @@ strongly prefer those expressions that occurred as part of the given
 incorrect expression; second, in cases where more than one of the same
 type is required, it will favor using multiple, distinct
 subexpressions among those reinforced; and finally, if no
-expressions are specified, then \Cost actually remains unchanged.
+expressions are reinforced, then \Cost actually remains unchanged.
 
 With this modification in place, the repair algorithm proceeds from
 the bottom up. For each broken sub-expression in the input, we first
@@ -101,7 +101,7 @@ subexpressions generated once the repair synthesizes a higher
 level. Additionally, the recursion guarantees that reinforcing a
 subexpression will not interfere with a synthesis that occurs at the
 same level as that subexpression.
-\begin{algorithm}[ht]
+\begin{algorithm}[hbt]
 \SetKwData{Repairs}{repairs}\SetKwData{Expr}{expr}\SetKwData{Subs}{subs}
 \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
 \Input{$G=(V_t\cup V_f,E)$, the synthesis graph; \Expr, the broken expression; $C_{max}$, the maximum allowable cost; $N$, the number of repairs to synthesize}
