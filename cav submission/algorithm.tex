@@ -3,7 +3,7 @@
 \subsection{Synthesis Graph Construction}
 \label{sec:algorithm:graph}
 
-Our algorithm operates by searching through a specially-crafted data structure called the {\emph{synthesis graph}}. Each node of the synthesis graph corresponds to either a value-producing language entity, such as a function, variable, constant, or literal, or to a type in the language. We therefore divide nodes into two sets $V_t$ (type nodes) and $V_f$ (function nodes). Since variables, constants, and literals can be considered functions taking the empty set to their value, they belong to $V_f$. From each function node, there is an out-edge to the type it produces, and for each distinct type that the function takes as an argument, there is an incoming edge into the function node to the type node. Importantly, this means that a function on three input parameters of the same type will have in-degree exactly one.
+Our algorithm operates by searching through a data structure we call the {\emph{synthesis graph}}. Each node of the synthesis graph corresponds to either a value-producing language entity, such as a function, variable, constant, or literal, or to a type in the language. We therefore divide nodes into two sets $V_t$ (type nodes) and $V_f$ (function nodes). Since variables, constants, and literals can be considered functions taking the empty set to their value, they belong to $V_f$. From each function node, there is an out-edge to the type it produces, and for each distinct type that the function takes as an argument, there is an incoming edge into the function node to the type node. Importantly, this means that a function on three input parameters of the same type will have in-degree exactly one.
 
 In addition, the edges are weighted by their cost of inclusion, a subjective measure that guides the search towards desirable traits, such as smaller expressions or lower memory usage.
 
@@ -59,15 +59,14 @@ prescribed cost bound $C_{now}$.
 \end{procedure}
 The procedure operates recursively, and it checks to see whether the
 computation has been completed before by referring to the \Snips
-table. To carry out the computation for $\tau$ it looks at its
-neighbors in the graph that correspond to its out-edges, those
-indicating a ``constructed-from'' relationship. As long as that
-function would not immediately break the cost constraint, it attempts
-to satisfy all of its argument types recursively. This only needs to
-be done once for each type. Then, for every possible set of arguments
-to the function, it adds the allowable expressions to the results, and
-pushes out the worst few results if the size of the set would exceed
-$N$.
+table. To compute candidates for $\tau \in V_t$, the procedure looks
+at its outgoing neighbors, which are all functions whose output is of type $\tau$.
+For each function that would not immediately break the cost constraint,
+\label{proc:getExpression} attempts to satisfy all of its argument types recursively.
+This only needs to be done once for each type. Then, for every possible
+set of arguments to the function, it adds the allowable expressions to the
+results, and pushes out the worst few results if the size of the set would
+exceed $N$.
 
 \subsection{Repair Algorithm}
 \label{sec:algorithm:repair}
