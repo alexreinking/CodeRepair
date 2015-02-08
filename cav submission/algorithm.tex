@@ -62,7 +62,7 @@ computation has been completed before by referring to the \Snips
 table. To compute candidates for $\tau \in V_t$, the procedure looks
 at its outgoing neighbors, which are all functions whose output is of type $\tau$.
 For each function that would not immediately break the cost constraint,
-\label{proc:getExpression} attempts to satisfy all of its argument types recursively.
+\ref{proc:getExpression} attempts to satisfy all of its argument types recursively.
 This only needs to be done once for each type. Then, for every possible
 set of arguments to the function, it adds the allowable expressions to the
 results, and pushes out the worst few results if the size of the set would

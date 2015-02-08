@@ -37,7 +37,7 @@ public class CodeSynthesisTest {
             testGraph.addLocalVariable("inStream1", "java.io.InputStream");
             testGraph.addLocalVariable("inStream2", "java.io.InputStream");
             testGraph.addLocalVariable("outStream", "java.io.OutputStream");
-            synthesis.enforce("javax.swing.tree.DefaultMutableTreeNode", new CodeSnippet("(top)", 0.0));
+//            synthesis.enforce("javax.swing.tree.DefaultMutableTreeNode", new CodeSnippet("(top)", 0.0));
         }
     }
 
