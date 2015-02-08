@@ -37,7 +37,7 @@ public class CodeSynthesisTest {
             testGraph.addLocalVariable("inStream1", "java.io.InputStream");
             testGraph.addLocalVariable("inStream2", "java.io.InputStream");
             testGraph.addLocalVariable("outStream", "java.io.OutputStream");
-            synthesis.strongEnforce("javax.swing.tree.DefaultMutableTreeNode", new CodeSnippet("top", 0.0));
+            synthesis.enforce("javax.swing.tree.DefaultMutableTreeNode", new CodeSnippet("(top)", 0.0));
         }
     }
 
@@ -83,8 +83,8 @@ public class CodeSynthesisTest {
     }
 
     @Test
-    public void testJScrollPane() throws Exception {
-        testSynthesis("javax.swing.JScrollPane", "new JScrollPane(new JTree(top))");
+    public void testJTree() throws Exception {
+        testSynthesis("javax.swing.JTree", "new JTree((top))");
     }
 
     @Test
