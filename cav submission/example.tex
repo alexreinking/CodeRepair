@@ -3,18 +3,18 @@
 
 \subsection{Code Correction: Single Error}
 \label{sec:examples:single}
-The following simple example, adapted from \cite{GveroETAL13CompleteCompletionTypesWeights}, illustrates how our algorithm handles an expression that does not compile. Consider the following program fragment:
+The following simple example, adapted from \cite{GveroETAL13CompleteCompletionTypesWeights}, illustrates how our algorithm handles an expression that does not compile.
 \begin{lstlisting}
   String body = "email.txt"; String sig = "sign.txt";
   SequenceInputStream seqStream = new SequenceInputStream(body, sig); // error
 \end{lstlisting}
-Here, the developer has given the \lstinline{SequenceInputStream} constructor two strings, even though none of its overloads accept those arguments. Still, we can recognize the intent of the intended expression. To preserve this intent, our algorithm should construct an expression that maintains the relative position of the original arguments. The corrected expression should favor reusing the well-typed subexpressions, such as the \lstinline{body} and \lstinline{sig} variables in their corresponding sub-expression trees. Our algorithm finds all such constructible expressions from the visible declarations in the current scope. The results are well-typed and ranked according to a metric that favors resemblance to the starting expression.
+Here, the developer has given the \lstinline{SequenceInputStream} constructor two strings, even though none of its overloads accept those arguments. Still, we can recognize the intent of the ill-typed expression. To preserve this intent, our algorithm constructs a code snippet that maintains the relative position of the original arguments. The corrected expression should favor reusing the well-typed sub-expressions, such as the \lstinline{body} and \lstinline{sig} variables in their corresponding sub-expression trees. Our algorithm finds all such constructible expressions from the visible declarations in the current scope. The results are well-typed and ranked according to a metric that favors resemblance to the starting expression.
 
 In this case, the returned expression with the highest score is \lstinline{new SequenceInputStream(new FileInputStream(body), new FileInputStream(sig))}, which precisely reflects the programmer's intent.
 
 \subsection{Code Correction: Multiple Errors}
 \label{sec:examples:multiple}
-Sometimes, an ill-typed expression poorly reflects the structure of the desired expression, while still retaining other useful information. Often, the correct structure is obscured by passing too many or too few arguments arguments to a function, or by passing them in the wrong order.
+Sometimes, an ill-typed expression might poorly reflect the structure of the desired expression, while still retaining other useful information. This is the case when the correct structure is obscured by passing too many or too few arguments to a function, or by passing them in the wrong order.
 
 The following code fragment uses an extensive number of calls to the standard Java API with the intention to read a compressed file though a buffered stream. The developer attempts to instantiate an \lstinline{InputStream} object:
 \begin{lstlisting}
@@ -37,4 +37,4 @@ new BufferedInputStream(new DeflaterInputStream(new FileInputStream(fileName),
   new Deflater(compLevel, true)), buffSize);
 \end{lstlisting}
 
-These examples show how our algorithm efficiently searches through a large number of possible repair expressions, and guides that procedure according to an appropriate metric that values shorter distances between the given expression and the corrected expression.
+Our goal with these examples is to show how our algorithm efficiently searches through a large number of possible repair expressions, and guides that procedure according to an appropriate metric that values shorter distances between the given expression and the corrected expression.
