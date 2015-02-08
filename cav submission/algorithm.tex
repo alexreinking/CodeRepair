@@ -120,8 +120,8 @@ Write \Expr as \Expr$(x_1, \ldots, x_k)$ where $x_i$ are its subexpressions of t
 \caption{Repair Algorithm}\label{proc:repair}
 \end{algorithm}
 Although this algorithm, as described, returns up to $N$ possible
-repairs, in our preliminary implementation, we found that the first
-result was always the most correct, so we speculate that setting $N=1$ might be
+repairs, in our preliminary implementation, the first returned
+result was mostly the correct one, so we speculate that setting $N$ really low might be
 acceptable in a practical setting.
 
 \iffalse
