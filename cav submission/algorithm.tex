@@ -9,7 +9,7 @@ In addition, the edges are weighted by their cost of inclusion, a subjective mea
 
 \subsection{Synthesis Procedure}
 \label{sec:algorithm:synthesis}
-We now describe the synthesis portion of our algorithm, Algorithm~\ref{proc:synthesize}. The algorithm takes as input the synthesis graph $G=(V_t \cup V_f, E)$, a type $\tau$, and some additional arguments. It returns a list of expressions of type $\tau$.
+We now describe the synthesis portion of our algorithm, Algorithm~\ref{proc:synthesize}. The algorithm takes as input the synthesis graph $G=(V_t \cup V_f, E)$, a type $\tau$, a cost limit $C_{max}$, and the number of expressions to synthesize $N$. It returns a list of expressions of type $\tau$.
 \SetKwData{Snips}{snips}
 \begin{algorithm}[hbt]
 \SetKwData{Exprs}{exprs}

@@ -17,10 +17,10 @@ import java.util.Set;
 public class CodeSynthesisTest {
     private static final double COST_LIMIT = 4.5;
     private static final int REQUESTED = 10;
-    private static final int N_TRIALS = 1;
-    private CodeSynthesis synthesis = null;
+    private static final int N_TRIALS = 50;
     final private static String inFile = "./resources/rt.javap";
     final private static String graphFile = "./resources/graph.ser";
+    private CodeSynthesis synthesis = null;
     private SynthesisGraph testGraph;
 
     @Before
@@ -37,22 +37,13 @@ public class CodeSynthesisTest {
             testGraph.addLocalVariable("inStream1", "java.io.InputStream");
             testGraph.addLocalVariable("inStream2", "java.io.InputStream");
             testGraph.addLocalVariable("outStream", "java.io.OutputStream");
+            synthesis.strongEnforce("javax.swing.tree.DefaultMutableTreeNode", new CodeSnippet("top", 0.0));
         }
     }
 
-    private void measureBallSize(String type, double costLimit) {
-        ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> iterator
-                = new ClosestFirstIterator<>(testGraph, testGraph.getTypeByName(type), costLimit);
-
-        Set<JavaGraphNode> vertices = new HashSet<>();
-        while (iterator.hasNext())
-            vertices.add(iterator.next());
-
-        DirectedSubgraph<JavaGraphNode, DefaultWeightedEdge> subgraph
-                = new DirectedSubgraph<>(testGraph, vertices, testGraph.edgeSet());
-
-        System.out.printf("(Ball) |V| = %d |E| = %d%n", subgraph.vertexSet().size(), subgraph.edgeSet().size());
-        System.out.printf("(Graph) |V| = %d |E| = %d%n", testGraph.vertexSet().size(), testGraph.edgeSet().size());
+    @Test
+    public void testBufferedReader() throws Exception {
+        testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))");
     }
 
     private void testSynthesis(String type, String desiredCode) throws InterruptedException {
@@ -76,9 +67,24 @@ public class CodeSynthesisTest {
         Assert.assertTrue("Synthesis did not return the desired segment", passed[0]);
     }
 
+    private void measureBallSize(String type, double costLimit) {
+        ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> iterator
+                = new ClosestFirstIterator<>(testGraph, testGraph.getTypeByName(type), costLimit);
+
+        Set<JavaGraphNode> vertices = new HashSet<>();
+        while (iterator.hasNext())
+            vertices.add(iterator.next());
+
+        DirectedSubgraph<JavaGraphNode, DefaultWeightedEdge> subgraph
+                = new DirectedSubgraph<>(testGraph, vertices, testGraph.edgeSet());
+
+        System.out.printf("(Ball) |V| = %d |E| = %d%n", subgraph.vertexSet().size(), subgraph.edgeSet().size());
+        System.out.printf("(Graph) |V| = %d |E| = %d%n", testGraph.vertexSet().size(), testGraph.edgeSet().size());
+    }
+
     @Test
-    public void testBufferedReader() throws Exception {
-        testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))");
+    public void testJScrollPane() throws Exception {
+        testSynthesis("javax.swing.JScrollPane", "new JScrollPane(new JTree(top))");
     }
 
     @Test
