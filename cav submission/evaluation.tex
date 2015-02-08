@@ -6,19 +6,19 @@ We empirically evaluated our approach on some typical-use benchmarks. Table~\ref
 \begin{table*}[hbt]
   \centering
   %\renewcommand{\arraystretch}{1.00}
-  \begin{tabularx}{\linewidth}{| X | l | l | l | l | l |}
+  \begin{tabularx}{\linewidth}{| X | l  | l | l | l | l | l |}
     \hline
-    \textbf{Benchmark} & \textbf{Type} & \textbf{Time (ms)} & \textbf{Nodes} & \textbf{Edges} & \textbf{Rank} \\ \hline
-	\texttt{SequenceInputStream} & Synthesis & $<$ 1 & 141   & 149   & 1 \\ \hline
-	\texttt{SequenceInputStream} & Repair    & 4   & --    & --    & 1 \\ \hline
-    \texttt{BufferedReader}      & Synthesis & 16  & 3119  & 4225  & 2 \\ \hline
-    \texttt{BufferedReader}      & Repair    & 18  & --    & --    & 1 \\ \hline
-    \texttt{AudioClip} (applet)  & Synthesis & 27  & 6808  & 9291  & 2 \\ \hline
-    \texttt{InputStreamReader}   & Synthesis & 29  & 7064  & 9673  & 1 \\ \hline
-    \texttt{FileInputStream}     & Synthesis & 38  & 7832  & 10516 & 1 \\ \hline
-    \texttt{Matcher} (regex)     & Synthesis & 93  & 14505 & 24740 & 1 \\ \hline
-    \texttt{InputStream} (from byte array) & Synthesis & 116 & 13163  & 20581  & 2 \\ \hline
-    \texttt{DeflaterInputStream} & Repair    & 380 & -- & -- & 1 \\ \hline
+    \textbf{Benchmark} & \textbf{Type} & \textbf{Size=} & \textbf{Time (ms)} & \textbf{Nodes} & \textbf{Edges} & \textbf{Rank} \\ \hline
+	\texttt{SequenceInputStream} & Synthesis & K & $<$ 1 & 141   & 149   & 1 \\ \hline
+	\texttt{SequenceInputStream} & Repair    & K & 4   & --    & --    & 1 \\ \hline
+    \texttt{BufferedReader}      & Synthesis & K & 16  & 3119  & 4225  & 2 \\ \hline
+    \texttt{BufferedReader}      & Repair    & K & 18  & --    & --    & 1 \\ \hline
+    \texttt{AudioClip} (applet)  & Synthesis & K & 27  & 6808  & 9291  & 2 \\ \hline
+    \texttt{InputStreamReader}   & Synthesis & K & 29  & 7064  & 9673  & 1 \\ \hline
+    \texttt{FileInputStream}     & Synthesis & K & 38  & 7832  & 10516 & 1 \\ \hline
+    \texttt{Matcher} (regex)     & Synthesis & K & 93  & 14505 & 24740 & 1 \\ \hline
+    \texttt{InputStream} (from byte array) & Synthesis & K & 116 & 13163  & 20581  & 2 \\ \hline
+    \texttt{DeflaterInputStream} & Repair & K    & 380 & -- & -- & 1 \\ \hline
   \end{tabularx}
   \caption{Typical-use runtimes in various benchmarks. ``Nodes'' and ``Edges'' refer to the size of the searched subgraph, and ``Rank'' indicates the correct expression's position among the results. The entire Java standard library was used to build the graph before running the benchmarks. Each test case was initialized with a small environment consisting of five variables.}
   \label{eval:runtime}
