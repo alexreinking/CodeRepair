@@ -59,8 +59,8 @@ public class RepairMessage implements Plugin {
                         if (TypeKind.ERROR.equals(rhsType.getKind()) && TypeKind.DECLARED.equals(lhsType.getKind())) {
                             if (graph.hasType(lhsType.toString())) {
                                 System.out.println("Winston: info: Error detected! Attempting to repair...");
-                                System.out.printf("Winston: This might work!%n    %s %s = %s;%n",
-                                        lhsType,
+                                System.out.printf("Winston: This might work!%n \t%s %s = %s;%n",
+                                        lhsTypeTree,
                                         node.getName(),
                                         new RepairScanner(trees, getCurrentPath()).scan(rhsTree, null));
                             }
