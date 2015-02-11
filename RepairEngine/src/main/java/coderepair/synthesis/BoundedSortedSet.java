@@ -1,7 +1,9 @@
 package coderepair.synthesis;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.NavigableSet;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Created by alexreinking on 11/11/14.

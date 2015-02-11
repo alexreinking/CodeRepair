@@ -1,4 +1,4 @@
-package coderepair.sourcescanner;
+package coderepair.oracle;
 
 import coderepair.SynthesisGraph;
 import coderepair.analysis.JavaFunctionNode;

@@ -50,7 +50,7 @@ public class GraphLoader {
     public static SynthesisGraph buildGraph(String declarationsFileName, String... allowedPackages) {
         return loadFile(declarationsFileName)
                 .flatMap(GraphLoader::parse)
-                .map(j -> GraphLoader.construct(j, allowedPackages))
+                .map(j -> construct(j, allowedPackages))
                 .get();
     }
 
