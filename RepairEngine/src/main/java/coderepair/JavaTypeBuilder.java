@@ -13,6 +13,10 @@ import java.util.HashMap;
 class JavaTypeBuilder implements Serializable {
     private final HashMap<String, JavaTypeNode> classTypes = new HashMap<>();
 
+    boolean hasType(String qualifiedName) {
+        return classTypes.containsKey(qualifiedName);
+    }
+
     JavaTypeNode getTypeByName(String qualifiedName) {
         if (classTypes.containsKey(qualifiedName))
             return classTypes.get(qualifiedName);

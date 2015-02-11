@@ -64,6 +64,10 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
                 .export(outputStream, graph);
     }
 
+    public boolean hasType(String qualifiedName) {
+        return nodeManager.hasType(qualifiedName);
+    }
+
     public JavaTypeNode getTypeByName(String qualifiedName) {
         return nodeManager.getTypeByName(qualifiedName);
     }

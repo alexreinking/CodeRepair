@@ -3,11 +3,12 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOError;
 import java.io.IOException;
+import java.io.LineNumberReader;
 
 public class corpus {
     public static void main(String[] args) {
         try {
-            BufferedReader br = new BufferedReader(new FileReader("./data/rt.javap"));
+            BufferedReader br = args[0]; //new LineNumberReader("./data/rt.javap");
             for (String s = br.readLine(); s != null; s = br.readLine()) {
                 System.out.println(s);
             }

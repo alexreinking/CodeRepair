@@ -1,4 +1,4 @@
-package coderepair.oracle;
+package coderepair.plugin;
 
 import coderepair.SynthesisGraph;
 import coderepair.analysis.JavaFunctionNode;
@@ -36,7 +36,7 @@ public class SourceStatistics implements Plugin {
 
     @Override
     public String getName() {
-        return "coderepair.sourcescanner.SourceStatistics";
+        return "coderepair.plugin.SourceStatistics";
     }
 
     @Override
