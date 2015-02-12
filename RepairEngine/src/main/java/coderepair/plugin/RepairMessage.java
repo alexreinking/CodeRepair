@@ -4,10 +4,7 @@ import coderepair.SynthesisGraph;
 import coderepair.synthesis.CodeSnippet;
 import coderepair.synthesis.CodeSynthesis;
 import coderepair.util.GraphLoader;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
 import javax.lang.model.type.TypeKind;
@@ -54,15 +51,19 @@ public class RepairMessage implements Plugin {
             ExpressionTree rhsTree = node.getInitializer();
             Tree lhsTypeTree = node.getType();
 
-            getTypeMirror(rhsTree).ifPresent((TypeMirror rhsType) ->
-                    getTypeMirror(lhsTypeTree).ifPresent((TypeMirror lhsType) -> {
+            getTypeMirror(rhsTree).ifPresent(rhsType ->
+                    getTypeMirror(lhsTypeTree).ifPresent(lhsType -> {
                         if (TypeKind.ERROR.equals(rhsType.getKind()) && TypeKind.DECLARED.equals(lhsType.getKind())) {
                             if (graph.hasType(lhsType.toString())) {
                                 System.out.println("Winston: info: Error detected! Attempting to repair...");
-                                System.out.printf("Winston: This might work!%n \t%s %s = %s;%n",
-                                        lhsTypeTree,
-                                        node.getName(),
-                                        new RepairScanner(trees, getCurrentPath()).scan(rhsTree, null));
+                                TypedSnippet scan = new RepairScanner(trees, getCurrentPath()).scan(rhsTree, null);
+                                if (scan == null)
+                                    System.out.println("Winston: warn: Sorry! No repairs found.");
+                                else
+                                    System.out.printf("Winston: This might work!%n \t%s %s = %s;%n",
+                                            lhsTypeTree,
+                                            node.getName(),
+                                            scan);
                             }
                         }
                     }));
@@ -71,7 +72,7 @@ public class RepairMessage implements Plugin {
         }
 
         private Optional<TypeMirror> getTypeMirror(Tree tree) {
-            return Optional.ofNullable(tree).map((Tree t) -> trees.getTypeMirror(new TreePath(getCurrentPath(), tree)));
+            return Optional.ofNullable(tree).map(t -> trees.getTypeMirror(new TreePath(getCurrentPath(), tree)));
         }
     }
 
@@ -104,9 +105,9 @@ public class RepairMessage implements Plugin {
         public TypedSnippet visitNewClass(NewClassTree newClass, Void aVoid) {
             String className = getTypeMirror(newClass.getIdentifier()).map(TypeMirror::toString).get();
 
-            return getTypeMirror(newClass).map((TypeMirror evaluatedType) -> {
+            return getTypeMirror(newClass).map(evaluatedType -> {
                 if (TypeKind.ERROR.equals(evaluatedType.getKind())) {
-                    newClass.getArguments().stream().forEach((ExpressionTree arg) -> {
+                    newClass.getArguments().stream().forEach(arg -> {
                         String type = getTypeMirror(arg).map(TypeMirror::toString).get();
                         String code = arg.toString();
                         if (hasTypeError(arg)) {
@@ -123,13 +124,26 @@ public class RepairMessage implements Plugin {
             }).get();
         }
 
-
         private Optional<TypeMirror> getTypeMirror(Tree tree) {
-            return Optional.ofNullable(tree).map((Tree t) -> trees.getTypeMirror(new TreePath(path, tree)));
+            return Optional.ofNullable(tree).map(t -> trees.getTypeMirror(new TreePath(path, tree)));
         }
 
-        private boolean hasTypeError(Tree tree) {
-            return getTypeMirror(tree).map((TypeMirror t) -> TypeKind.ERROR.equals(t.getKind())).get();
+        private Boolean hasTypeError(Tree tree) {
+            return getTypeMirror(tree).map(t -> TypeKind.ERROR.equals((TypeKind) t.getKind())).get();
+        }
+
+        @Override
+        public TypedSnippet visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
+            System.out.printf("%s: %s%n", getTypeMirror(node).map(TypeMirror::toString).orElse("<no-type>"), node);
+            System.out.printf("%s: %s: %s%n",
+                    getTypeMirror(node.getMethodSelect()).map(TypeMirror::toString).orElse("<no-type>"),
+                    node.getClass().getSimpleName(),
+                    node.getMethodSelect());
+            node.getArguments().stream().forEach(exp ->
+                            System.out.printf("arg: %s: %s%n",
+                                    getTypeMirror(exp).map(TypeMirror::toString).orElse("<no-type>"), exp)
+            );
+            return super.visitMethodInvocation(node, aVoid);
         }
     }
 }
