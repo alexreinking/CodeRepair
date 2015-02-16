@@ -13,6 +13,7 @@ public class CodeRepairTest {
     final private static String inFile = "./resources/rt.javap";
     final private static String graphFile = "./resources/graph.ser";
     private static final Producer<Double> costs = () -> 0.0001 * Math.random();
+    private final double targetConductance = 0.6;
     private SynthesisGraph synthesisGraph = null;
     private CodeSnippet bestSnippet;
 
@@ -48,7 +49,7 @@ public class CodeRepairTest {
         CodeSynthesis synthesis = new CodeSynthesis(synthesisGraph);
 
         /* Stage 1 */
-        bestSnippet = synthesis.synthesize("java.io.FileInputStream", 6.5, 1).first();
+        bestSnippet = synthesis.synthesize("java.io.FileInputStream", targetConductance, 1).first();
 
         System.out.printf("%6f  %s%n", bestSnippet.cost, bestSnippet.code);
         synthesis.strongEnforce("java.io.FileInputStream", new CodeSnippet(bestSnippet.code, costs.produce()));
@@ -57,7 +58,7 @@ public class CodeRepairTest {
         synthesis.strongEnforce("boolean", new CodeSnippet("true", costs.produce()));
         synthesis.strongEnforce("int", new CodeSnippet("compLevel", costs.produce()));
 
-        bestSnippet = synthesis.synthesize("java.util.zip.DeflaterInputStream", 6.5, 1).first();
+        bestSnippet = synthesis.synthesize("java.util.zip.DeflaterInputStream", targetConductance, 1).first();
 
         System.out.printf("%6f  %s%n", bestSnippet.cost, bestSnippet.code);
         synthesis.strongEnforce("java.util.zip.DeflaterInputStream", new CodeSnippet(bestSnippet.code, costs.produce()));
@@ -65,7 +66,7 @@ public class CodeRepairTest {
         /* Stage 3 */
         synthesis.strongEnforce("int", new CodeSnippet("buffSize", costs.produce()));
 
-        bestSnippet = synthesis.synthesize("java.io.BufferedInputStream", 6.5, 1).first();
+        bestSnippet = synthesis.synthesize("java.io.BufferedInputStream", targetConductance, 1).first();
 
         System.out.printf("%6f  %s%n", bestSnippet.cost, bestSnippet.code);
         synthesis.strongEnforce("java.io.BufferedInputStream", new CodeSnippet(bestSnippet.code, costs.produce()));
@@ -88,7 +89,7 @@ public class CodeRepairTest {
         /* Stage 1 */
         synthesis.strongEnforce("java.lang.String", new CodeSnippet("fileName", costs.produce()));
 
-        bestSnippet = synthesis.synthesize("java.io.BufferedReader", 6.5, 10).first();
+        bestSnippet = synthesis.synthesize("java.io.BufferedReader", targetConductance, 10).first();
 
         System.out.printf("%6f  %s%n", bestSnippet.cost, bestSnippet.code);
         synthesis.strongEnforce("java.io.BufferedReader", new CodeSnippet(bestSnippet.code, costs.produce()));
@@ -114,7 +115,7 @@ public class CodeRepairTest {
         synthesis.strongEnforce("java.lang.String", new CodeSnippet("(body)", cost / 2));
         synthesis.strongEnforce("java.lang.String", new CodeSnippet("(sig)", cost));
 
-        bestSnippet = synthesis.synthesize("java.io.SequenceInputStream", 6.5, 10).first();
+        bestSnippet = synthesis.synthesize("java.io.SequenceInputStream", targetConductance, 10).first();
 
         System.out.printf("%6f  %s%n", bestSnippet.cost, bestSnippet.code);
         synthesis.strongEnforce("java.io.SequenceInputStream", new CodeSnippet(bestSnippet.code, costs.produce()));

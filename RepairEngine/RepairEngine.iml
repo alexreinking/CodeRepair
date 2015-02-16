@@ -21,6 +21,5 @@
         <jarDirectory url="file://$MODULE_DIR$/../lib" recursive="false" type="SOURCES" />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="com.github.javaparser:javaparser-core:2.0.0" level="project" />
   </component>
 </module>

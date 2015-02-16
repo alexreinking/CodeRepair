@@ -13,8 +13,8 @@ import java.util.Optional;
 
 public class RepairMessage implements Plugin {
 
-    private final String serializedFile = "/Users/alexreinking/Development/CodeRepair/resources/graph.ser";
-    private final String dataFile = "/Users/alexreinking/Development/CodeRepair/resources/rt.javap";
+    private final String serializedFile = "/home/alex/Development/CodeRepair/resources/graph.ser";
+    private final String dataFile = "/home/alex/Development/CodeRepair/resources/rt.javap";
     private final SynthesisGraph graph = GraphLoader.getGraph(serializedFile, dataFile);
 
     @Override
@@ -117,7 +117,7 @@ public class RepairMessage implements Plugin {
                         }
                         synthesis.strongEnforce(type, new CodeSnippet(code, 0.0001 * Math.random()));
                     });
-                    return new TypedSnippet(synthesis.synthesize(className, 6.5, 5).first().code, className);
+                    return new TypedSnippet(synthesis.synthesize(className, 0.8, 5).first().code, className);
                 } else {
                     return new TypedSnippet(newClass.toString(), className);
                 }

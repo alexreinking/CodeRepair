@@ -5,6 +5,7 @@ import coderepair.analysis.JavaFunctionNode;
 import coderepair.analysis.JavaGraphNode;
 import coderepair.analysis.JavaTypeNode;
 import org.jetbrains.annotations.NotNull;
+import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.traverse.ClosestFirstIterator;
 
@@ -26,7 +27,7 @@ public class CodeSynthesis {
         return enforcedSnippets;
     }
 
-    public SortedSet<CodeSnippet> synthesize(String qualifiedName, double costLimit, int nRequested) {
+    public SortedSet<CodeSnippet> synthesize(String qualifiedName, double targetConductance, int nRequested) {
         synthTable.clear();
         snippetTable.clear();
 
@@ -35,15 +36,45 @@ public class CodeSynthesis {
         Stack<JavaTypeNode> typesByDistance = new Stack<>();
 
         ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> costLimitBall
-                = new ClosestFirstIterator<>(synthesisGraph, requestedType, costLimit);
-        while (costLimitBall.hasNext()) {
+                = new ClosestFirstIterator<>(synthesisGraph, requestedType);
+
+        Set<JavaGraphNode> cut = new HashSet<>();
+        double totalEdges = 0;
+        double edgesInside = 0;
+        double conductance;
+        double costLimit;
+
+        do {
             JavaGraphNode next = costLimitBall.next();
+
+            for (JavaGraphNode nbr : Graphs.successorListOf(synthesisGraph, next)) {
+                totalEdges += synthesisGraph.getWeight(next, nbr);
+                if (cut.contains(nbr))
+                    edgesInside += synthesisGraph.getWeight(next, nbr);
+            }
+
+            for (JavaGraphNode nbr : Graphs.predecessorListOf(synthesisGraph, next)) {
+                totalEdges += synthesisGraph.getWeight(nbr, next);
+                if (cut.contains(nbr))
+                    edgesInside += synthesisGraph.getWeight(nbr, next);
+            }
+
+            cut.add(next);
+            conductance = (totalEdges - 2 * edgesInside) / totalEdges;
+
             if (next instanceof JavaFunctionNode) {
                 JavaTypeNode output = ((JavaFunctionNode) next).getOutput();
                 synthTable.computeIfAbsent(output, t -> new TreeSet<>())
                         .add(new Generator(next, synthesisGraph.getWeight(output, next)));
             } else typesByDistance.push((JavaTypeNode) next);
-        }
+
+            costLimit = costLimitBall.getShortestPathLength(next);
+
+            if (cut.size() > 500 && conductance < targetConductance)
+                break;
+        } while (costLimitBall.hasNext() && cut.size() < synthesisGraph.vertexSet().size() / 2);
+
+        System.out.printf("dynamically chosen cost limit = %s (%d vertices)%n", costLimit, cut.size());
 
         while (!typesByDistance.empty()) {
             JavaTypeNode top = typesByDistance.pop();

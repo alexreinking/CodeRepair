@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class CodeSynthesisTest {
-    private static final double COST_LIMIT = 4.5;
+    private static final double CUT_TARGET = 0.8;
     private static final int REQUESTED = 10;
     private static final int N_TRIALS = 50;
     final private static String inFile = "./resources/rt.javap";
@@ -41,18 +41,13 @@ public class CodeSynthesisTest {
         }
     }
 
-    @Test
-    public void testBufferedReader() throws Exception {
-        testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))");
-    }
-
     private void testSynthesis(String type, String desiredCode) throws InterruptedException {
         final boolean[] passed = {false};
 
         new TimedTask("Synthesis", () -> {
             System.out.println("\n============= " + type + " =============\n");
             for (CodeSnippet snippet : synthesis.synthesize(type,
-                    CodeSynthesisTest.COST_LIMIT, CodeSynthesisTest.REQUESTED)) {
+                    CodeSynthesisTest.CUT_TARGET, CodeSynthesisTest.REQUESTED)) {
                 if (snippet.code.equals(desiredCode)) {
                     System.out.print("* ");
                     passed[0] = true;
@@ -62,7 +57,7 @@ public class CodeSynthesisTest {
         }).times(N_TRIALS).run();
 
         System.out.println("\nSizes:");
-        measureBallSize(type, CodeSynthesisTest.COST_LIMIT);
+        measureBallSize(type, CodeSynthesisTest.CUT_TARGET);
         Thread.sleep(10);
         Assert.assertTrue("Synthesis did not return the desired segment", passed[0]);
     }
@@ -80,6 +75,11 @@ public class CodeSynthesisTest {
 
         System.out.printf("(Ball) |V| = %d |E| = %d%n", subgraph.vertexSet().size(), subgraph.edgeSet().size());
         System.out.printf("(Graph) |V| = %d |E| = %d%n", testGraph.vertexSet().size(), testGraph.edgeSet().size());
+    }
+
+    @Test
+    public void testBufferedReader() throws Exception {
+        testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))");
     }
 
     @Test
