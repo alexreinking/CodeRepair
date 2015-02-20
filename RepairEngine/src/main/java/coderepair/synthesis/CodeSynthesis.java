@@ -35,8 +35,13 @@ public class CodeSynthesis {
         if (requestedType == null) return Collections.emptySortedSet();
         Stack<JavaTypeNode> typesByDistance = new Stack<>();
 
-        ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> costLimitBall
-                = new ClosestFirstIterator<>(synthesisGraph, requestedType);
+        ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> costLimitBall;
+        try {
+            costLimitBall = new ClosestFirstIterator<>(synthesisGraph, requestedType);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Failed to find " + qualifiedName);
+            return Collections.emptySortedSet();
+        }
 
         Set<JavaGraphNode> cut = new HashSet<>();
         double totalEdges = 0;
@@ -74,7 +79,7 @@ public class CodeSynthesis {
                 break;
         } while (costLimitBall.hasNext() && cut.size() < synthesisGraph.vertexSet().size() / 2);
 
-        System.out.printf("dynamically chosen cost limit = %s (%d vertices)%n", costLimit, cut.size());
+//        System.out.printf("dynamically chosen cost limit = %s (%d vertices)%n", costLimit, cut.size());
 
         while (!typesByDistance.empty()) {
             JavaTypeNode top = typesByDistance.pop();

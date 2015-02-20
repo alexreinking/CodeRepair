@@ -9,12 +9,14 @@ import com.sun.source.util.*;
 
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.util.HashSet;
 import java.util.Optional;
 
 public class RepairMessage implements Plugin {
 
-    private final String serializedFile = "/home/alex/Development/CodeRepair/resources/graph.ser";
-    private final String dataFile = "/home/alex/Development/CodeRepair/resources/rt.javap";
+    private static final String HOME_DIR = System.getProperty("user.home");
+    private final String serializedFile = HOME_DIR + "/.winston/resources/graph.ser";
+    private final String dataFile = HOME_DIR + "/.winston/resources/rt.javap";
     private final SynthesisGraph graph = GraphLoader.getGraph(serializedFile, dataFile);
 
     @Override
@@ -56,14 +58,24 @@ public class RepairMessage implements Plugin {
                         if (TypeKind.ERROR.equals(rhsType.getKind()) && TypeKind.DECLARED.equals(lhsType.getKind())) {
                             if (graph.hasType(lhsType.toString())) {
                                 System.out.println("Winston: info: Error detected! Attempting to repair...");
-                                TypedSnippet scan = new RepairScanner(trees, getCurrentPath()).scan(rhsTree, null);
-                                if (scan == null)
+
+                                HashSet<TypedSnippet> snips = new HashSet<>();
+                                for (double c = 0.9; c >= 0.4; c -= 0.1) {
+                                    TypedSnippet scan = new RepairScanner(trees, getCurrentPath(), c).scan(rhsTree, null);
+                                    if (scan != null && !snips.contains(scan)) {
+                                        snips.add(scan);
+                                        if (snips.size() == 1)
+                                            System.out.println("Winston: info: try one of these:");
+                                        System.out.printf("\t[%2f] %s %s = %s;%n",
+                                                c,
+                                                lhsTypeTree,
+                                                node.getName(),
+                                                scan);
+                                    }
+                                }
+
+                                if (snips.isEmpty())
                                     System.out.println("Winston: warn: Sorry! No repairs found.");
-                                else
-                                    System.out.printf("Winston: This might work!%n \t%s %s = %s;%n",
-                                            lhsTypeTree,
-                                            node.getName(),
-                                            scan);
                             }
                         }
                     }));
@@ -89,16 +101,34 @@ public class RepairMessage implements Plugin {
         public String toString() {
             return code;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            TypedSnippet that = (TypedSnippet) o;
+
+            return code.equals(that.code) && type.equals(that.type);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = type.hashCode();
+            result = 31 * result + code.hashCode();
+            return result;
+        }
     }
 
     private class RepairScanner extends TreeScanner<TypedSnippet, Void> {
         private final Trees trees;
-        CodeSynthesis synthesis = new CodeSynthesis(graph);
         private TreePath path;
+        private double conductanceTarget;
 
-        public RepairScanner(Trees trees, TreePath path) {
+        public RepairScanner(Trees trees, TreePath path, double conductanceTarget) {
             this.trees = trees;
             this.path = path;
+            this.conductanceTarget = conductanceTarget;
         }
 
         @Override
@@ -107,6 +137,7 @@ public class RepairMessage implements Plugin {
 
             return getTypeMirror(newClass).map(evaluatedType -> {
                 if (TypeKind.ERROR.equals(evaluatedType.getKind())) {
+                    CodeSynthesis synthesis = new CodeSynthesis(graph);
                     newClass.getArguments().stream().forEach(arg -> {
                         String type = getTypeMirror(arg).map(TypeMirror::toString).get();
                         String code = arg.toString();
@@ -117,7 +148,7 @@ public class RepairMessage implements Plugin {
                         }
                         synthesis.strongEnforce(type, new CodeSnippet(code, 0.0001 * Math.random()));
                     });
-                    return new TypedSnippet(synthesis.synthesize(className, 0.8, 5).first().code, className);
+                    return new TypedSnippet(synthesis.synthesize(className, conductanceTarget, 5).first().code, className);
                 } else {
                     return new TypedSnippet(newClass.toString(), className);
                 }

@@ -49,10 +49,15 @@ public class SynthesisContributor extends CompletionContributor {
     );
 
     private static final ElementPattern<? extends PsiElement> ASSIGNMENT_PATTERN =
-            psiElement().withParent(ASSIGNMENT_PARENT).withSuperParent(2, or(
-                            psiElement(PsiAssignmentExpression.class),
-                            psiElement(PsiLocalVariable.class).inside(PsiDeclarationStatement.class))
-            ).inside(PsiMethod.class);
+            psiElement()
+                    .withParent(ASSIGNMENT_PARENT)
+                    .withSuperParent(2, or(
+                                    psiElement(PsiAssignmentExpression.class),
+                                    psiElement(PsiLocalVariable.class)
+                                            .inside(PsiDeclarationStatement.class)
+                            )
+                    )
+                    .inside(PsiMethod.class);
 
     private static final ElementPattern<? extends PsiElement> METHOD_PARAM_PATTERN =
             psiElement().withSuperParent(3, PsiMethodCallExpressionImpl.class);
@@ -73,7 +78,7 @@ public class SynthesisContributor extends CompletionContributor {
                 if (ctx != null) {
                     addLocalsToGraph(synthesis, ctx, parameters);
 
-                    for (CodeSnippet codeSnippet : synthesis.synthesize(ctx.typeName, 4.5, 10)) {
+                    for (CodeSnippet codeSnippet : synthesis.synthesize(ctx.typeName, 0.8, 10)) {
                         LookupElementBuilder lookupElement = LookupElementBuilder.create(codeSnippet.code);
                         lookupElement.putUserData(SNIPPET_ATTR, codeSnippet);
                         resultSet.addElement(lookupElement);

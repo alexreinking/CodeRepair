@@ -12,9 +12,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.Optional;
 
-/**
- * Created by ajr64 on 11/13/14.
- */
 public class GraphLoader {
     private static Optional<ANTLRFileStream> loadFile(String fileName) {
         try {
@@ -39,6 +36,7 @@ public class GraphLoader {
              ObjectInputStream in = new ObjectInputStream(fileInput)) {
             return Optional.of((SynthesisGraph) in.readObject());
         } catch (IOException | ClassNotFoundException e) {
+            System.err.println(e.getMessage());
             return Optional.empty();
         }
     }
