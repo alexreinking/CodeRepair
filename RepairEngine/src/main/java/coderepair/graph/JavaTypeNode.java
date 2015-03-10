@@ -1,4 +1,4 @@
-package coderepair.analysis;
+package coderepair.graph;
 
 import java.io.Serializable;
 import java.util.regex.Matcher;

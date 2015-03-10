@@ -1,6 +1,6 @@
 package coderepair.weighting;
 
-import coderepair.SynthesisGraph;
+import coderepair.graph.SynthesisGraph;
 
 @FunctionalInterface
 public interface GraphWeighter {

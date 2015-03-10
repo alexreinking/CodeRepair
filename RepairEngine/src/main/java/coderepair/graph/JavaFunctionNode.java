@@ -1,26 +1,24 @@
-package coderepair.analysis;
-
-import coderepair.synthesis.CodeSnippet;
-import coderepair.synthesis.types.JavaFunctionSynthesizer;
+package coderepair.graph;
 
 import java.io.Serializable;
 import java.util.*;
 
 public class JavaFunctionNode extends JavaGraphNode implements Serializable {
-    private final JavaFunctionSynthesizer synthesizer;
+
     private final String functionName;
     private final List<JavaTypeNode> signature;
     private final HashSet<JavaTypeNode> inputs = new HashSet<>();
     private final JavaTypeNode output;
+    private final Role role;
     private boolean isStatic = false;
 
     public JavaFunctionNode(String name, Collection<JavaTypeNode> formals,
-                            JavaTypeNode output, JavaFunctionSynthesizer synthesizer) {
+                            JavaTypeNode output, Role role) {
         StringJoiner args = new StringJoiner(" x ");
         for (JavaTypeNode formal : formals) args.add(formal.getName());
         inputs.addAll(formals);
 
-        this.synthesizer = synthesizer;
+        this.role = role;
         this.output = output;
         this.functionName = name;
         this.signature = new ArrayList<>(formals);
@@ -55,7 +53,14 @@ public class JavaFunctionNode extends JavaGraphNode implements Serializable {
         return signature;
     }
 
-    public String synthesize(CodeSnippet[] args) {
-        return synthesizer.synthesizeFromArguments(functionName, args);
+    public Role getRole() {
+        return role;
+    }
+
+    public enum Role {
+        ClassCast,
+        Constructor,
+        Method,
+        Value
     }
 }

@@ -1,6 +1,6 @@
 package edu.yale.cpsc.winston;
 
-import coderepair.SynthesisGraph;
+import coderepair.graph.SynthesisGraph;
 import coderepair.synthesis.CodeSnippet;
 import coderepair.synthesis.CodeSynthesis;
 import com.intellij.codeInsight.completion.*;

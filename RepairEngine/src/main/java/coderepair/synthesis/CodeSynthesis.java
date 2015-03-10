@@ -1,9 +1,9 @@
 package coderepair.synthesis;
 
-import coderepair.SynthesisGraph;
-import coderepair.analysis.JavaFunctionNode;
-import coderepair.analysis.JavaGraphNode;
-import coderepair.analysis.JavaTypeNode;
+import coderepair.graph.JavaFunctionNode;
+import coderepair.graph.JavaGraphNode;
+import coderepair.graph.JavaTypeNode;
+import coderepair.graph.SynthesisGraph;
 import org.jetbrains.annotations.NotNull;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -21,10 +21,6 @@ public class CodeSynthesis {
 
     public CodeSynthesis(SynthesisGraph synthesisGraph) {
         this.synthesisGraph = synthesisGraph;
-    }
-
-    public Map<JavaTypeNode, SortedSet<CodeSnippet>> getEnforcedSnippets() {
-        return enforcedSnippets;
     }
 
     public SortedSet<CodeSnippet> synthesize(String qualifiedName, double targetConductance, int nRequested) {
@@ -140,9 +136,9 @@ public class CodeSynthesis {
     void addFunctionPossibilities(
             SortedSet<CodeSnippet> snippets, JavaFunctionNode functionType,
             double currentCost, List<SortedSet<CodeSnippet>> synths,
-            int pos, CodeSnippet paramArray[]) {
+            int pos, CodeSnippet[] paramArray) {
         if (pos == paramArray.length) {
-            String code = functionType.synthesize(paramArray);
+            String code = SnippetBuilder.buildInvocation(functionType, paramArray);
             double div = Math.pow(2.0, allEnforced.stream().filter(s -> code.contains(s.code)).count());
             snippets.add(new CodeSnippet(code, currentCost, div));
         } else {

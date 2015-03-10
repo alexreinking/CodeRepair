@@ -1,8 +1,8 @@
 package coderepair.weighting;
 
-import coderepair.SynthesisGraph;
-import coderepair.analysis.JavaFunctionNode;
-import coderepair.analysis.JavaTypeNode;
+import coderepair.graph.JavaFunctionNode;
+import coderepair.graph.JavaTypeNode;
+import coderepair.graph.SynthesisGraph;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,7 +1,7 @@
 package coderepair.weighting;
 
-import coderepair.SynthesisGraph;
-import coderepair.analysis.JavaFunctionNode;
+import coderepair.graph.JavaFunctionNode;
+import coderepair.graph.SynthesisGraph;
 
 /**
  * Created by alexreinking on 3/9/15.

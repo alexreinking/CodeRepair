@@ -1,6 +1,6 @@
 package coderepair.synthesis;
 
-import coderepair.SynthesisGraph;
+import coderepair.graph.SynthesisGraph;
 import coderepair.util.GraphLoader;
 import com.intellij.util.Producer;
 import org.junit.After;

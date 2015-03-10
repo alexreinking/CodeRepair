@@ -1,7 +1,7 @@
 package coderepair.synthesis;
 
-import coderepair.SynthesisGraph;
-import coderepair.analysis.JavaGraphNode;
+import coderepair.graph.JavaGraphNode;
+import coderepair.graph.SynthesisGraph;
 import coderepair.util.GraphLoader;
 import coderepair.util.TimedTask;
 import org.jgrapht.graph.DefaultWeightedEdge;

@@ -1,5 +1,6 @@
 package coderepair;
 
+import coderepair.graph.SynthesisGraph;
 import coderepair.util.GraphLoader;
 import coderepair.util.TimedTask;
 import coderepair.weighting.NaiveWeighting;

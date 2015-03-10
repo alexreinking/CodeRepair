@@ -1,9 +1,9 @@
 package coderepair.util;
 
-import coderepair.JavapGraphBuilder;
-import coderepair.SynthesisGraph;
 import coderepair.antlr.JavaPLexer;
 import coderepair.antlr.JavaPParser;
+import coderepair.graph.JavapGraphBuilder;
+import coderepair.graph.SynthesisGraph;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
 

@@ -1,8 +1,5 @@
-package coderepair;
+package coderepair.graph;
 
-import coderepair.analysis.JavaFunctionNode;
-import coderepair.analysis.JavaGraphNode;
-import coderepair.analysis.JavaTypeNode;
 import coderepair.antlr.JavaPBaseVisitor;
 import org.antlr.v4.runtime.misc.NotNull;
 
@@ -17,7 +14,7 @@ public class JavapGraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     private final HashSet<String> allowedPackages = new HashSet<>();
     private final HashSet<JavaFunctionNode> methods = new HashSet<>();
     private SynthesisGraph synthesisGraph = null;
-    private JavaTypeBuilder nodeManager;
+    private JavaGraphNodeFactory nodeManager;
 
     public JavapGraphBuilder() {
         this(new ArrayList<>());
@@ -34,7 +31,7 @@ public class JavapGraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
 
     @Override
     public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
-        nodeManager = new JavaTypeBuilder();
+        nodeManager = new JavaGraphNodeFactory();
         synthesisGraph = new SynthesisGraph(nodeManager);
 
         List<String> primNames = Arrays.asList("byte", "short", "int", "long", "float", "double", "boolean", "char");

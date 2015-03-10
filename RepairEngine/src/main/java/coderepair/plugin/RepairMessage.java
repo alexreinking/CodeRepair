@@ -1,6 +1,6 @@
 package coderepair.plugin;
 
-import coderepair.SynthesisGraph;
+import coderepair.graph.SynthesisGraph;
 import coderepair.synthesis.CodeSnippet;
 import coderepair.synthesis.CodeSynthesis;
 import coderepair.util.GraphLoader;
