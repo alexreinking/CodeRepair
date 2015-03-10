@@ -1,6 +1,6 @@
 package coderepair.util;
 
-import coderepair.GraphBuilder;
+import coderepair.JavapGraphBuilder;
 import coderepair.SynthesisGraph;
 import coderepair.antlr.JavaPLexer;
 import coderepair.antlr.JavaPParser;
@@ -28,7 +28,7 @@ public class GraphLoader {
     }
 
     private static SynthesisGraph construct(JavaPParser.JavapContext j, String... allowedPackages) {
-        return new GraphBuilder(allowedPackages).visitJavap(j);
+        return new JavapGraphBuilder(allowedPackages).visitJavap(j);
     }
 
     private static Optional<SynthesisGraph> loadGraph(String serializedFileName) {

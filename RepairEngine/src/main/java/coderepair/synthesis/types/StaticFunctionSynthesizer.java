@@ -4,16 +4,13 @@ import coderepair.synthesis.CodeSnippet;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
-public class StaticFunctionSynthesizer extends JavaFunctionSynthesizer implements Serializable {
+public class StaticFunctionSynthesizer implements Serializable, JavaFunctionSynthesizer {
     @Override
-    public String synthesizeFromArguments(String functionName, List<CodeSnippet> formals) {
-        return String.format("%s(%s)", functionName, String.join(", ", getStrings(formals)));
+    public String synthesizeFromArguments(String functionName, CodeSnippet[] formals) {
+        ArrayList<String> args = new ArrayList<>(formals.length);
+        for (CodeSnippet formal : formals) args.add(formal.code);
+        return String.format("%s(%s)", functionName, String.join(", ", args));
     }
 
-    private List<String> getStrings(List<CodeSnippet> snippets) {
-        return new ArrayList<>(snippets.stream().map(snippet -> snippet.code).collect(Collectors.toList()));
-    }
 }

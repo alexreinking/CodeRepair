@@ -5,19 +5,14 @@ import coderepair.synthesis.CodeSnippet;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class MethodSynthesizer extends JavaFunctionSynthesizer implements Serializable {
+public class MethodSynthesizer implements Serializable, JavaFunctionSynthesizer {
     @Override
-    public String synthesizeFromArguments(String functionName, List<CodeSnippet> formals) {
-        if (formals.size() < 1)
+    public String synthesizeFromArguments(String functionName, CodeSnippet[] formals) {
+        if (formals.length < 1)
             throw new IllegalArgumentException("Methods must at least have an owner");
-        List<String> strings = getStrings(formals.subList(1, formals.size()));
-        return String.format("(%s).%s(%s)", formals.get(0).code, functionName, String.join(", ", strings));
-    }
-
-    private List<String> getStrings(List<CodeSnippet> snippets)
-    {
-        return new ArrayList<>(snippets.stream().map(snippet -> snippet.code).collect(Collectors.toList()));
+        List<String> args = new ArrayList<>(formals.length);
+        for (int i = 1; i < formals.length; i++) args.add(formals[i].code);
+        return String.format("(%s).%s(%s)", formals[0].code, functionName, String.join(", ", args));
     }
 }

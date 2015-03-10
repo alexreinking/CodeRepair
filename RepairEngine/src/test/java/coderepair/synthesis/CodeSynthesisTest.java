@@ -17,7 +17,7 @@ import java.util.Set;
 public class CodeSynthesisTest {
     private static final double CUT_TARGET = 0.8;
     private static final int REQUESTED = 10;
-    private static final int N_TRIALS = 50;
+    private static final int N_TRIALS = 1;
     final private static String inFile = "./resources/rt.javap";
     final private static String graphFile = "./resources/graph.ser";
     private CodeSynthesis synthesis = null;

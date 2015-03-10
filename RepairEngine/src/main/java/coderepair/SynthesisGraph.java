@@ -4,40 +4,20 @@ import coderepair.analysis.JavaFunctionNode;
 import coderepair.analysis.JavaGraphNode;
 import coderepair.analysis.JavaTypeNode;
 import org.jgrapht.DirectedGraph;
-import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
-import org.jgrapht.ext.ComponentAttributeProvider;
-import org.jgrapht.ext.DOTExporter;
-import org.jgrapht.ext.IntegerNameProvider;
-import org.jgrapht.ext.VertexNameProvider;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, DefaultWeightedEdge>
         implements Serializable, DirectedGraph<JavaGraphNode, DefaultWeightedEdge> {
-    private static final IntegerNameProvider<JavaGraphNode> idProvider = new IntegerNameProvider<>();
-    private static final VertexNameProvider<JavaGraphNode> nameProvider = node -> {
-        if (node instanceof JavaFunctionNode)
-            return ((JavaFunctionNode) node).getFunctionName();
-        return node.getName();
-    };
-    private static final ComponentAttributeProvider<JavaGraphNode> colorProvider = component -> {
-        if (component instanceof JavaTypeNode) {
-            HashMap<String, String> attrMap = new HashMap<>();
-            attrMap.put("fontcolor", "white");
-            attrMap.put("fillcolor", "blue");
-            attrMap.put("shape", "box");
-            attrMap.put("style", "filled");
-            return attrMap;
-        }
-        return null;
-    };
 
     private final JavaTypeBuilder nodeManager;
     private final ArrayList<JavaGraphNode> currentLocals = new ArrayList<>();
@@ -47,23 +27,10 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         this.nodeManager = nodeManager;
     }
 
-    public ArrayList<JavaGraphNode> getCurrentLocals() {
-        return currentLocals;
-    }
-
-    public void exportToFile(Writer outputStream) {
-        exportToFile(outputStream, this);
-    }
-
     public void serialize(OutputStream outputStream) throws IOException {
         ObjectOutputStream out = new ObjectOutputStream(outputStream);
         out.writeObject(this);
         out.close();
-    }
-
-    public static void exportToFile(Writer outputStream, Graph<JavaGraphNode, DefaultWeightedEdge> graph) {
-        new DOTExporter<JavaGraphNode, DefaultWeightedEdge>(idProvider, nameProvider, null, colorProvider, null)
-                .export(outputStream, graph);
     }
 
     public boolean hasType(String qualifiedName) {

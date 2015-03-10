@@ -3,13 +3,12 @@ package coderepair.synthesis.types;
 import coderepair.synthesis.CodeSnippet;
 
 import java.io.Serializable;
-import java.util.List;
 
-public class FieldSynthesizer extends JavaFunctionSynthesizer implements Serializable {
+public class FieldSynthesizer implements Serializable, JavaFunctionSynthesizer {
     @Override
-    public String synthesizeFromArguments(String functionName, List<CodeSnippet> formals) {
-        if (formals.size() < 1)
+    public String synthesizeFromArguments(String functionName, CodeSnippet[] formals) {
+        if (formals.length < 1)
             throw new IllegalArgumentException("Methods must at least have an owner");
-        return String.format("(%s).%s", formals.get(0).code, functionName);
+        return String.format("(%s).%s", formals[0].code, functionName);
     }
 }

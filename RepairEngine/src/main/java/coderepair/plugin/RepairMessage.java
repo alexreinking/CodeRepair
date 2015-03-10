@@ -41,6 +41,38 @@ public class RepairMessage implements Plugin {
         });
     }
 
+    private class TypedSnippet {
+        public String type;
+        public String code;
+
+        public TypedSnippet(String code, String type) {
+            this.code = code;
+            this.type = type;
+        }
+
+        @Override
+        public String toString() {
+            return code;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            TypedSnippet that = (TypedSnippet) o;
+
+            return code.equals(that.code) && type.equals(that.type);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = type.hashCode();
+            result = 31 * result + code.hashCode();
+            return result;
+        }
+    }
+
     private class RepairInitiator extends TreePathScanner<Object, Void> {
         private final Trees trees;
 
@@ -85,38 +117,6 @@ public class RepairMessage implements Plugin {
 
         private Optional<TypeMirror> getTypeMirror(Tree tree) {
             return Optional.ofNullable(tree).map(t -> trees.getTypeMirror(new TreePath(getCurrentPath(), tree)));
-        }
-    }
-
-    private class TypedSnippet {
-        public String type;
-        public String code;
-
-        public TypedSnippet(String code, String type) {
-            this.code = code;
-            this.type = type;
-        }
-
-        @Override
-        public String toString() {
-            return code;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            TypedSnippet that = (TypedSnippet) o;
-
-            return code.equals(that.code) && type.equals(that.type);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = type.hashCode();
-            result = 31 * result + code.hashCode();
-            return result;
         }
     }
 
@@ -175,6 +175,43 @@ public class RepairMessage implements Plugin {
                                     getTypeMirror(exp).map(TypeMirror::toString).orElse("<no-type>"), exp)
             );
             return super.visitMethodInvocation(node, aVoid);
+        }
+
+        @Override
+        public TypedSnippet scan(final Tree toRepair, Void aVoid) {
+            TreePath methodPath = path, classPath = path;
+            while (methodPath != null && methodPath.getLeaf().getKind() != Tree.Kind.METHOD)
+                methodPath = methodPath.getParentPath();
+
+            while (classPath != null && classPath.getLeaf().getKind() != Tree.Kind.CLASS)
+                classPath = classPath.getParentPath();
+
+            assert methodPath != null;
+            assert classPath != null;
+
+            new TreeScanner<Void, Void>() {
+                private boolean found = false;
+
+                @Override
+                public Void visitVariable(VariableTree node, Void aVoid) {
+                    if (toRepair.equals(node.getInitializer()))
+                        found = true;
+                    else if (!found) {
+                        String type = getTypeMirror(node).map(TypeMirror::toString).orElse("<no-type>");
+                        if (graph.hasType(type)) {
+                            graph.addLocalVariable(node.getName().toString(), type);
+                        } else {
+                            System.err.println("Winston: warn: no data collected for type " + type);
+                        }
+                    }
+
+                    return super.visitVariable(node, aVoid);
+                }
+            }.scan(methodPath, null);
+
+            TypedSnippet scan = super.scan(toRepair, aVoid);
+            graph.resetLocals();
+            return scan;
         }
     }
 }

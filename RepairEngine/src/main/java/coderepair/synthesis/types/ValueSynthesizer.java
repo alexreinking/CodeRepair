@@ -3,12 +3,11 @@ package coderepair.synthesis.types;
 import coderepair.synthesis.CodeSnippet;
 
 import java.io.Serializable;
-import java.util.List;
 
-public class ValueSynthesizer extends JavaFunctionSynthesizer implements Serializable {
+public class ValueSynthesizer implements Serializable, JavaFunctionSynthesizer {
     @Override
-    public String synthesizeFromArguments(String functionName, List<CodeSnippet> formals) {
-        if (formals.size() != 0)
+    public String synthesizeFromArguments(String functionName, CodeSnippet[] formals) {
+        if (formals.length != 0)
             throw new IllegalArgumentException("Values may not take arguments");
         return functionName;
     }

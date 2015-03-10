@@ -7,14 +7,11 @@ import java.util.zip.*;
 import java.util.zip.DeflaterInputStream;
 
 public class corpus {
+    private static final String FILE = "my_file.txt";
+
     public static void main(String[] args) {
         int buffSize = 1024, compLevel = Deflater.BEST_SPEED;
-        String fileName = "compressed.txt";
 
-        String body = "Hello world!";
-        String signature = "Alex";
-
-        InputStream input = new BufferedInputStream(buffSize, new DeflaterInputStream(
-                new FileInputStream(fileName), compLevel, true));
+        BufferedReader br = new BufferedReader();
     }
 }

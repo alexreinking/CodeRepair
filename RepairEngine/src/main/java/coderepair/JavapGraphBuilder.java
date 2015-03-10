@@ -13,29 +13,29 @@ import java.util.List;
 
 import static coderepair.antlr.JavaPParser.*;
 
-public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
+public class JavapGraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     private final HashSet<String> allowedPackages = new HashSet<>();
     private final HashSet<JavaFunctionNode> methods = new HashSet<>();
-    private SynthesisGraph fnFlowGraph = null;
+    private SynthesisGraph synthesisGraph = null;
     private JavaTypeBuilder nodeManager;
 
-    public GraphBuilder() {
+    public JavapGraphBuilder() {
         this(new ArrayList<>());
     }
 
-    public GraphBuilder(List<String> packages) {
+    public JavapGraphBuilder(List<String> packages) {
         allowedPackages.addAll(packages);
         allowedPackages.add("java.lang");
     }
 
-    public GraphBuilder(String[] allowedPackages) {
+    public JavapGraphBuilder(String[] allowedPackages) {
         this(Arrays.asList(allowedPackages));
     }
 
     @Override
     public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
         nodeManager = new JavaTypeBuilder();
-        fnFlowGraph = new SynthesisGraph(nodeManager);
+        synthesisGraph = new SynthesisGraph(nodeManager);
 
         List<String> primNames = Arrays.asList("byte", "short", "int", "long", "float", "double", "boolean", "char");
         for (String primType : primNames) {
@@ -45,22 +45,22 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
 
         ctx.classDeclaration().forEach(this::visitClassDeclaration);
 
-        for (JavaFunctionNode method : methods) {
-            fnFlowGraph.addVertex(method);
-            fnFlowGraph.setEdgeWeight(fnFlowGraph.addEdge(method.getOutput(), method), costForFunction(method));
+        methods.stream().forEach(method -> {
+            synthesisGraph.addVertex(method);
+            synthesisGraph.addEdge(method.getOutput(), method);
 
             for (JavaGraphNode inType : method.getInputs())
-                fnFlowGraph.setEdgeWeight(fnFlowGraph.addEdge(method, inType), 0.0);
-        }
+                synthesisGraph.addEdge(method, inType);
+        });
 
-        return fnFlowGraph;
+        return synthesisGraph;
     }
 
     private boolean addTypeToGraph(JavaTypeNode type) {
         if (type.getName().contains("$"))
             return false;
         if (type.isPrimitive()) {
-            fnFlowGraph.addVertex(type);
+            synthesisGraph.addVertex(type);
             return true;
         }
         String packageName = type.getPackageName();
@@ -68,18 +68,10 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
             return false;
         for (String okPackage : allowedPackages)
             if (packageName.startsWith(okPackage) || allowedPackages.size() == 1) {
-                fnFlowGraph.addVertex(type);
+                synthesisGraph.addVertex(type);
                 return true;
             }
         return false;
-    }
-
-    private double costForFunction(JavaFunctionNode method) {
-        if (method.getFunctionName().startsWith("new"))
-            return 1 + method.getTotalFormals();
-        else if (method.getFunctionName().equals("<cast>"))
-            return 0.01;
-        return 1 + (double) method.getTotalFormals() / 2.0;
     }
 
     @Override
@@ -153,6 +145,6 @@ public class GraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                 }
             }
         }
-        return fnFlowGraph;
+        return synthesisGraph;
     }
 }
