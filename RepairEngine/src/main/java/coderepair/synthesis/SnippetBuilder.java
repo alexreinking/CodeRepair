@@ -13,7 +13,7 @@ public class SnippetBuilder {
         String functionName = fn.getFunctionName();
         String snippet = "";
 
-        switch (fn.getRole()) {
+        switch (fn.getKind()) {
             case ClassCast:
                 if (args.length != 1)
                     throw new IllegalArgumentException("Error! Can only cast exactly one type to another");
@@ -22,7 +22,7 @@ public class SnippetBuilder {
 
             case Constructor:
                 for (CodeSnippet arg : args) formals.add(arg.code);
-                snippet = String.format("%s(%s)", functionName, String.join(", ", formals));
+                snippet = String.format("new %s(%s)", functionName, String.join(", ", formals));
                 break;
 
             case Method:

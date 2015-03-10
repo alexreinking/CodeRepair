@@ -2,6 +2,8 @@ package coderepair.synthesis;
 
 import coderepair.graph.JavaGraphNode;
 import coderepair.graph.SynthesisGraph;
+import coderepair.synthesis.trees.ExpressionTree;
+import coderepair.synthesis.valuations.AdditiveValuator;
 import coderepair.util.GraphLoader;
 import coderepair.util.TimedTask;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -29,7 +31,7 @@ public class CodeSynthesisTest {
             testGraph = GraphLoader.getGraph(graphFile, inFile);
             if (testGraph == null) throw new RuntimeException("Could not load graph");
 
-            synthesis = new CodeSynthesis(testGraph);
+            synthesis = new CodeSynthesis(testGraph, new ExpressionTreeBuilder(new AdditiveValuator(testGraph)));
 
             testGraph.resetLocals();
             testGraph.addLocalVariable("fileName", "java.lang.String");
@@ -46,13 +48,13 @@ public class CodeSynthesisTest {
 
         new TimedTask("Synthesis", () -> {
             System.out.println("\n============= " + type + " =============\n");
-            for (CodeSnippet snippet : synthesis.synthesize(type,
+            for (ExpressionTree snippet : synthesis.synthesize(type,
                     CodeSynthesisTest.CUT_TARGET, CodeSynthesisTest.REQUESTED)) {
-                if (snippet.code.equals(desiredCode)) {
+                if (snippet.asExpression().equals(desiredCode)) {
                     System.out.print("* ");
                     passed[0] = true;
                 }
-                System.out.printf("%6f  %s%n", snippet.cost, snippet.code);
+                System.out.printf("%6f  %s%n", snippet.getCost(), snippet.asExpression());
             }
         }).times(N_TRIALS).run();
 
@@ -105,6 +107,16 @@ public class CodeSynthesisTest {
     @Test
     public void testMatcher() throws Exception {
         testSynthesis("java.util.regex.Matcher", "(Pattern.compile(fileName)).matcher(inputText)");
+    }
+
+    @Test
+    public void testPattern() throws Exception {
+        testSynthesis("java.util.regex.Pattern", "Pattern.compile(fileName)");
+    }
+
+    @Test
+    public void testString() throws Exception {
+        testSynthesis("java.lang.String", "fileName");
     }
 
     @Test

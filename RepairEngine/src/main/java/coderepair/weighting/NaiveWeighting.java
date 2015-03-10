@@ -18,9 +18,9 @@ public class NaiveWeighting implements GraphWeighter {
     }
 
     private double costForFunction(JavaFunctionNode method) {
-        if (method.getFunctionName().startsWith("new"))
+        if (method.getKind() == JavaFunctionNode.Kind.Constructor)
             return 1 + method.getTotalFormals();
-        else if (method.getFunctionName().equals("<cast>"))
+        else if (method.getKind() == JavaFunctionNode.Kind.ClassCast)
             return 0.01;
         return 1 + (double) method.getTotalFormals() / 2.0;
     }

@@ -1,8 +1,9 @@
 package coderepair.plugin;
 
 import coderepair.graph.SynthesisGraph;
-import coderepair.synthesis.CodeSnippet;
 import coderepair.synthesis.CodeSynthesis;
+import coderepair.synthesis.ExpressionTreeBuilder;
+import coderepair.synthesis.valuations.AdditiveValuator;
 import coderepair.util.GraphLoader;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
@@ -137,7 +138,7 @@ public class RepairMessage implements Plugin {
 
             return getTypeMirror(newClass).map(evaluatedType -> {
                 if (TypeKind.ERROR.equals(evaluatedType.getKind())) {
-                    CodeSynthesis synthesis = new CodeSynthesis(graph);
+                    CodeSynthesis synthesis = new CodeSynthesis(graph, new ExpressionTreeBuilder(new AdditiveValuator(graph)));
                     newClass.getArguments().stream().forEach(arg -> {
                         String type = getTypeMirror(arg).map(TypeMirror::toString).get();
                         String code = arg.toString();
@@ -146,9 +147,9 @@ public class RepairMessage implements Plugin {
                             type = repaired.type;
                             code = repaired.code;
                         }
-                        synthesis.strongEnforce(type, new CodeSnippet(code, 0.0001 * Math.random()));
+//                        synthesis.strongEnforce(type, new CodeSnippet(code, 0.0001 * Math.random()));
                     });
-                    return new TypedSnippet(synthesis.synthesize(className, conductanceTarget, 5).first().code, className);
+                    return new TypedSnippet(synthesis.synthesize(className, conductanceTarget, 5).first().asExpression(), className);
                 } else {
                     return new TypedSnippet(newClass.toString(), className);
                 }

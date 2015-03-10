@@ -8,8 +8,7 @@ import java.util.TreeSet;
 /**
  * Created by alexreinking on 11/11/14.
  */
-class BoundedSortedSet<E extends Comparable>
-        extends TreeSet<E> implements NavigableSet<E>, SortedSet<E>, Cloneable, Serializable {
+class BoundedSortedSet<E extends Comparable> extends TreeSet<E> implements NavigableSet<E>, SortedSet<E>, Cloneable, Serializable {
     private final int capacity;
 
     public BoundedSortedSet(int capacity) {

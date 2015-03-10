@@ -23,35 +23,31 @@ public class JavaGraphNodeFactory implements Serializable {
     }
 
     JavaFunctionNode makeCastNode(JavaTypeNode lowType, JavaTypeNode highType) {
-        return new JavaFunctionNode("<cast>", Arrays.asList(lowType), highType, JavaFunctionNode.Role.ClassCast);
+        return new JavaFunctionNode(JavaFunctionNode.Kind.ClassCast, "<cast>", Arrays.asList(lowType), highType, false);
     }
 
     JavaFunctionNode makeConstructor(JavaTypeNode type, Collection<JavaTypeNode> formals) {
-        return new JavaFunctionNode("new " + type.getClassName(), formals, type, JavaFunctionNode.Role.Constructor);
+        return new JavaFunctionNode(JavaFunctionNode.Kind.Constructor, type.getClassName(), formals, type, false);
     }
 
     JavaFunctionNode makeMethod(String name, JavaTypeNode owner, JavaTypeNode output, Collection<JavaTypeNode> formals) {
         ArrayList<JavaTypeNode> trueFormals = new ArrayList<>(1 + formals.size());
         trueFormals.add(owner);
         trueFormals.addAll(formals);
-        return new JavaFunctionNode(name, trueFormals, output, JavaFunctionNode.Role.Method);
+        return new JavaFunctionNode(JavaFunctionNode.Kind.Method, name, trueFormals, output, false);
     }
 
     JavaFunctionNode makeStaticMethod(String name, JavaTypeNode owner, JavaTypeNode output, Collection<JavaTypeNode> formals) {
-        JavaFunctionNode node = new JavaFunctionNode(owner.getClassName() + "." + name, formals, output, JavaFunctionNode.Role.Method);
-        node.setStatic(true);
-        return node;
+        return new JavaFunctionNode(JavaFunctionNode.Kind.Method, owner.getClassName() + "." + name, formals, output, true);
     }
 
     JavaFunctionNode makeValue(String value, String typeName) {
         JavaTypeNode valType = classTypes.get(typeName);
         if (valType == null) throw new RuntimeException("No such type: " + typeName);
-        return new JavaFunctionNode(value, new ArrayList<>(), valType, JavaFunctionNode.Role.Value);
+        return new JavaFunctionNode(JavaFunctionNode.Kind.Value, value, new ArrayList<>(), valType, false);
     }
 
     JavaFunctionNode makeField(String fieldName, JavaTypeNode valType, JavaTypeNode owner) {
-        JavaFunctionNode javaFunctionNode = new JavaFunctionNode(fieldName, Arrays.asList(owner), valType, JavaFunctionNode.Role.Value);
-        javaFunctionNode.setStatic(true);
-        return javaFunctionNode;
+        return new JavaFunctionNode(JavaFunctionNode.Kind.Value, fieldName, Arrays.asList(owner), valType, true);
     }
 }

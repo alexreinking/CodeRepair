@@ -1,8 +1,10 @@
 package edu.yale.cpsc.winston;
 
 import coderepair.graph.SynthesisGraph;
-import coderepair.synthesis.CodeSnippet;
 import coderepair.synthesis.CodeSynthesis;
+import coderepair.synthesis.ExpressionTreeBuilder;
+import coderepair.synthesis.trees.ExpressionTree;
+import coderepair.synthesis.valuations.AdditiveValuator;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -62,7 +64,7 @@ public class SynthesisContributor extends CompletionContributor {
     private static final ElementPattern<? extends PsiElement> METHOD_PARAM_PATTERN =
             psiElement().withSuperParent(3, PsiMethodCallExpressionImpl.class);
 
-    private static final Key<CodeSnippet> SNIPPET_ATTR = Key.create("snippet");
+    private static final Key<ExpressionTree> SNIPPET_ATTR = Key.create("snippet");
 
     public SynthesisContributor() {
         extend(CompletionType.SMART, ASSIGNMENT_PATTERN, new CompletionProvider<CompletionParameters>() {
@@ -72,14 +74,14 @@ public class SynthesisContributor extends CompletionContributor {
                                           @NotNull CompletionResultSet resultSet) {
                 if (graph == null) return;
                 graph.resetLocals();
-                CodeSynthesis synthesis = new CodeSynthesis(graph);
+                CodeSynthesis synthesis = new CodeSynthesis(graph, new ExpressionTreeBuilder(new AdditiveValuator(graph)));
 
                 SynthesisCompletionContext ctx = getTypeName(parameters);
                 if (ctx != null) {
                     addLocalsToGraph(synthesis, ctx, parameters);
 
-                    for (CodeSnippet codeSnippet : synthesis.synthesize(ctx.typeName, 0.8, 10)) {
-                        LookupElementBuilder lookupElement = LookupElementBuilder.create(codeSnippet.code);
+                    for (ExpressionTree codeSnippet : synthesis.synthesize(ctx.typeName, 0.8, 10)) {
+                        LookupElementBuilder lookupElement = LookupElementBuilder.create(codeSnippet.asExpression());
                         lookupElement.putUserData(SNIPPET_ATTR, codeSnippet);
                         resultSet.addElement(lookupElement);
                     }
@@ -89,7 +91,7 @@ public class SynthesisContributor extends CompletionContributor {
                         @Nullable
                         @Override
                         public Comparable weigh(@NotNull LookupElement element) {
-                            return element.getUserData(SNIPPET_ATTR);
+                            return element.getUserData(SNIPPET_ATTR).getCost();
                         }
                     });
 

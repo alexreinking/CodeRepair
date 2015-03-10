@@ -9,28 +9,25 @@ public class JavaFunctionNode extends JavaGraphNode implements Serializable {
     private final List<JavaTypeNode> signature;
     private final HashSet<JavaTypeNode> inputs = new HashSet<>();
     private final JavaTypeNode output;
-    private final Role role;
-    private boolean isStatic = false;
+    private final Kind kind;
+    private final boolean isStatic;
 
-    public JavaFunctionNode(String name, Collection<JavaTypeNode> formals,
-                            JavaTypeNode output, Role role) {
+    public JavaFunctionNode(Kind kind, String name, Collection<JavaTypeNode> formals,
+                            JavaTypeNode output, boolean isStatic) {
         StringJoiner args = new StringJoiner(" x ");
         for (JavaTypeNode formal : formals) args.add(formal.getName());
         inputs.addAll(formals);
 
-        this.role = role;
+        this.kind = kind;
         this.output = output;
         this.functionName = name;
         this.signature = new ArrayList<>(formals);
         this.name = String.format("%s: (%s) -> %s", this.functionName, args.toString(), output.getName());
+        this.isStatic = isStatic;
     }
 
     public boolean isStatic() {
         return isStatic;
-    }
-
-    public void setStatic(boolean isStatic) {
-        this.isStatic = isStatic;
     }
 
     public int getTotalFormals() {
@@ -53,11 +50,11 @@ public class JavaFunctionNode extends JavaGraphNode implements Serializable {
         return signature;
     }
 
-    public Role getRole() {
-        return role;
+    public Kind getKind() {
+        return kind;
     }
 
-    public enum Role {
+    public enum Kind {
         ClassCast,
         Constructor,
         Method,
