@@ -5,6 +5,7 @@ import coderepair.synthesis.trees.*;
 import coderepair.synthesis.valuations.ExpressionTreeValuator;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 public class ExpressionTreeBuilder {
     private final ExpressionTreeValuator valuator;
@@ -22,7 +23,7 @@ public class ExpressionTreeBuilder {
                 expr = new ClassCastExpressionTree(fn, args[0]);
                 break;
             case Constructor:
-                expr = new ConstructorExpressionTree(fn, args);
+                expr = new ConstructorExpressionTree(fn, args.clone()); // TODO: every day remind myself that Java has pointers
                 break;
             case Method:
                 ExpressionTree instance = args[0];
@@ -30,7 +31,7 @@ public class ExpressionTreeBuilder {
                 expr = new MethodCallExpressionTree(fn, args, instance);
                 break;
             case StaticMethod:
-                expr = new StaticMethodCallExpressionTree(fn, args);
+                expr = new StaticMethodCallExpressionTree(fn, args.clone());
                 break;
             case Field:
                 if (args.length != 1)
@@ -47,7 +48,13 @@ public class ExpressionTreeBuilder {
             case Type: // unused
                 break;
         }
-        valuator.valuate(expr);
         return expr;
+    }
+
+    public Comparator<ExpressionTree> getComparator() {
+        return (o1, o2) -> {
+            int diff = Double.compare(valuator.assess(o1), valuator.assess(o2));
+            return (diff != 0) ? diff : o1.asExpression().compareTo(o2.asExpression());
+        };
     }
 }

@@ -104,7 +104,7 @@ public class CodeSynthesis {
         if (synthTable.get(requestedType) == null) return Collections.emptySortedSet();
         if (snippetTable.containsKey(requestedType)) return snippetTable.get(requestedType);
 
-        SortedSet<ExpressionTree> snippets = Collections.synchronizedSortedSet(new BoundedSortedSet<>(nRequested));
+        SortedSet<ExpressionTree> snippets = Collections.synchronizedSortedSet(new BoundedSortedSet<>(nRequested, builder.getComparator()));
         snippets.addAll(enforcedSnippets.getOrDefault(requestedType, Collections.emptySortedSet()));
         synthTable.get(requestedType)
                 .stream()

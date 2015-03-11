@@ -15,7 +15,7 @@ public class AdditiveValuator extends ExpressionTreeValuator {
 
     private double sumChildren(ExpressionTree tree) {
         double sum = 0.0;
-        for (ExpressionTree t : tree.getChildren()) sum += valuate(t);
+        for (ExpressionTree t : tree.getChildren()) sum += assess(t);
         return sum;
     }
 
@@ -43,7 +43,7 @@ public class AdditiveValuator extends ExpressionTreeValuator {
 
     @Override
     public Double visitMethodCall(MethodCallExpressionTree tree) {
-        return valuate(tree.getInstance()) + nodeValue(tree);
+        return assess(tree.getInstance()) + nodeValue(tree);
     }
 
     @Override

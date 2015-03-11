@@ -74,7 +74,8 @@ public class SynthesisContributor extends CompletionContributor {
                                           @NotNull CompletionResultSet resultSet) {
                 if (graph == null) return;
                 graph.resetLocals();
-                CodeSynthesis synthesis = new CodeSynthesis(graph, new ExpressionTreeBuilder(new AdditiveValuator(graph)));
+                AdditiveValuator valuator = new AdditiveValuator(graph);
+                CodeSynthesis synthesis = new CodeSynthesis(graph, new ExpressionTreeBuilder(valuator));
 
                 SynthesisCompletionContext ctx = getTypeName(parameters);
                 if (ctx != null) {
@@ -91,7 +92,7 @@ public class SynthesisContributor extends CompletionContributor {
                         @Nullable
                         @Override
                         public Comparable weigh(@NotNull LookupElement element) {
-                            return element.getUserData(SNIPPET_ATTR).getCost();
+                            return valuator.assess(element.getUserData(SNIPPET_ATTR));
                         }
                     });
 

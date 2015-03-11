@@ -24,6 +24,7 @@ public class CodeSynthesisTest {
     final private static String graphFile = "./resources/graph.ser";
     private CodeSynthesis synthesis = null;
     private SynthesisGraph testGraph;
+    private AdditiveValuator valuator;
 
     @Before
     public void setUp() throws Exception {
@@ -31,7 +32,8 @@ public class CodeSynthesisTest {
             testGraph = GraphLoader.getGraph(graphFile, inFile);
             if (testGraph == null) throw new RuntimeException("Could not load graph");
 
-            synthesis = new CodeSynthesis(testGraph, new ExpressionTreeBuilder(new AdditiveValuator(testGraph)));
+            valuator = new AdditiveValuator(testGraph);
+            synthesis = new CodeSynthesis(testGraph, new ExpressionTreeBuilder(valuator));
 
             testGraph.resetLocals();
             testGraph.addLocalVariable("fileName", "java.lang.String");
@@ -54,7 +56,7 @@ public class CodeSynthesisTest {
                     System.out.print("* ");
                     passed[0] = true;
                 }
-                System.out.printf("%6f  %s%n", snippet.getCost(), snippet.asExpression());
+                System.out.printf("%6f  %s%n", valuator.assess(snippet), snippet.asExpression());
             }
         }).times(N_TRIALS).run();
 
@@ -122,6 +124,11 @@ public class CodeSynthesisTest {
     @Test
     public void testAudioClip() throws Exception {
         testSynthesis("java.applet.AudioClip", "Applet.newAudioClip(new URL(fileName))");
+    }
+
+    @Test
+    public void testURL() throws Exception {
+        testSynthesis("java.net.URL", "new URL(fileName)");
     }
 
     @Test
