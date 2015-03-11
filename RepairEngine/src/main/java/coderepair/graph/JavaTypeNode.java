@@ -8,14 +8,14 @@ public class JavaTypeNode extends JavaGraphNode implements Serializable {
     private final String className;
     private final String packageName;
     private final boolean primitive;
-    private boolean concrete;
+    private boolean concrete; // TODO: make final
 
     public JavaTypeNode(String qualifiedName, boolean concrete) {
+        super(Kind.Type, qualifiedName);
         this.concrete = concrete;
-        this.name = qualifiedName;
 
         Pattern packageClassSep = Pattern.compile("((?:\\w+\\.)+)?(.+)");
-        Matcher matcher = packageClassSep.matcher(this.name);
+        Matcher matcher = packageClassSep.matcher(getName());
 
         if (matcher.find()) {
             this.className = matcher.group(2);

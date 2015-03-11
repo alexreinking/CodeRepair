@@ -18,7 +18,6 @@ public abstract class ExpressionTree implements Comparable<ExpressionTree> {
     }
 
     public final void setCost(double cost) {
-        assert this.cost == null;
         this.cost = cost;
     }
 
@@ -30,9 +29,9 @@ public abstract class ExpressionTree implements Comparable<ExpressionTree> {
     }
 
     public final String asExpression() {
-        if (expr == null)
-            expr = collapse();
-        return expr;
+//        if (expr == null)
+//            expr = collapse();
+        return collapse();
     }
 
     protected abstract String collapse();

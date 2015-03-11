@@ -5,7 +5,6 @@ import coderepair.graph.JavaGraphNode;
 import coderepair.graph.JavaTypeNode;
 import coderepair.graph.SynthesisGraph;
 import coderepair.synthesis.trees.ExpressionTree;
-import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.traverse.ClosestFirstIterator;
 
@@ -35,7 +34,7 @@ public class CodeSynthesis {
         if (requestedType == null) return Collections.emptySortedSet();
         Stack<JavaTypeNode> typesByDistance = new Stack<>();
 
-        ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> costLimitBall = new ClosestFirstIterator<>(synthesisGraph, requestedType);
+        ClosestFirstIterator<JavaGraphNode, DefaultWeightedEdge> neighborhood = new ClosestFirstIterator<>(synthesisGraph, requestedType);
 
         Set<JavaGraphNode> cut = new HashSet<>();
         double totalEdges = 0;
@@ -44,40 +43,40 @@ public class CodeSynthesis {
         double costLimit;
 
         do {
-            JavaGraphNode next = costLimitBall.next();
+            JavaGraphNode next = neighborhood.next();
 
-            for (JavaGraphNode nbr : Graphs.successorListOf(synthesisGraph, next)) {
-                totalEdges += synthesisGraph.getWeight(next, nbr);
-                if (cut.contains(nbr))
-                    edgesInside += synthesisGraph.getWeight(next, nbr);
-            }
+            for (DefaultWeightedEdge edge : synthesisGraph.edgesOf(next)) {
+                JavaGraphNode neighbor = (synthesisGraph.getEdgeSource(edge).equals(next))
+                        ? synthesisGraph.getEdgeTarget(edge)
+                        : synthesisGraph.getEdgeSource(edge);
 
-            for (JavaGraphNode nbr : Graphs.predecessorListOf(synthesisGraph, next)) {
-                totalEdges += synthesisGraph.getWeight(nbr, next);
-                if (cut.contains(nbr))
-                    edgesInside += synthesisGraph.getWeight(nbr, next);
+                double wgt = synthesisGraph.getEdgeWeight(edge);
+                totalEdges += wgt;
+                if (cut.contains(neighbor))
+                    edgesInside += wgt;
             }
 
             cut.add(next);
             conductance = (totalEdges - 2 * edgesInside) / totalEdges;
 
-            if (next instanceof JavaFunctionNode) {
+            if (next.getKind().equals(JavaGraphNode.Kind.Type))
+                typesByDistance.push((JavaTypeNode) next);
+            else {
                 JavaFunctionNode fn = (JavaFunctionNode) next;
-                JavaTypeNode output = fn.getOutput();
-                synthTable.computeIfAbsent(output, t -> new ArrayList<>()).add(fn);
-            } else typesByDistance.push((JavaTypeNode) next);
+                synthTable.computeIfAbsent(fn.getOutput(), t -> new ArrayList<>()).add(fn);
+            }
 
-            costLimit = costLimitBall.getShortestPathLength(next);
+            costLimit = neighborhood.getShortestPathLength(next);
 
             if (cut.size() > 500 && conductance < targetConductance)
                 break;
-        } while (costLimitBall.hasNext() && cut.size() < synthesisGraph.vertexSet().size() / 2);
+        } while (neighborhood.hasNext() && cut.size() < synthesisGraph.vertexSet().size() / 2);
 
         System.out.printf("dynamically chosen cost limit = %s (%d vertices)%n", costLimit, cut.size());
 
         while (!typesByDistance.empty()) {
             JavaTypeNode top = typesByDistance.pop();
-            double costDeficit = costLimitBall.getShortestPathLength(top);
+            double costDeficit = neighborhood.getShortestPathLength(top);
             double effectiveCostLimit = costLimit - costDeficit;
             snippetTable.put(top, getExpression(top, effectiveCostLimit, nRequested));
         }
@@ -111,27 +110,25 @@ public class CodeSynthesis {
                 .stream()
                 .forEach(funcGen -> {
                     double nextCost = remaining - synthesisGraph.getWeight(requestedType, funcGen);
-                    if (nextCost < 0.0)
+                    if (nextCost <= 0.0)
                         return;
 
-                    List<SortedSet<ExpressionTree>> choices =
-                            funcGen.getSignature()
-                                    .stream()
-                                    .map(input -> getExpression(input, nextCost, nRequested))
-                                    .filter(resultSet -> !resultSet.isEmpty())
-                                    .collect(Collectors.toList());
+                    List<SortedSet<ExpressionTree>> choices = new ArrayList<>(funcGen.getTotalFormals());
+                    for (JavaTypeNode input : funcGen.getSignature()) {
+                        SortedSet<ExpressionTree> arg = getExpression(input, nextCost, nRequested);
+                        if (arg.size() == 0)
+                            return;
+                        choices.add(arg);
+                    }
 
                     if (choices.size() == funcGen.getSignature().size())
                         addFunctionPossibilities(snippets, funcGen, choices, 0, new ExpressionTree[choices.size()]);
                 });
-
         return snippets;
     }
 
-    void addFunctionPossibilities(
-            SortedSet<ExpressionTree> snippets, JavaFunctionNode functionType,
-            List<SortedSet<ExpressionTree>> synths,
-            int pos, ExpressionTree[] args) {
+    void addFunctionPossibilities(SortedSet<ExpressionTree> snippets, JavaFunctionNode functionType,
+                                  List<SortedSet<ExpressionTree>> synths, int pos, ExpressionTree[] args) {
         if (pos == args.length) {
             snippets.add(builder.buildInvocation(functionType, args));
         } else for (ExpressionTree subExpr : synths.get(pos)) {

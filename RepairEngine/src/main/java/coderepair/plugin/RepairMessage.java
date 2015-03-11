@@ -43,8 +43,8 @@ public class RepairMessage implements Plugin {
     }
 
     private class TypedSnippet {
-        public String type;
-        public String code;
+        public final String type;
+        public final String code;
 
         public TypedSnippet(String code, String type) {
             this.code = code;
@@ -123,8 +123,8 @@ public class RepairMessage implements Plugin {
 
     private class RepairScanner extends TreeScanner<TypedSnippet, Void> {
         private final Trees trees;
-        private TreePath path;
-        private double conductanceTarget;
+        private final TreePath path;
+        private final double conductanceTarget;
 
         public RepairScanner(Trees trees, TreePath path, double conductanceTarget) {
             this.trees = trees;

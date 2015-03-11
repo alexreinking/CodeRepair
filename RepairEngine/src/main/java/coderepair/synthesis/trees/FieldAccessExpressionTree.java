@@ -19,7 +19,7 @@ public class FieldAccessExpressionTree extends ExpressionTree {
 
     @Override
     protected String collapse() {
-        return String.format("(%s).%s", instance.asExpression(), field.getFunctionName());
+        return "(" + instance.asExpression() + ")." + field.getFunctionName();
     }
 
     @Override

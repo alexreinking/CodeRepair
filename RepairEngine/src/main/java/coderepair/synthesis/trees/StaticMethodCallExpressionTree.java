@@ -9,20 +9,20 @@ import java.util.StringJoiner;
 /**
  * Created by alexreinking on 3/10/15.
  */
-public class ConstructorExpressionTree extends ExpressionTree {
-    private final JavaFunctionNode ctor;
+public class StaticMethodCallExpressionTree extends ExpressionTree {
     private final ExpressionTree[] args;
+    private final JavaFunctionNode method;
 
-    public ConstructorExpressionTree(JavaFunctionNode ctor, ExpressionTree[] args) {
-        this.ctor = ctor;
+    public StaticMethodCallExpressionTree(JavaFunctionNode method, ExpressionTree[] args) {
         this.args = args;
+        this.method = method;
     }
 
     @Override
     protected String collapse() {
         StringJoiner params = new StringJoiner(", ");
         for (ExpressionTree arg : args) params.add(arg.asExpression());
-        return "new " + ctor.getFunctionName() + "(" + params + ")";
+        return method.getFunctionName() + "(" + params + ")";
     }
 
     @Override
@@ -32,6 +32,6 @@ public class ConstructorExpressionTree extends ExpressionTree {
 
     @Override
     public JavaFunctionNode getLeaf() {
-        return ctor;
+        return method;
     }
 }

@@ -43,7 +43,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         superTypes.add(thisType);
         Graphs.predecessorListOf(this, thisType).stream()
                 .filter(javaGraphNode -> javaGraphNode instanceof JavaFunctionNode)
-                .filter(javaGraphNode -> ((JavaFunctionNode )javaGraphNode).getFunctionName().equals("<cast>"))
+                .filter(javaGraphNode -> ((JavaFunctionNode) javaGraphNode).getFunctionName().equals("<cast>"))
                 .forEach(javaGraphNode -> {
                     JavaFunctionNode functionNode = (JavaFunctionNode) javaGraphNode;
                     JavaTypeNode superType = functionNode.getOutput();

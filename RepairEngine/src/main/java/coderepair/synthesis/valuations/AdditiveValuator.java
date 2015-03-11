@@ -43,10 +43,12 @@ public class AdditiveValuator extends ExpressionTreeValuator {
 
     @Override
     public Double visitMethodCall(MethodCallExpressionTree tree) {
-        double instanceCost = 0.0;
-        if (tree.getInstance() != null)
-            instanceCost = valuate(tree.getInstance());
-        return instanceCost + nodeValue(tree);
+        return valuate(tree.getInstance()) + nodeValue(tree);
+    }
+
+    @Override
+    public Double visitStaticMethodCall(StaticMethodCallExpressionTree tree) {
+        return nodeValue(tree);
     }
 
     @Override

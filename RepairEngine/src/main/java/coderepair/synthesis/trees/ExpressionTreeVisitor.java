@@ -3,17 +3,7 @@ package coderepair.synthesis.trees;
 /**
  * Created by alexreinking on 3/10/15.
  */
-public class ExpressionTreeVisitor<E> {
-    private final E defaultValue;
-
-    public ExpressionTreeVisitor() {
-        this(null);
-    }
-
-    public ExpressionTreeVisitor(E defaultValue) {
-        this.defaultValue = defaultValue;
-    }
-
+public abstract class ExpressionTreeVisitor<E> {
     public E visit(ExpressionTree tree) {
         switch (tree.getLeaf().getKind()) {
             case ClassCast:
@@ -22,36 +12,28 @@ public class ExpressionTreeVisitor<E> {
                 return visitConstructor((ConstructorExpressionTree) tree);
             case Method:
                 return visitMethodCall((MethodCallExpressionTree) tree);
+            case StaticMethod:
+                return visitStaticMethodCall((StaticMethodCallExpressionTree) tree);
             case Value:
-                if (!tree.getLeaf().isStatic())
-                    return visitValue((ValueExpressionTree) tree);
+                return visitValue((ValueExpressionTree) tree);
+            case Field:
                 return visitFieldAccess((FieldAccessExpressionTree) tree);
+            default:
+                System.err.println("encountered " + tree.getLeaf().getKind());
+                assert false;
         }
-        return defaultValue;
+        return null;
     }
 
-    public E visitClassCast(ClassCastExpressionTree tree) {
-        tree.getChildren().forEach(this::visit);
-        return defaultValue;
-    }
+    public abstract E visitClassCast(ClassCastExpressionTree tree);
 
-    public E visitConstructor(ConstructorExpressionTree tree) {
-        tree.getChildren().forEach(this::visit);
-        return defaultValue;
-    }
+    public abstract E visitConstructor(ConstructorExpressionTree tree);
 
-    public E visitMethodCall(MethodCallExpressionTree tree) {
-        tree.getChildren().forEach(this::visit);
-        return defaultValue;
-    }
+    public abstract E visitMethodCall(MethodCallExpressionTree tree);
 
-    public E visitFieldAccess(FieldAccessExpressionTree tree) {
-        tree.getChildren().forEach(this::visit);
-        return defaultValue;
-    }
+    public abstract E visitStaticMethodCall(StaticMethodCallExpressionTree tree);
 
-    public E visitValue(ValueExpressionTree tree) {
-        tree.getChildren().forEach(this::visit);
-        return defaultValue;
-    }
+    public abstract E visitValue(ValueExpressionTree tree);
+
+    public abstract E visitFieldAccess(FieldAccessExpressionTree tree);
 }

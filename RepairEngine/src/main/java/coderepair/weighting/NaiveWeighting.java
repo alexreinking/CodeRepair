@@ -1,6 +1,7 @@
 package coderepair.weighting;
 
 import coderepair.graph.JavaFunctionNode;
+import coderepair.graph.JavaGraphNode;
 import coderepair.graph.SynthesisGraph;
 
 /**
@@ -18,9 +19,9 @@ public class NaiveWeighting implements GraphWeighter {
     }
 
     private double costForFunction(JavaFunctionNode method) {
-        if (method.getKind() == JavaFunctionNode.Kind.Constructor)
+        if (method.getKind() == JavaGraphNode.Kind.Constructor)
             return 1 + method.getTotalFormals();
-        else if (method.getKind() == JavaFunctionNode.Kind.ClassCast)
+        else if (method.getKind() == JavaGraphNode.Kind.ClassCast)
             return 0.01;
         return 1 + (double) method.getTotalFormals() / 2.0;
     }

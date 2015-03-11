@@ -7,7 +7,7 @@ import coderepair.synthesis.valuations.ExpressionTreeValuator;
 import java.util.Arrays;
 
 public class ExpressionTreeBuilder {
-    private ExpressionTreeValuator valuator;
+    private final ExpressionTreeValuator valuator;
 
     public ExpressionTreeBuilder(ExpressionTreeValuator valuator) {
         this.valuator = valuator;
@@ -25,23 +25,26 @@ public class ExpressionTreeBuilder {
                 expr = new ConstructorExpressionTree(fn, args);
                 break;
             case Method:
-                ExpressionTree instance = null;
-                if (!fn.isStatic()) {
-                    instance = args[0];
-                    args = Arrays.copyOfRange(args, 1, args.length);
-                }
+                ExpressionTree instance = args[0];
+                args = Arrays.copyOfRange(args, 1, args.length);
                 expr = new MethodCallExpressionTree(fn, args, instance);
                 break;
+            case StaticMethod:
+                expr = new StaticMethodCallExpressionTree(fn, args);
+                break;
+            case Field:
+                if (args.length != 1)
+                    throw new IllegalArgumentException("Fields must at least have an owner, and cannot take arguments.");
+                expr = new FieldAccessExpressionTree(fn, args[0]);
+                break;
+            case StaticField: // unused
+                break;
             case Value:
-                if (fn.isStatic()) {
-                    if (args.length != 1)
-                        throw new IllegalArgumentException("Fields must at least have an owner, and cannot take arguments.");
-                    expr = new FieldAccessExpressionTree(fn, args[0]);
-                } else {
-                    if (args.length != 0)
-                        throw new IllegalArgumentException("Values may not take arguments.");
-                    expr = new ValueExpressionTree(fn);
-                }
+                if (args.length != 0)
+                    throw new IllegalArgumentException("Values may not take arguments.");
+                expr = new ValueExpressionTree(fn);
+                break;
+            case Type: // unused
                 break;
         }
         valuator.valuate(expr);

@@ -26,14 +26,9 @@ public class MethodCallExpressionTree extends ExpressionTree {
 
     @Override
     protected String collapse() {
-        StringBuilder expr = new StringBuilder();
-        if (instance != null)
-            expr.append("(").append(instance.asExpression()).append(").");
-        expr.append(method.getFunctionName()).append("(");
-        StringJoiner argJoiner = new StringJoiner(", ");
-        for (ExpressionTree arg : args) argJoiner.add(arg.asExpression());
-        expr.append(argJoiner).append(")");
-        return expr.toString();
+        StringJoiner params = new StringJoiner(", ");
+        for (ExpressionTree arg : args) params.add(arg.asExpression());
+        return "(" + instance.asExpression() + ")." + method.getFunctionName() + "(" + params + ")";
     }
 
     @Override
