@@ -19,11 +19,11 @@ import java.util.Set;
 public class CodeSynthesisTest {
     private static final double CUT_TARGET = 0.8;
     private static final int REQUESTED = 10;
-    private static final int N_TRIALS = 1;
-    final private static String inFile = "./resources/rt.javap";
-    final private static String graphFile = "./resources/graph.ser";
-    private CodeSynthesis synthesis = null;
-    private SynthesisGraph testGraph;
+    private static final int N_TRIALS = 50;
+    private static final String inFile = "./resources/rt.javap";
+    private static final String graphFile = "./resources/graph.ser";
+    private static SynthesisGraph testGraph;
+    private static CodeSynthesis synthesis = null;
 
     @Before
     public void setUp() throws Exception {
@@ -41,6 +41,11 @@ public class CodeSynthesisTest {
             testGraph.addLocalVariable("outStream", "java.io.OutputStream");
             testGraph.addLocalVariable("top", "javax.swing.tree.DefaultMutableTreeNode");
         }
+    }
+
+    @Test
+    public void testBufferedReader() throws Exception {
+        testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))");
     }
 
     private void testSynthesis(String type, String desiredCode) throws InterruptedException {
@@ -77,11 +82,6 @@ public class CodeSynthesisTest {
 
         System.out.printf("(Ball) |V| = %d |E| = %d%n", subgraph.vertexSet().size(), subgraph.edgeSet().size());
         System.out.printf("(Graph) |V| = %d |E| = %d%n", testGraph.vertexSet().size(), testGraph.edgeSet().size());
-    }
-
-    @Test
-    public void testBufferedReader() throws Exception {
-        testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))");
     }
 
     @Test
