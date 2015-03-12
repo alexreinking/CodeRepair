@@ -9,6 +9,7 @@ import java.util.List;
  */
 public abstract class ExpressionTree {
     private String expr = null;
+    private Double cost = null;
 
     public abstract List<ExpressionTree> getChildren();
 
@@ -26,4 +27,13 @@ public abstract class ExpressionTree {
     protected abstract String collapse();
 
     public abstract JavaFunctionNode getLeaf();
+
+    public Double getCost() {
+        return cost;
+    }
+
+    public void setCost(Double cost) {
+        assert this.cost == null && cost != null;
+        this.cost = cost;
+    }
 }

@@ -3,14 +3,8 @@ package coderepair.synthesis.valuations;
 import coderepair.graph.SynthesisGraph;
 import coderepair.synthesis.trees.*;
 
-import java.util.HashMap;
-
-/**
- * Created by alexreinking on 3/10/15.
- */
 public abstract class ExpressionTreeValuator extends ExpressionTreeVisitor<Double> {
     protected final SynthesisGraph synthesisGraph;
-    private final HashMap<ExpressionTree, Double> costCache = new HashMap<>();
 
     public ExpressionTreeValuator(SynthesisGraph synthesisGraph) {
         this.synthesisGraph = synthesisGraph;
@@ -25,7 +19,9 @@ public abstract class ExpressionTreeValuator extends ExpressionTreeVisitor<Doubl
 
     @Override
     public final Double visit(ExpressionTree tree) {
-        return costCache.computeIfAbsent(tree, super::visit);
+        if (tree.getCost() == null)
+            tree.setCost(super.visit(tree));
+        return tree.getCost();
     }
 
     public abstract Double visitConstructor(ConstructorExpressionTree tree);

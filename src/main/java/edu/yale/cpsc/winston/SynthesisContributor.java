@@ -92,7 +92,7 @@ public class SynthesisContributor extends CompletionContributor {
                         @Nullable
                         @Override
                         public Comparable weigh(@NotNull LookupElement element) {
-                            return valuator.assess(element.getUserData(SNIPPET_ATTR));
+                            return element.getUserData(SNIPPET_ATTR).getCost();
                         }
                     });
 

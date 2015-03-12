@@ -17,14 +17,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class CodeSynthesisTest {
-    private static final double CUT_TARGET = 0.6;
+    private static final double CUT_TARGET = 0.8;
     private static final int REQUESTED = 10;
     private static final int N_TRIALS = 1;
     final private static String inFile = "./resources/rt.javap";
     final private static String graphFile = "./resources/graph.ser";
     private CodeSynthesis synthesis = null;
     private SynthesisGraph testGraph;
-    private AdditiveValuator valuator;
 
     @Before
     public void setUp() throws Exception {
@@ -32,8 +31,7 @@ public class CodeSynthesisTest {
             testGraph = GraphLoader.getGraph(graphFile, inFile);
             if (testGraph == null) throw new RuntimeException("Could not load graph");
 
-            valuator = new AdditiveValuator(testGraph);
-            synthesis = new CodeSynthesis(testGraph, new ExpressionTreeBuilder(valuator));
+            synthesis = new CodeSynthesis(testGraph, new ExpressionTreeBuilder(new AdditiveValuator(testGraph)));
 
             testGraph.resetLocals();
             testGraph.addLocalVariable("fileName", "java.lang.String");
@@ -41,7 +39,7 @@ public class CodeSynthesisTest {
             testGraph.addLocalVariable("inStream1", "java.io.InputStream");
             testGraph.addLocalVariable("inStream2", "java.io.InputStream");
             testGraph.addLocalVariable("outStream", "java.io.OutputStream");
-//            synthesis.enforce("javax.swing.tree.DefaultMutableTreeNode", new CodeSnippet("(top)", 0.0));
+            testGraph.addLocalVariable("top", "javax.swing.tree.DefaultMutableTreeNode");
         }
     }
 
@@ -56,7 +54,7 @@ public class CodeSynthesisTest {
                     System.out.print("* ");
                     passed[0] = true;
                 }
-                System.out.printf("%6f  %s%n", valuator.assess(snippet), snippet.asExpression());
+                System.out.printf("%6f  %s%n", snippet.getCost(), snippet.asExpression());
             }
         }).times(N_TRIALS).run();
 
@@ -88,7 +86,7 @@ public class CodeSynthesisTest {
 
     @Test
     public void testJTree() throws Exception {
-        testSynthesis("javax.swing.JTree", "new JTree((top))");
+        testSynthesis("javax.swing.JTree", "new JTree(top)");
     }
 
     @Test

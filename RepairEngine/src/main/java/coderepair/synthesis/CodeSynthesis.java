@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class CodeSynthesis {
     private final SynthesisGraph synthesisGraph;
     private final ExpressionTreeBuilder builder;
-    private final Map<JavaTypeNode, List<JavaFunctionNode>> synthTable = new HashMap<>();
+    private final Map<JavaTypeNode, List<Generator>> synthTable = new HashMap<>();
     private final Map<JavaTypeNode, SortedSet<ExpressionTree>> snippetTable = new HashMap<>();
     private final Map<JavaTypeNode, SortedSet<ExpressionTree>> enforcedSnippets = new HashMap<>();
     private final Set<ExpressionTree> allEnforced = new HashSet<>();
@@ -63,7 +63,7 @@ public class CodeSynthesis {
                 typesByDistance.push((JavaTypeNode) next);
             else {
                 JavaFunctionNode fn = (JavaFunctionNode) next;
-                synthTable.computeIfAbsent(fn.getOutput(), t -> new ArrayList<>()).add(fn);
+                synthTable.computeIfAbsent(fn.getOutput(), t -> new ArrayList<>()).add(new Generator(fn, synthesisGraph.getWeight(fn.getOutput(), fn)));
             }
 
             costLimit = neighborhood.getShortestPathLength(next);
@@ -107,15 +107,14 @@ public class CodeSynthesis {
         SortedSet<ExpressionTree> snippets = Collections.synchronizedSortedSet(new BoundedSortedSet<>(nRequested, builder.getComparator()));
         snippets.addAll(enforcedSnippets.getOrDefault(requestedType, Collections.emptySortedSet()));
         synthTable.get(requestedType)
-                .stream()
-                .forEach(funcGen -> {
-                    double nextCost = remaining - synthesisGraph.getWeight(requestedType, funcGen);
-                    if (nextCost <= 0.0)
-                        return;
+                .parallelStream()
+                .filter(g -> remaining - g.cost > 0)
+                .forEach(gen -> {
+                    JavaFunctionNode funcGen = gen.node;
 
                     List<SortedSet<ExpressionTree>> choices = new ArrayList<>(funcGen.getTotalFormals());
                     for (JavaTypeNode input : funcGen.getSignature()) {
-                        SortedSet<ExpressionTree> arg = getExpression(input, nextCost, nRequested);
+                        SortedSet<ExpressionTree> arg = getExpression(input, remaining - gen.cost, nRequested);
                         if (arg.size() == 0)
                             return;
                         choices.add(arg);
@@ -134,6 +133,16 @@ public class CodeSynthesis {
         } else for (ExpressionTree subExpr : synths.get(pos)) {
             args[pos] = subExpr;
             addFunctionPossibilities(snippets, functionType, synths, pos + 1, args);
+        }
+    }
+
+    private class Generator {
+        public JavaFunctionNode node;
+        public double cost;
+
+        public Generator(JavaFunctionNode node, double cost) {
+            this.cost = cost;
+            this.node = node;
         }
     }
 }

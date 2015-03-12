@@ -14,7 +14,7 @@ public class NaiveWeighting implements GraphWeighter {
 
         graph.vertexSet().stream().filter(node -> node instanceof JavaFunctionNode).forEach(node -> {
             JavaFunctionNode method = (JavaFunctionNode) node;
-            graph.setEdgeWeight(graph.getEdge(method.getOutput(), method), costForFunction(method));
+            graph.setEdgeWeight(graph.getEdge(method.getOutput(), method), perturb(costForFunction(method)));
         });
     }
 
@@ -24,5 +24,9 @@ public class NaiveWeighting implements GraphWeighter {
         else if (method.getKind() == JavaGraphNode.Kind.ClassCast)
             return 0.01;
         return 1 + (double) method.getTotalFormals() / 2.0;
+    }
+
+    private double perturb(double val) {
+        return (0.5 - Math.random()) / 1000.0 + val;
     }
 }

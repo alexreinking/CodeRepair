@@ -13,7 +13,7 @@ public class Main {
         final String inFile = "./resources/rt.javap";
         final String graphFile = "./resources/graph.ser";
 
-        final SynthesisGraph graph = GraphLoader.getGraph(graphFile, inFile, "java.io", "java.util.regex", "java.applet", "javax.swing", "java.net");
+        final SynthesisGraph graph = GraphLoader.getGraph(graphFile, inFile); //, "java.io", "java.util.regex", "java.applet", "javax.swing", "java.net");
 
         TimedTask weightGraph = new TimedTask("Graph weighting", () -> {
             System.out.println("Weighting graph on " + graph.vertexSet().size() + " vertices.");

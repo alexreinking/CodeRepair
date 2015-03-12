@@ -48,6 +48,7 @@ public class ExpressionTreeBuilder {
             case Type: // unused
                 break;
         }
+        valuator.assess(expr);
         return expr;
     }
 
