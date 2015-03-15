@@ -16,8 +16,6 @@ public class CodeSynthesis {
     private final ExpressionTreeBuilder builder;
     private final Map<JavaTypeNode, List<Generator>> synthTable = new HashMap<>();
     private final Map<JavaTypeNode, SortedSet<ExpressionTree>> snippetTable = new HashMap<>();
-    private final Map<JavaTypeNode, SortedSet<ExpressionTree>> enforcedSnippets = new HashMap<>();
-    private final Set<ExpressionTree> allEnforced = new HashSet<>();
 
     public CodeSynthesis(SynthesisGraph synthesisGraph, ExpressionTreeBuilder builder) {
         this.synthesisGraph = synthesisGraph;
@@ -50,7 +48,7 @@ public class CodeSynthesis {
                         ? synthesisGraph.getEdgeTarget(edge)
                         : synthesisGraph.getEdgeSource(edge);
 
-                double wgt = synthesisGraph.getEdgeWeight(edge);
+                double wgt = 1 + synthesisGraph.getEdgeWeight(edge);
                 totalEdges += wgt;
                 if (cut.contains(neighbor))
                     edgesInside += wgt;
@@ -85,27 +83,11 @@ public class CodeSynthesis {
         return snippetTable.getOrDefault(requestedType, Collections.emptySortedSet());
     }
 
-    public void strongEnforce(String type, ExpressionTree snippet) {
-        for (JavaTypeNode assignableType : synthesisGraph.getAssignableTypes(synthesisGraph.getTypeByName(type)))
-            enforce(assignableType.getName(), snippet);
-    }
-
-    public void enforce(String type, ExpressionTree snippet) {
-        enforcedSnippets.computeIfAbsent(synthesisGraph.getTypeByName(type), v -> new TreeSet<>()).add(snippet);
-        allEnforced.add(snippet);
-    }
-
-    public void relax() {
-        enforcedSnippets.clear();
-        allEnforced.clear();
-    }
-
     SortedSet<ExpressionTree> getExpression(JavaTypeNode requestedType, double remaining, int nRequested) {
         if (synthTable.get(requestedType) == null) return Collections.emptySortedSet();
         if (snippetTable.containsKey(requestedType)) return snippetTable.get(requestedType);
 
         SortedSet<ExpressionTree> snippets = Collections.synchronizedSortedSet(new BoundedSortedSet<>(nRequested, builder.getComparator()));
-        snippets.addAll(enforcedSnippets.getOrDefault(requestedType, Collections.emptySortedSet()));
         synthTable.get(requestedType)
                 .parallelStream()
                 .filter(g -> remaining - g.cost > 0)

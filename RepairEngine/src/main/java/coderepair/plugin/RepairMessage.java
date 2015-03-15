@@ -18,7 +18,7 @@ public class RepairMessage implements Plugin {
     private static final String HOME_DIR = System.getProperty("user.home");
     private final String serializedFile = HOME_DIR + "/.winston/resources/graph.ser";
     private final String dataFile = HOME_DIR + "/.winston/resources/rt.javap";
-    private final SynthesisGraph graph = GraphLoader.getGraph(serializedFile, dataFile);
+    private final SynthesisGraph graph = GraphLoader.fromSerialized(serializedFile, dataFile);
 
     @Override
     public String getName() {

@@ -28,7 +28,7 @@ public class CodeSynthesisTest {
     @Before
     public void setUp() throws Exception {
         if (testGraph == null) {
-            testGraph = GraphLoader.getGraph(graphFile, inFile);
+            testGraph = GraphLoader.fromSerialized(graphFile, inFile);
             if (testGraph == null) throw new RuntimeException("Could not load graph");
 
             synthesis = new CodeSynthesis(testGraph, new ExpressionTreeBuilder(new AdditiveValuator(testGraph)));
@@ -41,11 +41,6 @@ public class CodeSynthesisTest {
             testGraph.addLocalVariable("outStream", "java.io.OutputStream");
             testGraph.addLocalVariable("top", "javax.swing.tree.DefaultMutableTreeNode");
         }
-    }
-
-    @Test
-    public void testBufferedReader() throws Exception {
-        testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))");
     }
 
     private void testSynthesis(String type, String desiredCode) throws InterruptedException {
@@ -82,6 +77,16 @@ public class CodeSynthesisTest {
 
         System.out.printf("(Ball) |V| = %d |E| = %d%n", subgraph.vertexSet().size(), subgraph.edgeSet().size());
         System.out.printf("(Graph) |V| = %d |E| = %d%n", testGraph.vertexSet().size(), testGraph.edgeSet().size());
+    }
+
+    @Test
+    public void testBufferedReader() throws Exception {
+        testSynthesis("java.io.BufferedReader", "new BufferedReader(new FileReader(fileName))");
+    }
+
+    @Test
+    public void testBufferedWriter() throws Exception {
+        testSynthesis("java.io.BufferedWriter", "new BufferedWriter(new PrintWriter(fileName))");
     }
 
     @Test

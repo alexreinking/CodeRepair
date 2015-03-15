@@ -5,6 +5,9 @@ import coderepair.graph.JavaTypeNode;
 import coderepair.graph.SynthesisGraph;
 import coderepair.synthesis.trees.*;
 
+import java.util.HashSet;
+import java.util.List;
+
 /**
  * Created by alexreinking on 3/10/15.
  */
@@ -13,22 +16,26 @@ public class AdditiveValuator extends ExpressionTreeValuator {
         super(synthesisGraph);
     }
 
-    private double sumChildren(ExpressionTree tree) {
-        double sum = 0.0;
-        for (ExpressionTree t : tree.getChildren()) sum += assess(t);
-        return sum;
+    private int countDuplicates(List<ExpressionTree> args) {
+        return args.size() - new HashSet<>(args).size();
+    }
+
+    @Override
+    public Double visitClassCast(ClassCastExpressionTree tree) {
+        return nodeValue(tree);
     }
 
     private double nodeValue(ExpressionTree tree) {
         JavaFunctionNode leaf = tree.getLeaf();
         JavaTypeNode output = leaf.getOutput();
         double leafWeight = synthesisGraph.getWeight(output, leaf);
-        return leafWeight + sumChildren(tree);
+        return (leafWeight + sumChildren(tree)) * (1 + countDuplicates(tree.getChildren()));
     }
 
-    @Override
-    public Double visitClassCast(ClassCastExpressionTree tree) {
-        return nodeValue(tree);
+    private double sumChildren(ExpressionTree tree) {
+        double sum = 0.0;
+        for (ExpressionTree t : tree.getChildren()) sum += assess(t);
+        return sum;
     }
 
     @Override

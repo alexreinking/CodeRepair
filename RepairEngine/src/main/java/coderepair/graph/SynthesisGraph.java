@@ -5,9 +5,6 @@ import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -17,17 +14,11 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         implements Serializable, DirectedGraph<JavaGraphNode, DefaultWeightedEdge> {
 
     private final JavaGraphNodeFactory nodeManager;
-    private final ArrayList<JavaGraphNode> currentLocals = new ArrayList<>();
+    private final ArrayList<JavaFunctionNode> currentLocals = new ArrayList<>();
 
     public SynthesisGraph(JavaGraphNodeFactory nodeManager) {
         super(DefaultWeightedEdge.class);
         this.nodeManager = nodeManager;
-    }
-
-    public void serialize(OutputStream outputStream) throws IOException {
-        ObjectOutputStream out = new ObjectOutputStream(outputStream);
-        out.writeObject(this);
-        out.close();
     }
 
     public boolean hasType(String qualifiedName) {
@@ -72,5 +63,4 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         currentLocals.forEach(this::removeVertex);
         currentLocals.clear();
     }
-
 }

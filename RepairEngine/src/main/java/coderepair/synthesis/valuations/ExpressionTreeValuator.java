@@ -24,11 +24,21 @@ public abstract class ExpressionTreeValuator extends ExpressionTreeVisitor<Doubl
         return tree.getCost();
     }
 
+    @Override
     public abstract Double visitConstructor(ConstructorExpressionTree tree);
 
+    @Override
     public abstract Double visitMethodCall(MethodCallExpressionTree tree);
 
+    @Override
     public abstract Double visitValue(ValueExpressionTree tree);
 
+    @Override
     public abstract Double visitFieldAccess(FieldAccessExpressionTree tree);
+
+    @Override
+    public abstract Double visitClassCast(ClassCastExpressionTree tree);
+
+    @Override
+    public abstract Double visitStaticMethodCall(StaticMethodCallExpressionTree tree);
 }

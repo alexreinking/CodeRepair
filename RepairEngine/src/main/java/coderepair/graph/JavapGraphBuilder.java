@@ -118,7 +118,7 @@ public class JavapGraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
                             String methodName = method.typeName().get(1).getText();
                             JavaFunctionNode newFunc;
                             if (method.modifiers().STATIC() != null)
-                                newFunc = nodeManager.makeStaticMethod(methodName, classNode, outType, formals);
+                                newFunc = nodeManager.makeStaticMethod(classNode.getClassName() + "." + methodName, outType, formals);
                             else
                                 newFunc = nodeManager.makeMethod(methodName, classNode, outType, formals);
                             methods.add(newFunc);
