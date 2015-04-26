@@ -75,7 +75,7 @@ public class JavapGraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     public SynthesisGraph visitClassDeclaration(@NotNull ClassDeclarationContext ctx) {
         JavaTypeNode classNode = nodeManager.getTypeByName(ctx.typeName().getText());
         if (ctx.INTERFACE() != null || ctx.modifiers() != null && ctx.modifiers().ABSTRACT() != null)
-            classNode.setConcrete(false);
+            classNode.makeAbstract();
 
         if (addTypeToGraph(classNode)) {
             List<TypeNameContext> superTypes = new ArrayList<>();

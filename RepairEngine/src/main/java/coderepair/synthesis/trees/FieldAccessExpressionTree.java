@@ -2,7 +2,7 @@ package coderepair.synthesis.trees;
 
 import coderepair.graph.JavaFunctionNode;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,7 +24,7 @@ public class FieldAccessExpressionTree extends ExpressionTree {
 
     @Override
     public List<ExpressionTree> getChildren() {
-        return Arrays.asList(instance);
+        return Collections.singletonList(instance);
     }
 
     @Override

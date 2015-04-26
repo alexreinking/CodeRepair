@@ -4,9 +4,9 @@ import coderepair.graph.SynthesisGraph;
 import coderepair.synthesis.trees.*;
 
 public abstract class ExpressionTreeValuator extends ExpressionTreeVisitor<Double> {
-    protected final SynthesisGraph synthesisGraph;
+    final SynthesisGraph synthesisGraph;
 
-    public ExpressionTreeValuator(SynthesisGraph synthesisGraph) {
+    ExpressionTreeValuator(SynthesisGraph synthesisGraph) {
         this.synthesisGraph = synthesisGraph;
     }
 

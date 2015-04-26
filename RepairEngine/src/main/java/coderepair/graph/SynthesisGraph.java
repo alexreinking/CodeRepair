@@ -1,20 +1,18 @@
 package coderepair.graph;
 
 import org.jgrapht.DirectedGraph;
-import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, DefaultWeightedEdge>
         implements Serializable, DirectedGraph<JavaGraphNode, DefaultWeightedEdge> {
 
     private final JavaGraphNodeFactory nodeManager;
     private final ArrayList<JavaFunctionNode> currentLocals = new ArrayList<>();
+
     public SynthesisGraph(JavaGraphNodeFactory nodeManager) {
         super(DefaultWeightedEdge.class);
         this.nodeManager = nodeManager;
@@ -32,6 +30,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
         return nodeManager.getTypeByName(qualifiedName);
     }
 
+    /*
     public List<JavaTypeNode> getAssignableTypes(JavaTypeNode thisType) {
         List<JavaTypeNode> superTypes = new LinkedList<>();
         superTypes.add(thisType);
@@ -45,6 +44,7 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
                 });
         return superTypes;
     }
+    */
 
     public double getWeight(JavaGraphNode startType, JavaGraphNode funcType) {
         return getEdgeWeight(getEdge(startType, funcType));

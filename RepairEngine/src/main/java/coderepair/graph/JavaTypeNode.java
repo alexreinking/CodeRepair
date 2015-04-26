@@ -10,9 +10,9 @@ public class JavaTypeNode extends JavaGraphNode implements Serializable {
     private final boolean primitive;
     private boolean concrete; // TODO: make final
 
-    public JavaTypeNode(String qualifiedName, boolean concrete) {
+    public JavaTypeNode(String qualifiedName) {
         super(Kind.Type, qualifiedName);
-        this.concrete = concrete;
+        this.concrete = true;
 
         Pattern packageClassSep = Pattern.compile("((?:\\w+\\.)+)?(.+)");
         Matcher matcher = packageClassSep.matcher(getName());
@@ -39,8 +39,8 @@ public class JavaTypeNode extends JavaGraphNode implements Serializable {
         return concrete;
     }
 
-    public void setConcrete(boolean concrete) {
-        this.concrete = concrete;
+    public void makeAbstract() {
+        this.concrete = false;
     }
 
     public boolean isPrimitive() {

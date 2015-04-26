@@ -108,7 +108,7 @@ public class RepairValuator extends ExpressionTreeValuator {
     }
 
     private class TraversalResult {
-        public HashSet<JavaFunctionNode> children;
+        public final HashSet<JavaFunctionNode> children;
         public double baseCost;
 
         public TraversalResult(double baseCost, HashSet<JavaFunctionNode> children) {

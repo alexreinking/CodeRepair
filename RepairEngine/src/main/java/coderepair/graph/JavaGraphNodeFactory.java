@@ -2,8 +2,8 @@ package coderepair.graph;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class JavaGraphNodeFactory implements Serializable {
@@ -14,11 +14,11 @@ public class JavaGraphNodeFactory implements Serializable {
     }
 
     public JavaTypeNode getTypeByName(String qualifiedName) {
-        return classTypes.computeIfAbsent(qualifiedName, name -> new JavaTypeNode(qualifiedName, true));
+        return classTypes.computeIfAbsent(qualifiedName, name -> new JavaTypeNode(qualifiedName));
     }
 
     public JavaFunctionNode makeCastNode(JavaTypeNode lowType, JavaTypeNode highType) {
-        return new JavaFunctionNode(JavaGraphNode.Kind.ClassCast, "<cast>", Arrays.asList(lowType), highType);
+        return new JavaFunctionNode(JavaGraphNode.Kind.ClassCast, "<cast>", Collections.singletonList(lowType), highType);
     }
 
     public JavaFunctionNode makeConstructor(JavaTypeNode type, Collection<JavaTypeNode> formals) {
@@ -43,6 +43,6 @@ public class JavaGraphNodeFactory implements Serializable {
     }
 
     public JavaFunctionNode makeField(String fieldName, JavaTypeNode valType, JavaTypeNode owner) {
-        return new JavaFunctionNode(JavaGraphNode.Kind.Field, fieldName, Arrays.asList(owner), valType);
+        return new JavaFunctionNode(JavaGraphNode.Kind.Field, fieldName, Collections.singletonList(owner), valType);
     }
 }

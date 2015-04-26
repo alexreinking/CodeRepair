@@ -4,7 +4,7 @@ package coderepair.synthesis.trees;
  * Created by alexreinking on 3/10/15.
  */
 public abstract class ExpressionTreeVisitor<E> {
-    public E visit(ExpressionTree tree) {
+    protected E visit(ExpressionTree tree) {
         switch (tree.getLeaf().getKind()) {
             case ClassCast:
                 return visitClassCast((ClassCastExpressionTree) tree);
@@ -25,15 +25,15 @@ public abstract class ExpressionTreeVisitor<E> {
         return null;
     }
 
-    public abstract E visitClassCast(ClassCastExpressionTree tree);
+    protected abstract E visitClassCast(ClassCastExpressionTree tree);
 
-    public abstract E visitConstructor(ConstructorExpressionTree tree);
+    protected abstract E visitConstructor(ConstructorExpressionTree tree);
 
-    public abstract E visitMethodCall(MethodCallExpressionTree tree);
+    protected abstract E visitMethodCall(MethodCallExpressionTree tree);
 
-    public abstract E visitStaticMethodCall(StaticMethodCallExpressionTree tree);
+    protected abstract E visitStaticMethodCall(StaticMethodCallExpressionTree tree);
 
-    public abstract E visitValue(ValueExpressionTree tree);
+    protected abstract E visitValue(ValueExpressionTree tree);
 
-    public abstract E visitFieldAccess(FieldAccessExpressionTree tree);
+    protected abstract E visitFieldAccess(FieldAccessExpressionTree tree);
 }

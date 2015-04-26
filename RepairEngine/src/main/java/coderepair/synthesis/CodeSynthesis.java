@@ -83,7 +83,7 @@ public class CodeSynthesis {
         return snippetTable.getOrDefault(requestedType, Collections.emptySortedSet());
     }
 
-    SortedSet<ExpressionTree> getExpression(JavaTypeNode requestedType, double remaining, int nRequested) {
+    private SortedSet<ExpressionTree> getExpression(JavaTypeNode requestedType, double remaining, int nRequested) {
         if (synthTable.get(requestedType) == null) return Collections.emptySortedSet();
         if (snippetTable.containsKey(requestedType)) return snippetTable.get(requestedType);
 
@@ -109,8 +109,8 @@ public class CodeSynthesis {
         return snippets;
     }
 
-    void addFunctionPossibilities(SortedSet<ExpressionTree> snippets, JavaFunctionNode functionType,
-                                  List<SortedSet<ExpressionTree>> synths, int pos, ExpressionTree[] args) {
+    private void addFunctionPossibilities(SortedSet<ExpressionTree> snippets, JavaFunctionNode functionType,
+                                          List<SortedSet<ExpressionTree>> synths, int pos, ExpressionTree[] args) {
         if (pos == args.length) {
             snippets.add(builder.buildInvocation(functionType, args));
         } else for (ExpressionTree subExpr : synths.get(pos)) {
@@ -120,8 +120,8 @@ public class CodeSynthesis {
     }
 
     private class Generator {
-        public JavaFunctionNode node;
-        public double cost;
+        public final JavaFunctionNode node;
+        public final double cost;
 
         public Generator(JavaFunctionNode node, double cost) {
             this.cost = cost;
