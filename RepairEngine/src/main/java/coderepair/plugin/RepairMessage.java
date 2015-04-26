@@ -12,6 +12,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.SortedSet;
 
 public class RepairMessage implements Plugin {
 
@@ -90,20 +91,20 @@ public class RepairMessage implements Plugin {
                     getTypeMirror(lhsTypeTree).ifPresent(lhsType -> {
                         if (TypeKind.ERROR.equals(rhsType.getKind()) && TypeKind.DECLARED.equals(lhsType.getKind())) {
                             if (graph.hasType(lhsType.toString())) {
-                                System.out.println("Winston: info: Error detected! Attempting to repair...");
+                                System.out.println("\nWinston: info: Error detected! Attempting to repair...");
 
                                 HashSet<TypedSnippet> snips = new HashSet<>();
                                 for (double c = 0.9; c >= 0.4; c -= 0.1) {
-                                    TypedSnippet scan = new RepairScanner(trees, getCurrentPath(), c).scan(rhsTree, null);
-                                    if (scan != null && !snips.contains(scan)) {
-                                        snips.add(scan);
+                                    TypedSnippet repairResult = new RepairScanner(trees, getCurrentPath(), c).scan(rhsTree, null);
+                                    if (repairResult != null && !snips.contains(repairResult)) {
+                                        snips.add(repairResult);
                                         if (snips.size() == 1)
                                             System.out.println("Winston: info: try one of these:");
-                                        System.out.printf("\t[%2f] %s %s = %s;%n",
+                                        System.out.printf("    [%.2f] %s %s = %s;%n",
                                                 c,
                                                 lhsTypeTree,
                                                 node.getName(),
-                                                scan);
+                                                repairResult);
                                     }
                                 }
 
@@ -150,7 +151,10 @@ public class RepairMessage implements Plugin {
                         }
                         repairValuator.strongEnforce(type, code);
                     });
-                    return new TypedSnippet(synthesis.synthesize(className, conductanceTarget, 5).first().asExpression(), className);
+                    SortedSet<coderepair.synthesis.trees.ExpressionTree> expressionTrees
+                            = synthesis.synthesize(className, conductanceTarget, 5);
+                    repairValuator.relax();
+                    return new TypedSnippet(expressionTrees.first().asExpression(), className);
                 } else {
                     return new TypedSnippet(newClass.toString(), className);
                 }

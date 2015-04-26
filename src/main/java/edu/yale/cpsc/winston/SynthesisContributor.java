@@ -5,6 +5,7 @@ import coderepair.synthesis.CodeSynthesis;
 import coderepair.synthesis.ExpressionTreeBuilder;
 import coderepair.synthesis.trees.ExpressionTree;
 import coderepair.synthesis.valuations.AdditiveValuator;
+import coderepair.util.GraphLoader;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -18,31 +19,16 @@ import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.Arrays;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 import static com.intellij.patterns.StandardPatterns.or;
 
 public class SynthesisContributor extends CompletionContributor {
-    private static final String graphFileName = "/Users/alexreinking/Development/CodeRepair/resources/graph.ser";
-    private static final SynthesisGraph graph;
-
-    static {
-        SynthesisGraph theGraph = null;
-        try {
-            FileInputStream fileInput = new FileInputStream(graphFileName);
-            ObjectInputStream in = new ObjectInputStream(fileInput);
-            theGraph = (SynthesisGraph) in.readObject();
-            in.close();
-            fileInput.close();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        graph = theGraph;
-    }
+    private static final String HOME_DIR = System.getProperty("user.home");
+    private final String serializedFile = HOME_DIR + "/.winston/resources/graph.ser";
+    private final String dataFile = HOME_DIR + "/.winston/resources/rt.javap";
+    private final SynthesisGraph graph = GraphLoader.fromSerialized(serializedFile, dataFile);
 
     private static final ElementPattern<PsiElement> ASSIGNMENT_PARENT = or(
             psiElement().withText(CompletionInitializationContext.DUMMY_IDENTIFIER_TRIMMED)
