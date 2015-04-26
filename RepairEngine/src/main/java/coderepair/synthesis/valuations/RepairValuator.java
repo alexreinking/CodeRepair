@@ -44,7 +44,7 @@ public class RepairValuator extends ExpressionTreeValuator {
     }
 
     public void strongEnforce(String typeName, String expression) {
-        System.out.printf("Enforced: %s%n", expression);
+//        System.out.printf("Enforced: %s%n", expression);
         JavaTypeNode typeNode = synthesisGraph.getTypeByName(typeName);
 
         JavaFunctionNode fn = synthesisGraph.getNodeManager().makeValue(expression, typeNode.getName());

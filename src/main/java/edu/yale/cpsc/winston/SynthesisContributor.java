@@ -96,7 +96,7 @@ public class SynthesisContributor extends CompletionContributor {
                         }
                     });
 
-                    resultSet.withRelevanceSorter(ordering)
+                    resultSet.withRelevanceSorter(ordering);
                 }
             }
         });

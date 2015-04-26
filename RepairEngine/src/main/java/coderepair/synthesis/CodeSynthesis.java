@@ -70,7 +70,7 @@ public class CodeSynthesis {
                 break;
         } while (neighborhood.hasNext() && cut.size() < synthesisGraph.vertexSet().size() / 2);
 
-        System.out.printf("dynamically chosen cost limit = %s (%d vertices)%n", costLimit, cut.size());
+//        System.out.printf("dynamically chosen cost limit = %s (%d vertices)%n", costLimit, cut.size());
 
         while (!typesByDistance.empty()) {
             JavaTypeNode top = typesByDistance.pop();
