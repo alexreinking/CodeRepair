@@ -16,10 +16,6 @@ public class AdditiveValuator extends ExpressionTreeValuator {
         super(synthesisGraph);
     }
 
-    private int countDuplicates(List<ExpressionTree> args) {
-        return args.size() - new HashSet<>(args).size();
-    }
-
     @Override
     public Double visitClassCast(ClassCastExpressionTree tree) {
         return nodeValue(tree);
@@ -36,6 +32,10 @@ public class AdditiveValuator extends ExpressionTreeValuator {
         double sum = 0.0;
         for (ExpressionTree t : tree.getChildren()) sum += assess(t);
         return sum;
+    }
+
+    private int countDuplicates(List<ExpressionTree> args) {
+        return args.size() - new HashSet<>(args).size();
     }
 
     @Override

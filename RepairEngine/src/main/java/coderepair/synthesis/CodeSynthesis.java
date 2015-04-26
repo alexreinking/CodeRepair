@@ -91,12 +91,12 @@ public class CodeSynthesis {
         synthTable.get(requestedType)
                 .parallelStream()
                 .filter(g -> remaining - g.cost > 0)
-                .forEach(gen -> {
-                    JavaFunctionNode funcGen = gen.node;
+                .forEach(g -> {
+                    JavaFunctionNode funcGen = g.node;
 
                     List<SortedSet<ExpressionTree>> choices = new ArrayList<>(funcGen.getTotalFormals());
                     for (JavaTypeNode input : funcGen.getSignature()) {
-                        SortedSet<ExpressionTree> arg = getExpression(input, remaining - gen.cost, nRequested);
+                        SortedSet<ExpressionTree> arg = getExpression(input, remaining - g.cost, nRequested);
                         if (arg.size() == 0)
                             return;
                         choices.add(arg);
@@ -105,6 +105,7 @@ public class CodeSynthesis {
                     if (choices.size() == funcGen.getSignature().size())
                         addFunctionPossibilities(snippets, funcGen, choices, 0, new ExpressionTree[choices.size()]);
                 });
+
         return snippets;
     }
 

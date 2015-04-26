@@ -15,10 +15,13 @@ public class SynthesisGraph extends SimpleDirectedWeightedGraph<JavaGraphNode, D
 
     private final JavaGraphNodeFactory nodeManager;
     private final ArrayList<JavaFunctionNode> currentLocals = new ArrayList<>();
-
     public SynthesisGraph(JavaGraphNodeFactory nodeManager) {
         super(DefaultWeightedEdge.class);
         this.nodeManager = nodeManager;
+    }
+
+    public JavaGraphNodeFactory getNodeManager() {
+        return nodeManager;
     }
 
     public boolean hasType(String qualifiedName) {

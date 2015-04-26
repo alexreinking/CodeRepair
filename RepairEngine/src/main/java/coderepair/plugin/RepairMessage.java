@@ -3,7 +3,7 @@ package coderepair.plugin;
 import coderepair.graph.SynthesisGraph;
 import coderepair.synthesis.CodeSynthesis;
 import coderepair.synthesis.ExpressionTreeBuilder;
-import coderepair.synthesis.valuations.AdditiveValuator;
+import coderepair.synthesis.valuations.RepairValuator;
 import coderepair.util.GraphLoader;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
@@ -138,7 +138,8 @@ public class RepairMessage implements Plugin {
 
             return getTypeMirror(newClass).map(evaluatedType -> {
                 if (TypeKind.ERROR.equals(evaluatedType.getKind())) {
-                    CodeSynthesis synthesis = new CodeSynthesis(graph, new ExpressionTreeBuilder(new AdditiveValuator(graph)));
+                    RepairValuator repairValuator = new RepairValuator(graph);
+                    CodeSynthesis synthesis = new CodeSynthesis(graph, new ExpressionTreeBuilder(repairValuator));
                     newClass.getArguments().stream().forEach(arg -> {
                         String type = getTypeMirror(arg).map(TypeMirror::toString).get();
                         String code = arg.toString();
@@ -147,7 +148,7 @@ public class RepairMessage implements Plugin {
                             type = repaired.type;
                             code = repaired.code;
                         }
-//                        synthesis.strongEnforce(type, new CodeSnippet(code, 0.0001 * Math.random()));
+                        repairValuator.strongEnforce(type, code);
                     });
                     return new TypedSnippet(synthesis.synthesize(className, conductanceTarget, 5).first().asExpression(), className);
                 } else {
@@ -162,20 +163,6 @@ public class RepairMessage implements Plugin {
 
         private Boolean hasTypeError(Tree tree) {
             return getTypeMirror(tree).map(t -> TypeKind.ERROR.equals((TypeKind) t.getKind())).get();
-        }
-
-        @Override
-        public TypedSnippet visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
-            System.out.printf("%s: %s%n", getTypeMirror(node).map(TypeMirror::toString).orElse("<no-type>"), node);
-            System.out.printf("%s: %s: %s%n",
-                    getTypeMirror(node.getMethodSelect()).map(TypeMirror::toString).orElse("<no-type>"),
-                    node.getClass().getSimpleName(),
-                    node.getMethodSelect());
-            node.getArguments().stream().forEach(exp ->
-                            System.out.printf("arg: %s: %s%n",
-                                    getTypeMirror(exp).map(TypeMirror::toString).orElse("<no-type>"), exp)
-            );
-            return super.visitMethodInvocation(node, aVoid);
         }
 
         @Override
@@ -213,6 +200,20 @@ public class RepairMessage implements Plugin {
             TypedSnippet scan = super.scan(toRepair, aVoid);
             graph.resetLocals();
             return scan;
+        }
+
+        @Override
+        public TypedSnippet visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
+            System.out.printf("%s: %s%n", getTypeMirror(node).map(TypeMirror::toString).orElse("<no-type>"), node);
+            System.out.printf("%s: %s: %s%n",
+                    getTypeMirror(node.getMethodSelect()).map(TypeMirror::toString).orElse("<no-type>"),
+                    node.getClass().getSimpleName(),
+                    node.getMethodSelect());
+            node.getArguments().stream().forEach(exp ->
+                            System.out.printf("arg: %s: %s%n",
+                                    getTypeMirror(exp).map(TypeMirror::toString).orElse("<no-type>"), exp)
+            );
+            return super.visitMethodInvocation(node, aVoid);
         }
     }
 }
