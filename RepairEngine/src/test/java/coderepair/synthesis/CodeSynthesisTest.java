@@ -27,13 +27,13 @@ public class CodeSynthesisTest {
         }
     }
 
-    // http://www.java2s.com/Tutorials/Java/Java_io/0010__Java_io_File.htm
     @Test
-    public void testExists() throws Exception {
+    public void testDatagramPacket() throws Exception {
         testSynthesis(
-                "boolean",
-                "(dummyFile).exists()",
-                new EnvironmentEntry("java.io.File", "dummyFile")
+                "java.net.DatagramPacket",
+                "new DatagramPacket(buf, buf.length)",
+                new EnvironmentEntry("byte[]", "buf"),
+                new EnvironmentEntry("int", "buf.length")
         );
     }
 
@@ -68,6 +68,140 @@ public class CodeSynthesisTest {
     }
 
     @Test
+    public void testInetAddress() throws Exception {
+        testSynthesis(
+                "java.net.InetAddress",
+                "InetAddress.getByName(mcIPStr)",
+                new EnvironmentEntry("java.lang.String", "mcIPStr")
+        );
+    }
+
+    @Test
+    public void testURLConnection() throws Exception {
+        testSynthesis(
+                "java.net.URLConnection",
+                "(new URL(urlStr)).openConnection()",
+                new EnvironmentEntry("java.lang.String", "urlStr")
+        );
+    }
+
+    // From InSynth
+    @Test
+    public void testTransferHandler() throws Exception {
+        testSynthesis(
+                "javax.swing.TransferHandler",
+                "new TransferHandler(s)",
+                new EnvironmentEntry("java.lang.String", "s")
+        );
+    }
+
+    // From InSynth
+    @Test
+    public void testSwingTimer() throws Exception {
+        testSynthesis(
+                "javax.swing.Timer",
+                "new Timer(500, actionListener)",
+                new EnvironmentEntry("int", "500"),
+                new EnvironmentEntry("java.awt.event.ActionListener", "actionListener")
+        );
+    }
+
+    @Test
+    public void testGraphicsDevice() throws Exception {
+        testSynthesis(
+                "java.awt.GraphicsDevice",
+                "(GraphicsEnvironment.getLocalGraphicsEnvironment()).getDefaultScreenDevice()"
+        );
+    }
+
+    @Test
+    public void testImageIcon() throws Exception {
+        testSynthesis(
+                "javax.swing.ImageIcon",
+                "new ImageIcon(\"yourFile.gif\")",
+                new EnvironmentEntry("java.lang.String", "\"yourFile.gif\"")
+        );
+    }
+
+    @Test
+    public void testGradientPaint() throws Exception {
+        testSynthesis(
+                "java.awt.GradientPaint",
+                "new GradientPaint(endPointX, endPointY, endColor, startPointX, startPointY, startColor)",
+                new EnvironmentEntry("java.awt.Color", "endColor"),
+                new EnvironmentEntry("float", "endPointY"),
+                new EnvironmentEntry("float", "endPointX"),
+                new EnvironmentEntry("java.awt.Color", "startColor"),
+                new EnvironmentEntry("float", "startPointY"),
+                new EnvironmentEntry("float", "startPointX")
+        );
+    }
+
+    @Test
+    public void testJFrame() throws Exception {
+        testSynthesis(
+                "javax.swing.JFrame",
+                "new JFrame(\"Label!\")",
+                new EnvironmentEntry("java.lang.String", "\"Label!\"")
+        );
+    }
+
+    @Test
+    public void testJTextArea() throws Exception {
+        testSynthesis(
+                "javax.swing.JTextArea",
+                "new JTextArea(\"Label!\")",
+                new EnvironmentEntry("java.lang.String", "\"Label!\"")
+        );
+    }
+
+    @Test
+    public void testJCheckBox() throws Exception {
+        testSynthesis(
+                "javax.swing.JCheckBox",
+                "new JCheckBox(\"Label!\")",
+                new EnvironmentEntry("java.lang.String", "\"Label!\"")
+        );
+    }
+
+    @Test
+    public void testJButton() throws Exception {
+        testSynthesis(
+                "javax.swing.JButton",
+                "new JButton(\"Button 1!\")",
+                new EnvironmentEntry("java.lang.String", "\"Button 1!\"")
+        );
+    }
+
+    @Test
+    public void testMaskFormatter() throws Exception {
+        testSynthesis(
+                "javax.swing.text.MaskFormatter",
+                "new MaskFormatter(\"Label!\")",
+                new EnvironmentEntry("java.lang.String", "\"Label!\"")
+        );
+    }
+
+    @Test
+    public void testContainerFromFrame() throws Exception {
+        testSynthesis(
+                "java.awt.Container",
+                "(frame).getContentPane()",
+                new EnvironmentEntry("javax.swing.JFrame", "frame")
+        );
+    }
+
+    // http://www.java2s.com/Tutorials/Java/Java_io/0010__Java_io_File.htm
+    @Test
+    public void testExists() throws Exception {
+        testSynthesis(
+                "boolean",
+                "(dummyFile).exists()",
+                new EnvironmentEntry("java.io.File", "dummyFile")
+        );
+    }
+
+    @Test
     public void testBufferedReader() throws Exception {
         testSynthesis(
                 "java.io.BufferedReader",
@@ -77,11 +211,93 @@ public class CodeSynthesisTest {
     }
 
     @Test
+    public void testStringReader() throws Exception {
+        testSynthesis(
+                "java.io.StringReader",
+                "new StringReader(\"a bc ddd\")",
+                new EnvironmentEntry("java.lang.String", "\"a bc ddd\"")
+        );
+    }
+
+    @Test
     public void testBufferedWriter() throws Exception {
         testSynthesis(
                 "java.io.BufferedWriter",
                 "new BufferedWriter(new PrintWriter(fileName))",
                 new EnvironmentEntry("java.lang.String", "fileName")
+        );
+    }
+
+    @Test
+    public void testPrintStream() throws Exception {
+        testSynthesis(
+                "java.io.PrintStream",
+                "new PrintStream(fout)",
+                new EnvironmentEntry("java.io.FileOutputStream", "fout"),
+                new EnvironmentEntry("java.io.File", "file")
+        );
+    }
+
+    @Test
+    public void testPipedReader() throws Exception {
+        testSynthesis(
+                "java.io.PipedReader",
+                "new PipedReader()"
+        );
+    }
+
+    @Test
+    public void testPipedReaderFromWriter() throws Exception {
+        testSynthesis(
+                "java.io.PipedReader",
+                "new PipedReader(pw)",
+                new EnvironmentEntry("java.io.PipedWriter", "pw")
+        );
+    }
+
+    // From InSynth
+    @Test
+    public void testObjectOutputStream() throws Exception {
+        testSynthesis(
+                "java.io.ObjectOutputStream",
+                "new ObjectOutputStream(fos)",
+                new EnvironmentEntry("java.io.FileOutputStream", "fos")
+        );
+    }
+
+    // From InSynth
+    @Test
+    public void testObjectInputStream() throws Exception {
+        testSynthesis(
+                "java.io.ObjectInputStream",
+                "new ObjectInputStream(fis)",
+                new EnvironmentEntry("java.io.FileInputStream", "fis"),
+                new EnvironmentEntry("java.io.FileOutputStream", "fos"),
+                new EnvironmentEntry("java.io.ObjectOutputStream", "oos")
+        );
+    }
+
+    @Test
+    public void testLineNumberReader() throws Exception {
+        testSynthesis(
+                "java.io.LineNumberReader",
+                "new LineNumberReader((System.console()).reader())"
+        );
+    }
+
+    @Test
+    public void testJWindow() throws Exception {
+        testSynthesis(
+                "javax.swing.JWindow",
+                "new JWindow()"
+        );
+    }
+
+    @Test
+    public void testJViewport() throws Exception {
+        testSynthesis(
+                "javax.swing.JViewport",
+                "new JViewport()"
         );
     }
 
@@ -163,13 +379,55 @@ public class CodeSynthesisTest {
         );
     }
 
+    // http://www.java2s.com/Tutorials/Java/Java_Network/0010__Java_Network_TCP_Server.htm
     @Test
-    public void testTokenizer() throws Exception {
+    public void testInetSocketAddress() throws Exception {
+        testSynthesis(
+                "java.net.InetSocketAddress",
+                "new InetSocketAddress(\"localhost\", 12900)",
+                new EnvironmentEntry("java.lang.String", "\"localhost\""),
+                new EnvironmentEntry("int", "12900")
+        );
+    }
+
+    // http://www.java2s.com/Tutorials/Java/Java_Network/0010__Java_Network_TCP_Server.htm
+    @Test
+    public void testServerSocket() throws Exception {
+        testSynthesis(
+                "java.net.ServerSocket",
+                "new ServerSocket(12900, 100)",
+                new EnvironmentEntry("int", "12900"),
+                new EnvironmentEntry("int", "100")
+        );
+    }
+
+    @Test
+    public void testInputStreamSocket() throws Exception {
+        testSynthesis(
+                "java.io.InputStream",
+                "(activeSocket).getInputStream()",
+                new EnvironmentEntry("java.net.Socket", "activeSocket")
+        );
+    }
+
+    @Test
+    public void testStringTokenizer() throws Exception {
         testSynthesis(
                 "java.util.StringTokenizer",
                 "new StringTokenizer(str, delimiters)",
                 new EnvironmentEntry("java.lang.String", "str"),
                 new EnvironmentEntry("java.lang.String", "delimiters")
+        );
+    }
+
+    // From InSynth
+    @Test
+    public void testStreamTokenizer() throws Exception {
+        testSynthesis(
+                "java.io.StreamTokenizer",
+                "new StreamTokenizer(br)",
+                new EnvironmentEntry("java.io.BufferedReader", "br"),
+                new EnvironmentEntry("java.io.FileReader", "fr")
         );
     }
 
@@ -225,6 +483,14 @@ public class CodeSynthesisTest {
         );
     }
     */
+
+    @Test
+    public void testInputStreamReaderFromNothing() throws Exception {
+        testSynthesis(
+                "java.io.InputStreamReader",
+                "new InputStreamReader(System.in)"
+        );
+    }
 
     @Test
     public void testInputStreamReader() throws Exception {
