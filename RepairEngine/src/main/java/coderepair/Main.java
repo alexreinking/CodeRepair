@@ -15,7 +15,19 @@ public class Main {
         final String csvInFile = "./resources/graph.freq.csv";
         final String csvOutFile = "./resources/graph.csv";
 
-        final SynthesisGraph graph = GraphLoader.fromSerialized(graphFile, inFile, "java.io", "java.util", "java.applet", "javax.swing", "java.net");
+        final SynthesisGraph graph = GraphLoader.fromSerialized(
+                graphFile,
+                inFile,
+                "java.io",
+                "java.util",
+                "java.applet",
+                "javax.swing",
+                "java.net",
+                "java.awt",
+                "javax.xml",
+                "org.w3c",
+                "org.xml"
+        );
 //        final SynthesisGraph graph = GraphLoader.fromFunctionList(csvInFile);
 
         TimedTask weightGraph = new TimedTask("Graph weighting", () -> {
