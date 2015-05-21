@@ -1,0 +1,46 @@
+\newcommand{\doi}[1]{doi:~\href{http://dx.doi.org/#1}{\Hurl{#1}}}   % print a hyperlinked DOI
+\newcommand{\ourTool}{Winston\xspace}
+
+\newcommand{\ruzica}[1]{\noindent{\color{red} {\bf \fbox{Ruzica}} {\it#1}}}
+\newcommand{\alex}[1]{\noindent{\color{green} {\bf \fbox{Alex}} {\it#1}}}
+
+%%                       %%
+%  Algorithm Definitions  %
+%%                       %%
+
+\SetKw{KwNew}{new}
+\SetKw{KwIn}{in}
+\SetKw{KwNot}{not}
+\SetKw{KwWhere}{where}
+\SetKw{KwContinue}{continue}
+
+%%                        %%
+%  Code Style Definitions  %
+%%                        %%
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{pred}{rgb}{0.9,0,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{pgreen},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pred},
+  basicstyle=\scriptsize\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$$},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+%%                            %%
+%  Float Position Adjustments  %
+%%                            %%
+
+\setlength\floatsep{1\baselineskip plus 3pt minus 2pt}
+\setlength\textfloatsep{1\baselineskip plus 3pt minus 2pt}
+\setlength\intextsep{1\baselineskip plus 3pt minus 2pt}

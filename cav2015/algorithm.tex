@@ -1,0 +1,150 @@
+\section{The Algorithm}
+\label{sec:algorithm}
+\subsection{Synthesis Graph Construction}
+\label{sec:algorithm:graph}
+
+Our algorithm operates by searching through a data structure we call the {\emph{synthesis graph}}. Each node of the synthesis graph corresponds to either a value-producing language entity, such as a function, variable, constant, or literal, or to a type in the language. We therefore divide nodes into two sets $V_t$ (type nodes) and $V_f$ (function nodes). Since variables, constants, and literals can be considered functions taking the empty set to their value, they belong to $V_f$. From every function node, there is an out-edge to the type it produces, and for each distinct type that the function takes as an argument, there is an incoming edge into the function node to the type node. Importantly, this means that a function on three input parameters of the same type will have in-degree exactly one.
+
+In addition, the edges are weighted by their cost of inclusion, a subjective measure that guides the search towards desirable traits, such as smaller expressions or lower memory usage.
+
+\subsection{Synthesis Procedure}
+\label{sec:algorithm:synthesis}
+We now outline the synthesis portion of our algorithm, Algorithm~\ref{proc:synthesize}. The algorithm takes as input the synthesis graph $G=(V_t \cup V_f, E)$, a type $\tau$, a cost limit $C_{max}$, and the number of expressions to synthesize $N$. It returns a list of expressions of type $\tau$.
+\SetKwData{Snips}{snips}
+\begin{algorithm}[hbt]
+\SetKwData{Exprs}{exprs}
+\SetKwFunction{Dist}{Dist}
+\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+\Input{$G=(V_t\cup V_f,E)$, the synthesis graph; $\tau \in V_t$, the type to synthesize; $C_{max}$, the maximum allowable cost; $N$, the number of snippets to synthesize}
+\Output{\Exprs, the list of expressions}
+\BlankLine
+$G'=(V_t'\cup V_f', E') \longleftarrow$ subgraph of $G$ reachable within $C_{max}$ from $\tau$ \;
+Sort $V_t'$ in descending distance away from $\tau$ \;
+\Snips $\longleftarrow$ Hash table mapping types to snippets \;
+\ForEach{$\sigma\in V_t'$}{
+  \Snips[$\sigma$] $\longleftarrow$ \ref{proc:getExpression}($G'$, \Snips, $\sigma$, $C_{max} - $ \Dist{$\sigma$}, $N$) \;
+}
+\Exprs $\longleftarrow$ \Snips[$\tau$] \;
+\caption{Synthesis Algorithm}\label{proc:synthesize}
+\end{algorithm}
+The first two steps can be done using Dijkstra's algorithm. Nodes $V_t'$ are sorted in reverse order so as
+to cache at the latest possible opportunity. This also means that in every run of the loop 
+$\sigma$ is as close as possible to $\tau$. If we
+create an expression of type  $\tau$ that involves $\sigma$, then the rest of the expression may cost at most $C_{max} - $
+\Dist{$\sigma$}. The procedure \ref{proc:getExpression} uses \Snips to
+avoid performing expensive recomputations.
+
+Next we describe the \ref{proc:getExpression} procedure, whose task is
+to find the $N$ best snippets of type $\tau$ in $G'$ within a
+prescribed cost bound $C_{now}$.
+\begin{procedure}[htb]
+\SetKwFunction{Cost}{Cost}\SetKwFunction{Keys}{Keys}
+\SetKwData{Results}{results}
+\lIf{$\tau$ $\in$ \Keys{\Snips}}{\Return{\Snips$[\tau]$}}
+\Results $\leftarrow$ $\emptyset$ \;
+\ForEach{$g \in V_f'$ of the form $g : (\tau_1 \times \cdots \times \tau_k) \to \tau$}{
+	\lIf{\Cost{$g$} $> C_{now}$}{\KwContinue}
+	For all $i$, let $s_i \leftarrow$ \ref{proc:getExpression}($G'$, \Snips, $\tau_i, C_{now} - $ \Cost{$g$}, $N$) \;
+	\ForEach{args $\in$ $s_1 \times \cdots \times s_k$}{
+		\If{\Cost{$g$(args)} $\leq C_{now}$}{
+			Add $g$(args) to \Results \;
+		}
+		\While{$|$ \Results $| > N$}{
+			Remove the most costly entry from \Results \;
+		}
+	}
+}
+\Return{\Results}
+\caption{GetExpressions({$G'=(V_t' \cup V_f', E')$}, snips, $\tau, C_{now}, N$)}\label{proc:getExpression}
+\end{procedure}
+The procedure operates recursively, and it checks to see whether the
+computation has been completed before by referring to the \Snips
+table. To compute candidates for $\tau \in V_t$, the procedure looks
+at its outgoing neighbors, which are all functions whose output is of type $\tau$.
+For each function that would not immediately break the cost constraint,
+\ref{proc:getExpression} attempts to satisfy all of its argument types recursively.
+This only needs to be done once for each type. Then, for every possible
+set of arguments to the function, it adds the allowable expressions to the
+results, and pushes out the worst few results if the size of the set would
+exceed $N$.
+
+\subsection{Repair Algorithm}
+\label{sec:algorithm:repair}
+Finally, we describe the repair algorithm, Algorithm \ref{proc:repair}. The key step in our
+approach is biasing the previously-described synthesis procedures
+towards those subexpressions of the broken expression that are
+correctly-typed. The intuition for this is that the search should be
+directed to favor those components that the programmer wanted to use.
+To do this, we adjust the \Cost function used by \ref{proc:getExpression} to 
+scale down its results by a factor of $2^n$, where $n$ is the number of
+expressions ``reinforced'' by the repair procedure that appear in the
+snippet. As a practical matter, we say we have ``reinforced'' an
+expression when we add it to a list of reinforced expressions.
+
+This scheme has a few distinct advantages: first, it will very
+strongly prefer those expressions that occurred as part of the given
+incorrect expression; second, in cases where more than one of the same
+type is required, it will favor using multiple, distinct
+subexpressions among those reinforced; and finally, if no
+expressions are reinforced, then \Cost actually remains unchanged.
+
+With this modification in place, the repair algorithm proceeds from
+the bottom up. For each broken sub-expression in the input, we first
+reinforce each of its well-typed subexpressions and then initiate a
+synthesis for the desired type of the current subexpression. If any of
+its children are ill-typed, we recurse and repair them first.
+
+Notice that this means the repaired subexpressions will also be
+reinforced. This behavior is desirable because it favors reusing the
+subexpressions generated once the repair synthesizes a higher
+level. Additionally, the recursion guarantees that reinforcing a
+subexpression will not interfere with a synthesis that occurs at the
+same level as that subexpression.
+\begin{algorithm}[hbt]
+\SetKwData{Repairs}{repairs}\SetKwData{Expr}{expr}\SetKwData{Subs}{subs}
+\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+\Input{$G=(V_t\cup V_f,E)$, the synthesis graph; \Expr, the broken expression; $C_{max}$, the maximum allowable cost; $N$, the number of repairs to synthesize}
+\Output{\Repairs, a list}
+\BlankLine
+\lIf{\Expr is well-typed}{\Return{[expr]}}
+Write \Expr as \Expr$(x_1, \ldots, x_k)$ where $x_i$ are its subexpressions of type $\tau_i$ \;
+\ForEach{$x\in\{x_1,\ldots,x_k\}$}{
+  $x \longleftarrow$ Repair ($G, x, C_{max}, N$) \tcp*{Replace $x$ with a list of either itself or its possible corrections}
+}
+\ForEach{\Subs $\in x_1 \times \ldots \times x_k$}{
+  Reinforce all expressions in \Subs \;
+  Add all results of Synthesize ($G, \tau, C_{max}, N$) to \Repairs \;
+  Clear reinforcements \;
+}
+\Repairs $\longleftarrow$ Best $N$ results in \Repairs
+\caption{Repair Algorithm}\label{proc:repair}
+\end{algorithm}
+Although this algorithm, as described, returns up to $N$ possible
+repairs, in our preliminary implementation, the first returned
+result was mostly the correct one, so we speculate that setting $N$ really low might be
+acceptable in a practical setting.
+
+\iffalse
+
+\subsection{Completeness Guarantees}
+
+Because the algorithm is limited only by user defined parameters, the
+search can be tuned to consider every node in the graph. Since the
+breadth and depth restrictions can be elided by increasing the cost
+and quantity limits, the full space of possible expressions is
+reachable. Note, however, that without a cost limit, the algorithm
+will not terminate, since many copy-constructors or other identity
+maps often times exist in the environment (e.g. one could synthesize
+$f(f(f(f(\ldots f(a)\ldots ))))$ ad infinitum). Even with a cost
+limit, it was shown in
+\cite{GveroETAL13CompleteCompletionTypesWeights} that the expression
+synthesis problem corresponds to the type-inhabitation problem, which
+is known to be PSPACE-complete \cite{Urzyczyn97}. Fortunately, finding
+a neighborhood for a type runs in polynomial time (same as Dijkstra's
+algorithm), and although we have no proven time bounds on the search,
+it has been extremely fast in practice. Thus, we know that since this
+problem is PSPACE-complete, there always exists a cost limit larger
+than the entire graph, but finite such that if an expression exists,
+it can be found by the algorithm in finite time.
+
+\fi
