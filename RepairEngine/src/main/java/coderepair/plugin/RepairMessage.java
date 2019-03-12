@@ -8,7 +8,6 @@ import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 
 public class RepairMessage implements Plugin {
-
     private static final String HOME_DIR = System.getProperty("user.home");
     private final String serializedFile = HOME_DIR + "/.winston/resources/graph.ser";
     private final String dataFile = HOME_DIR + "/.winston/resources/rt.javap";
