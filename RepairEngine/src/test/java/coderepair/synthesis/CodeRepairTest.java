@@ -13,8 +13,8 @@ import java.util.SortedSet;
 import static org.junit.Assert.assertEquals;
 
 public class CodeRepairTest {
-    private final static String inFile = "./resources/rt.javap";
-    private final static String graphFile = "./resources/graph.ser";
+    private final static String inFile = "../resources/rt.javap";
+    private final static String graphFile = "../resources/graph.ser";
     private final static double CUT_TARGET = 0.6;
     private static SynthesisGraph synthesisGraph = null;
     private static RepairValuator repairValuator;
