@@ -64,7 +64,7 @@ class RepairScanner extends TreeScanner<TypedSnippet, Void> {
     }
 
     private Boolean hasTypeError(Tree tree) {
-        return getTypeMirror(tree).map(t -> TypeKind.ERROR.equals((TypeKind) t.getKind())).get();
+        return getTypeMirror(tree).map(t -> TypeKind.ERROR.equals(t.getKind())).get();
     }
 
     @Override

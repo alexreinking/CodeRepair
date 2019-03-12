@@ -21,7 +21,7 @@ public class GraphWriter {
                     JavaFunctionNode fn = (JavaFunctionNode) node;
                     JavaTypeNode output = fn.getOutput();
 
-                    String sigStr = String.join("; ", fn.getSignature().stream().map(JavaGraphNode::getName).collect(Collectors.toList()));
+                    String sigStr = fn.getSignature().stream().map(JavaGraphNode::getName).collect(Collectors.joining("; "));
 
                     bw.write(String.format("%.8f, %s, %s, %s, %s", graph.getWeight(output, fn), output.getName(), fn.getFunctionName(), fn.getKind().name(), sigStr));
                     bw.newLine();

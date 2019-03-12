@@ -41,7 +41,7 @@ public class JavapGraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
 
         ctx.classDeclaration().forEach(this::visitClassDeclaration);
 
-        methods.stream().forEach(method -> {
+        methods.forEach(method -> {
             synthesisGraph.addVertex(method);
             synthesisGraph.addEdge(method.getOutput(), method);
 

@@ -12,7 +12,7 @@ public class JavaFunctionNode extends JavaGraphNode implements Serializable {
 
     public JavaFunctionNode(Kind kind, String name, Collection<JavaTypeNode> formals, JavaTypeNode output) {
         super(kind, String.format("%s: (%s) -> %s", name,
-                String.join(" x ", formals.stream().map(JavaTypeNode::getName).collect(Collectors.toList())),
+                formals.stream().map(JavaTypeNode::getName).collect(Collectors.joining(" x ")),
                 output.getName()));
 
         this.inputs = new HashSet<>(formals);

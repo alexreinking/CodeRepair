@@ -6,8 +6,6 @@ import coderepair.util.GraphWriter;
 import coderepair.util.TimedTask;
 import coderepair.weighting.NaiveWeighting;
 
-import java.io.IOException;
-
 public class Main {
     public static void main(String[] args) {
         final String inFile = "./resources/rt.javap";

@@ -6,6 +6,7 @@ import coderepair.graph.*;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
+import org.jetbrains.annotations.NotNull;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
 import java.io.*;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class GraphLoader {
+    @NotNull
     private static Optional<JavaPParser.JavapContext> parseJavap(CharStream stream) {
         JavaPLexer lexer = new JavaPLexer(stream);
         JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
@@ -35,6 +37,7 @@ public class GraphLoader {
         }
     }
 
+    @NotNull
     public static SynthesisGraph buildGraphFromJavap(String db, String... allowedPackages) {
         return loadFile(db)
                 .flatMap(GraphLoader::parseJavap)
@@ -81,31 +84,7 @@ public class GraphLoader {
                     graph.addVertex(type);
                 }
 
-                JavaFunctionNode fn = null;
-                switch (kind) {
-                    case ClassCast:
-                        fn = factory.makeCastNode(signature.get(0), outputType);
-                        break;
-                    case Constructor:
-                        fn = factory.makeConstructor(outputType, signature);
-                        break;
-                    case Method:
-                        fn = factory.makeMethod(name, signature.get(0), outputType, signature.subList(1, signature.size()));
-                        break;
-                    case StaticMethod:
-                        fn = factory.makeStaticMethod(name, outputType, signature);
-                        break;
-                    case Field:
-                        fn = factory.makeField(name, outputType, signature.size() > 0 ? signature.get(0) : null);
-                        break;
-                    case StaticField:
-                        fn = factory.makeField(name, outputType, signature.size() > 0 ? signature.get(0) : null);
-                        break;
-                    case Value:
-                        fn = factory.makeValue(name, outputType.getName());
-                        break;
-                }
-
+                JavaFunctionNode fn = factory.makeFunctionNode(kind, name, signature, outputType);
                 graph.addVertex(fn);
                 graph.setEdgeWeight(graph.addEdge(outputType, fn), weight);
                 for (JavaTypeNode signatureType : signature) {
@@ -121,5 +100,4 @@ public class GraphLoader {
             return null;
         }
     }
-
 }

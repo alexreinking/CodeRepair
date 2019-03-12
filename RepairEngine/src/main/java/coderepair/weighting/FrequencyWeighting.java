@@ -13,6 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,22 +40,14 @@ public class FrequencyWeighting implements GraphWeighter {
             String functionName = fn.getFunctionName();
 
             if (!fn.getKind().equals(JavaGraphNode.Kind.ClassCast)) {
-                String query = null;
 
-                if (fn.getKind().equals(JavaGraphNode.Kind.Constructor)) {
-                    query = functionName;
-                } else if (fn.getKind().equals(JavaGraphNode.Kind.StaticMethod)) {
-                    query = functionName;
-                } else {
-                    JavaTypeNode javaTypeNode = fn.getOutput();
-                    query = javaTypeNode.getPackageName() + " " + javaTypeNode.getClassName() + " " + functionName;
+                String query = getQuery(fn, functionName);
+                if (query.contains("<") || query.contains(">")) {
+                    return; // ignore generics for now
                 }
 
-                if (query.contains("<") || query.contains(">"))
-                    return; // ignore generics for now
-
                 try {
-                    URL apiCall = new URL(apiUrl + URLEncoder.encode(query, "UTF-8"));
+                    URL apiCall = new URL(apiUrl + URLEncoder.encode(query, StandardCharsets.UTF_8));
 
                     HttpURLConnection apiConn = (HttpURLConnection) apiCall.openConnection();
                     apiConn.setRequestMethod("GET");
@@ -91,5 +84,18 @@ public class FrequencyWeighting implements GraphWeighter {
                 }
             }
         });
+    }
+
+    private String getQuery(JavaFunctionNode function, String name) {
+        String query;
+        if (function.getKind().equals(JavaGraphNode.Kind.Constructor)) {
+            query = name;
+        } else if (function.getKind().equals(JavaGraphNode.Kind.StaticMethod)) {
+            query = name;
+        } else {
+            JavaTypeNode javaTypeNode = function.getOutput();
+            query = javaTypeNode.getPackageName() + " " + javaTypeNode.getClassName() + " " + name;
+        }
+        return query;
     }
 }

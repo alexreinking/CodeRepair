@@ -20,7 +20,7 @@ public class CodeSynthesisTest {
     private static SynthesisGraph testGraph;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         if (testGraph == null) {
             testGraph = GraphLoader.fromSerialized(graphFile, inFile);
             if (testGraph == null) throw new RuntimeException("Could not load graph");
