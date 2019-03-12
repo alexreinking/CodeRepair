@@ -58,7 +58,10 @@ public class GraphLoader {
             JavaGraphNodeFactory factory = new JavaGraphNodeFactory();
             SynthesisGraph graph = new SynthesisGraph(factory);
 
-            String line = br.readLine(); // chomp header
+            // chomp header
+            br.readLine();
+
+            String line;
             while ((line = br.readLine()) != null) {
                 String[] fields = line.split(",\\s*");
                 double weight = Double.parseDouble(fields[0]);

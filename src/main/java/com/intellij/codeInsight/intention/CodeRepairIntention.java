@@ -33,8 +33,9 @@ public class CodeRepairIntention extends PsiElementBaseIntentionAction implement
         PsiElement current = psiElement.getOriginalElement();
         PsiStatement highest = null;
         while (current != null) {
-            if (current instanceof PsiStatement)
+            if (current instanceof PsiStatement) {
                 highest = (PsiStatement) current;
+            }
             current = current.getContext();
         }
         return highest;

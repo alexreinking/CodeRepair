@@ -1,3 +1,4 @@
 From the examples directory:
 
-  $ find . -name \*.java | xargs javac -cp . -processorpath ../../out/artifacts/CodeRepair_jar/CodeRepair.jar -Xplugin:coderepair.plugin.RepairM
+  $ find . -name \*.java | xargs javac -cp . -processorpath ../../out/artifacts/CodeRepair_jar/CodeRepair.jar -Xplugin:coderepair.plugin.RepairMessage
+

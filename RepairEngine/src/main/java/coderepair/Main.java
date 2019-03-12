@@ -9,7 +9,7 @@ import coderepair.weighting.NaiveWeighting;
 import java.io.IOException;
 
 public class Main {
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) {
         final String inFile = "./resources/rt.javap";
         final String graphFile = "./resources/graph.ser";
         final String csvInFile = "./resources/graph.freq.csv";

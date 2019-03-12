@@ -1,15 +1,16 @@
-<idea-plugin version="2">
+<idea-plugin>
     <id>edu.yale.cpsc.CodeRepair</id>
     <name>Winston for IntelliJ</name>
     <version>1.0</version>
-    <vendor email="alex.reinking@yale.edu" url="http://cpsc.yale.edu">Yale University</vendor>
+    <vendor email="alex.reinking@yale.edu" url="https://alexreinking.com">Alex Reinking</vendor>
 
     <description><![CDATA[
       Repairs common type-errors in Java Code.
     ]]></description>
 
-    <change-notes>
-    </change-notes>
+    <change-notes><![CDATA[
+      Update for open source release. Fix build and support OpenJDK.
+    ]]></change-notes>
 
     <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
     <idea-version since-build="131"/>
@@ -27,5 +28,4 @@
         </intentionAction>
         <completion.contributor language="JAVA" implementationClass="edu.yale.cpsc.winston.SynthesisContributor"/>
     </extensions>
-
 </idea-plugin>

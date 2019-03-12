@@ -21,7 +21,7 @@ public class CodeRepairTest {
     private static CodeSynthesis synthesis;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         if (synthesisGraph == null) {
             synthesisGraph = GraphLoader.fromSerialized(graphFile, inFile);
             if (synthesisGraph == null) throw new RuntimeException("Could not load graph");
@@ -38,7 +38,7 @@ public class CodeRepairTest {
     }
 
     @After
-    public void done() throws Exception {
+    public void done() throws InterruptedException {
         System.out.println("Done!");
         System.out.println();
         Thread.sleep(10);
