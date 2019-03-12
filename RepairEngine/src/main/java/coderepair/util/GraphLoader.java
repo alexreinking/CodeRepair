@@ -3,8 +3,9 @@ package coderepair.util;
 import coderepair.antlr4.JavaPLexer;
 import coderepair.antlr4.JavaPParser;
 import coderepair.graph.*;
-import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
 import java.io.*;
@@ -14,8 +15,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class GraphLoader {
-    private static Optional<JavaPParser.JavapContext> parseJavap(ANTLRFileStream antlrFileStream) {
-        JavaPLexer lexer = new JavaPLexer(antlrFileStream);
+    private static Optional<JavaPParser.JavapContext> parseJavap(CharStream stream) {
+        JavaPLexer lexer = new JavaPLexer(stream);
         JavaPParser parser = new JavaPParser(new BufferedTokenStream(lexer));
         return Optional.of(parser.javap());
     }
@@ -41,9 +42,9 @@ public class GraphLoader {
                 .get();
     }
 
-    private static Optional<ANTLRFileStream> loadFile(String fileName) {
+    private static Optional<CharStream> loadFile(String fileName) {
         try {
-            return Optional.of(new ANTLRFileStream(fileName));
+            return Optional.of(CharStreams.fromFileName(fileName));
         } catch (IOException e) {
             return Optional.empty();
         }
