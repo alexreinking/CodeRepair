@@ -1,7 +1,7 @@
 package coderepair.util;
 
-import coderepair.antlr.JavaPLexer;
-import coderepair.antlr.JavaPParser;
+import coderepair.antlr4.JavaPLexer;
+import coderepair.antlr4.JavaPParser;
 import coderepair.graph.*;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
@@ -50,7 +50,7 @@ public class GraphLoader {
     }
 
     private static SynthesisGraph construct(JavaPParser.JavapContext j, String... allowedPackages) {
-        return new JavapGraphBuilder(allowedPackages).visitJavap(j);
+        return new JavapGraphBuilder(allowedPackages).visit(j);
     }
 
     public static SynthesisGraph fromFunctionList(String fileName) {

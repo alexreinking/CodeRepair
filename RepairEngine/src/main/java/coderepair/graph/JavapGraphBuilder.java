@@ -1,14 +1,13 @@
 package coderepair.graph;
 
-import coderepair.antlr.JavaPBaseVisitor;
-import org.antlr.v4.runtime.misc.NotNull;
+import coderepair.antlr4.JavaPBaseVisitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import static coderepair.antlr.JavaPParser.*;
+import static coderepair.antlr4.JavaPParser.*;
 
 public class JavapGraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     private final HashSet<String> allowedPackages = new HashSet<>();
@@ -30,7 +29,7 @@ public class JavapGraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     }
 
     @Override
-    public SynthesisGraph visitJavap(@NotNull JavapContext ctx) {
+    public SynthesisGraph visitJavap(JavapContext ctx) {
         nodeManager = new JavaGraphNodeFactory();
         synthesisGraph = new SynthesisGraph(nodeManager);
 
@@ -72,7 +71,7 @@ public class JavapGraphBuilder extends JavaPBaseVisitor<SynthesisGraph> {
     }
 
     @Override
-    public SynthesisGraph visitClassDeclaration(@NotNull ClassDeclarationContext ctx) {
+    public SynthesisGraph visitClassDeclaration(ClassDeclarationContext ctx) {
         JavaTypeNode classNode = nodeManager.getTypeByName(ctx.typeName().getText());
         if (ctx.INTERFACE() != null || ctx.modifiers() != null && ctx.modifiers().ABSTRACT() != null)
             classNode.makeAbstract();
